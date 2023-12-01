@@ -1,0 +1,102 @@
+{%extends 'layouts/layout.html'%}
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  <!-- !PAGE CONTENT! -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div
+        class = "w3-container w3-red"
+      >
+        {{ messages[0] }}
+        {% if messages[1] == 'register' %}
+            Go to <a
+              href = "{{ url_for(
+                'register'
+              )}}"
+            >
+              register page
+            </a>.
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <form
+    method = "POST"
+    action = "{{ url_for(
+      'login_attempt'
+    )}}"
+  >
+    <input
+      type                = "text"
+      placeholder         = "User Name/Email"
+      name                = "user_details"
+      id                  = "user_details"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type                = "password"
+      placeholder         = "Password"
+      name                = "user_password"
+      id                  = "user_password"
+      required maxlength  ="50"
+      pattern             ="[^&quot,']+"
+    />
+    <input
+      class = "registerbtn"
+      type  = "submit"
+      value = "login"
+    />
+  </form>
+
+  <div
+    class = "w3-container signin w3-row"
+  >
+    <center>
+      <div
+        class = "vl"
+      >
+      </div>
+    </center>
+    <div
+      class = "w3-half"
+    >
+      <p>
+        <a
+          href  = "register"
+          class = "btn"
+        >
+          Register
+        </a>
+      </p>
+    </div>
+    <div
+      class = "w3-half"
+    >
+      <p>
+        <a
+          href  = "forgot_password"
+          class = "btn"
+        >
+          Forgot password?
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+{%endblock%}

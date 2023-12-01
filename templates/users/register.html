@@ -1,0 +1,117 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+          {% if messages[1] == 'login' %}
+            Go to
+            <a
+              href = "{{ url_for(
+                'login_page'
+              )}}"
+            >
+              login page
+            </a>
+            .
+          {% endif %}
+        </div>
+    {% endif %}
+  {% endwith %}
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'user_create'
+    )}}"
+  >
+    <p>
+      Please fill in this form to create an account.
+    </p>
+    <hr/>
+    <input
+      type                = "text"
+      placeholder         = "User Name"
+      name                = "username"
+      id                  = "username"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type                = "email"
+      placeholder         = "Email"
+      name                = "user_email"
+      id                  = "user_email"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type                = "password"
+      placeholder         = "Enter Password"
+      name                = "user_password"
+      id                  = "user_password"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type                = "password"
+      placeholder         = "Repeat Password"
+      name                = "user_password_repeat"
+      id                  = "user_password_repeat"
+      required maxlength  = "50"
+      pattern             ="[^&quot,']+"
+    />
+    <hr/>
+    <p>
+      By creating an account you agree to our
+      <a
+        href = "t&c"
+      >
+        Terms & Conditions
+      </a>
+      .
+    </p>
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Register
+    </button>
+  </form>
+
+  <div
+    class = "w3-container signin"
+  >
+    <p>
+      Already have an account?
+      <a
+        href = "login"
+      >
+        Log in
+      </a>
+      .
+    </p>
+  </div>
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+
+{%endblock%}

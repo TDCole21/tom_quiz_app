@@ -1,0 +1,71 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+    <head>
+        <link
+        rel   = "stylesheet"
+        type  = "text/css"
+        href  = "{{ url_for(
+            'static',
+            filename = 'styles/quiz.css'
+        )}}"
+        />
+    </head>
+
+    {% if session['user_admin'] == 1 %}
+        <form
+            method  = "POST"
+            action  = "{{ url_for(
+                'quiz_manager'
+            )}}"
+        >
+            <button
+            type  = "submit"
+            class = "registerbtn"
+            >
+                Quiz Manager (make/edit a Quiz)
+            </button>
+        </form>
+
+        <hr/>
+
+        <form
+            method  = "POST"
+            action  = "{{ url_for(
+                'host_a_quiz'
+            )}}"
+        >
+            <button
+            type  = "submit"
+            class = "registerbtn"
+            >
+            Host a Quiz
+            </button>
+        </form>
+
+        <hr/>
+
+    {% endif %}
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'join_a_quiz'
+        )}}"
+    >
+        <button
+        type  = "submit"
+        class = "registerbtn"
+        >
+        Join a Quiz
+        </button>
+    </form>    
+
+    <hr>
+    <h4>To do:</h4>
+    <ul>
+        <li>Need to think of how to list completed quizzes under make/host a quiz</li>
+    </ul>
+
+{%endblock%}

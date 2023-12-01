@@ -1,0 +1,108 @@
+/* Full-width input fields */
+input[type = text],
+input[type = email],
+input[type = password] {
+  width:            100%;
+  padding:          12px;
+  border-radius:    4px;
+  margin:           5px 0;
+  opacity:          0.85;
+  display:          inline-block;
+  font-size:        17px;
+  line-height:      20px;
+  text-decoration:  none; /* remove underline from anchors */
+}
+
+input:hover,
+.btn:hover,
+.registerbtn:hover {
+  opacity: 1;
+}
+
+
+input[type = text]:focus,
+input[type = email]:focus,
+input[type = password]:focus {
+  background-color: #ddd;
+  outline:            none;
+}
+
+/* style the submit button */
+input[type = submit] {
+  background-color: #ff0000;
+  color:            #ffffff;
+  cursor:             pointer;
+}
+
+input[type = submit]:hover {
+  background-color: #ff0000;
+}
+
+/* Overwrite default styles of hr */
+hr {
+  border:         1px solid #f1f1f1;
+  margin-bottom:  25px;
+}
+  
+/* Set a style for the submit button */
+.registerbtn {
+  background-color: #ff0000;
+  color:            #ffffff;
+  padding:            16px 20px;
+  margin:             8px 0;
+  border:             none;
+  cursor:             pointer;
+  width:              100%;
+  opacity:            0.9;
+}
+
+/* Add a blue text color to links */
+a {
+  color: #1d91fd
+}
+
+
+.btn {
+  color:          #000000;
+  text-decoration:  none;
+}
+
+#textboxid
+{
+  height:     200px;
+  font-size:  14pt;
+}
+
+/* Set a grey background color and center the text of the "sign in" section */
+.signin {
+  background-color: #f1f1f1;
+  text-align:         center;
+}
+
+/* vertical line */
+.vl {
+  position:   absolute;
+  border:     2px solid #ddd;
+  left:       50%;
+  transform:  translate(150px);
+  height:     55px;
+}
+
+@media screen and (max-width: 600px) {
+    /* hide the vertical line */
+    .vl {
+      display: none;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+  /* hide the vertical line */
+  .vl {
+    transform: translate(0);
+  }
+}
+
+img {
+  max-width:  80%;
+  height:     auto;
+}

@@ -1,0 +1,79 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  <hr/>
+
+  {% if quiz_info|length > 0 %}
+    <h2>
+      Host a Quiz:
+    </h2>
+    {% for quiz in quiz_info %}
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'host_live_quiz'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{quiz['quiz_id']}}"
+          />
+          <button
+            type    = "submit"
+            class   = "registerbtn"
+          >
+            {{quiz["quiz_name"]}}
+          </button>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>
+      There are currently no Quizzes.
+    </p>
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'create_quiz'
+      )}}"
+    >
+      <input
+        type                = "text"
+        placeholder         = "Quiz name"
+        name                = "quiz_name"
+        required maxlength  = "50"
+        pattern             = "[^&quot,']+"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Create Quiz
+      </button>
+    </form>
+  {%endif %}
+
+  <hr/>
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+
+{%endblock%}

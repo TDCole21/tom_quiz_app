@@ -1,0 +1,181 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div
+        class = "w3-container w3-red"
+      >
+        {{ messages[0] }}
+        {% if messages[1] == 'login' %}
+          Go to <a
+            href = "{{ url_for(
+              'login'
+            )}}"
+          >
+            login page
+          </a>.
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'quiz_manager'
+    )}}"
+  >
+    <a
+      onclick = "document.getElementById('form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Go back 
+      </h2>
+    </a>
+  </form>
+
+  <hr/>
+{{question_info}}
+
+  {% if question_info|length > 0 %}
+    <!-- Information about Questions -->
+    <h2>
+      Existing Questions:
+    </h2>
+    {% for question in question_info %}
+      <h3>
+        Question tag: {{question['question_tag']}}
+      </h3>
+      <h4>
+        Associated Quizzes:
+      </h4>
+      <h4>
+        Associated Questions:
+      </h4>
+      <h4>
+        Categories include:
+      </h4>
+      <h4>
+        Mode Category:
+      </h4>          
+      <div
+      class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'question_template'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+            class = "registerbtn"
+          >
+            Edit
+          </button>
+        </form>
+      </div>
+
+      <div
+      class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'delete_question'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "question_name"
+            value = "{{question['question_name']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "question_maker"
+          />
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+            class = "registerbtn"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
+
+    <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% endif %}   
+  
+  <h2>
+    Make a new Question:
+  </h2>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'create_new_question'
+    )}}"
+  >
+    <input
+      type                = "text"
+      placeholder         = "Question tag"
+      name                = "question_tag"
+      id                  = "question_tag"
+      required maxlength  = "50"
+      pattern             = "[^&quot']+"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id']}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question_maker"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Create Question
+    </button>
+  </form>
+
+  <hr/>
+
+  <h4>To do:</h4>
+  <ul>
+      <li>Have the edit question button work</li>
+      <li>Remove question info at top of page</li>
+      <li>Give information on associated quizzes</li>
+      <li>Maybe give information on associated questions</li>
+      <li>Give information on associated categories</li>
+      <li>Have an if statement to say if there are no associated quizzes</li>
+
+  </ul>
+
+{%endblock%}

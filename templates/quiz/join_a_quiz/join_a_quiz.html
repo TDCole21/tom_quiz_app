@@ -1,0 +1,103 @@
+{%extends 'layouts/layout.html'%}
+
+
+{%block body%}
+
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  <!-- This will display upcoming quizzes.
+  Unsure if I'll create a separate page to display basic info on the quiz or to have it displayed on this page -->
+
+  <h2>
+    Upcoming Quizzes:
+  </h2>
+  {% for quiz in upcoming_quiz_info %}
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        value = "{{quiz['quiz_id']}}"
+        class = "registerbtn"
+      >
+        {{quiz["quiz_name"]}}
+      </button>
+    </form>
+  {% endfor %}
+
+  <hr/>
+
+  <!-- This will display ongoing quizzes.
+  Unsure if I'll create a separate page to display basic info on the quiz or to have it displayed on this page -->
+
+  <h2>
+    Active Quizzes:
+  </h2>
+  {% for quiz in active_quiz_info %}
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        value = "{{quiz['quiz_id']}}"
+        class = "registerbtn"
+      >
+        {{quiz["quiz_name"]}}
+      </button>
+    </form>
+  {% endfor %}
+
+  <hr/>
+
+  <!-- This will display past quizzes.
+  Unsure if I'll create a separate page to display basic info on the quiz or to have it displayed on this page -->
+
+  <h2>
+    Previous Quizzes:
+  </h2>
+
+  {% for quiz in previous_quiz_info %}
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        value = "{{quiz['quiz_id']}}"
+        class = "registerbtn"
+      >
+        {{quiz["quiz_name"]}}
+      </button>
+    </form>
+  {% endfor %}
+  <!-- End page content -->
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+{%endblock%}

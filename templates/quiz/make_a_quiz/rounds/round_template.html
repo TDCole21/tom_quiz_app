@@ -1,0 +1,311 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div 
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+    {% endif %}
+  {% endwith %}
+
+<!-- Tells user what Quiz the round is in, and gives them ability to go back to edit Quiz -->
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'round_maker'
+    )}}"
+  >
+    <a
+      onclick = "document.getElementById('form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Go back 
+      </h2>
+    </a>
+  </form>
+
+  <hr>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_round_name'
+    )}}"
+  >
+    <h3>
+      Round {{round_info['round_order']}}: {{round_info['round_name']}}
+    </h3>
+    <input
+      type                = "text"
+      placeholder         = "New Round name"
+      name                = "new_round_name"
+      id                  = "new_round_name"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+    type  = "hidden"
+    name  = "round_id"
+    value = "{{round_info['round_id']}}"
+    />
+    <input
+    type  = "hidden"
+    name  = "source_point"
+    value = "round_template"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Round name
+    </button>
+  </form>
+
+  <hr>
+  <h3>
+    Round Description:
+  </h3>
+  <p>
+    {{round_info['round_description']}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_round_description'
+    )}}"
+  >
+    <textarea
+      rows          = "2"
+      cols          = "20"
+      placeholder   = "New Round description"
+      name          = "new_round_description"
+      id            = "new_round_description"
+      required wrap = "soft"
+    ></textarea>
+
+    <input
+      type  = "hidden"
+      name  = "round_id"
+      value = "{{round_info['round_id']}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "round_template"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Round description
+    </button>
+    <style>
+      #new_round_description {
+        width: 100%;
+      }
+    </style>
+  </form>
+
+  <hr>
+
+  <h2>
+    Associated Quizzes:
+  </h2>
+  {% if associated_quiz_info %}
+    {% for associated_quiz in associated_quiz_info %}
+      <h3>
+        Quiz {{associated_quiz['quiz_name']}}
+      </h3>
+      {% if associated_quiz['quiz_description'] %}
+      Quiz Description: {{associated_quiz['quiz_description']}}
+        <br>
+      {% endif %}
+      Round Order: {{associated_quiz['round_order']}}
+      <br>
+      {% if associated_quiz['round_questions'] %}
+        Number of Questions: {{associated_round['round_questions']}}
+        <br>
+      {% endif %}
+      {% if associated_quiz['quiz_active'] %}
+        Quiz is in progress
+      {% elif associated_quiz['quiz_completed'] %}
+        The Quiz is completed
+      {% else %}
+        This Quiz has yet to be played
+      {% endif %}
+      <br>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'unassociate_round'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{associated_quiz['quiz_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round_template"
+          />
+          <input
+            type  = "hidden"
+            name  = "round_name"
+            value = "{{round_info['round_name']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "round_order"
+            value = "{{associated_quiz['round_order']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+            class = "registerbtn"
+          >
+            Remove from Quiz
+          </button>
+        </form>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'quiz_template'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{associated_quiz['quiz_id']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{associated_quiz['quiz_id']}}"
+            class = "registerbtn"
+          >
+            Edit Quiz
+          </button>
+        </form>
+      </div>
+
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+      There are no Rounds associated with this Quiz
+  {% endif %}
+
+  <h2>
+    Add this Round to a Quiz:
+  </h2>
+  {% if unassociated_quiz_info %}
+    {% for unassociated_quiz in unassociated_quiz_info %}
+      <h3>
+        Quiz {{unassociated_quiz['quiz_name']}}{% if unassociated_quiz['quiz_description'] %}: {{unassociated_quiz['quizdescription']}}{% endif %}
+      </h3>
+      <div
+      class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'associate_round'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{unassociated_quiz['quiz_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round_template"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+            class = "registerbtn"
+          >
+            Add to Quiz
+          </button>
+        </form>
+      </div>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+      There are no Quizzes to add to
+  {% endif %}
+
+<hr>
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'delete_round'
+    )}}"
+  >
+    <input
+      type = "hidden"
+      name = "round_id"
+      value = "{{round_info['round_id']}}"
+    />
+    <input
+      type = "hidden"
+      name = "quiz_id"
+      value = "{{round_info['quiz_id']}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "round_maker"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Delete Round
+    </button>
+  </form>
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Show associated Questions, with unassociate_question button, edit question and change order buttons</li>
+      <li>Maybe add option to change round order from this page... not sure</li>
+      <li>Show unassociated Questions, with associate_question button</li>
+      <li>Show average question difficulty</li>
+      <li>Show mode question category</li>
+      <li>Unnasociate question only deletes live table entry if the round is not associated with a quiz, otherwise it just removes the question_id and other question related fields</li>
+      <li>Unnasociate from quiz only deletes live table entry if the round is not associated with a question, otherwise it just removes the quiz_id and other quiz related fields</li>
+  </ul>
+
+
+{%endblock%}

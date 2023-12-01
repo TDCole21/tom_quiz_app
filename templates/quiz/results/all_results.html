@@ -1,0 +1,51 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+    <head>
+        <link
+        rel   = "stylesheet"
+        type  = "text/css"
+        href  = "{{ url_for(
+            'static',
+            filename = 'styles/quiz.css'
+        )}}"
+        />
+    </head>
+
+    {{quiz_info}}
+
+    <h2>
+        Choose a Quiz:
+    </h2>
+        {% for i in quiz_info %}
+            <div
+                class = "w3-button"
+            >
+                <form
+                    method  = "POST"
+                    action  = "{{ url_for(
+                        'results'
+                    )}}"
+                >
+                    <button
+                        type    = "submit"
+                        class   = "registerbtn"
+                        name    = "quiz_id"
+                        value   = "{{i['quiz_id']}}"
+                    >
+                        {{i["quiz_name"]}}
+                    </button>
+                </form>
+            </div>
+            <br/>
+        {% endfor %}
+        <hr/>   
+
+    <hr>
+    <h4>To do:</h4>
+    <ul>
+        <li>Nothing</li>
+    </ul>
+
+{%endblock%}

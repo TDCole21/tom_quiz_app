@@ -1,0 +1,135 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+    <head>
+        <link
+            rel   = "stylesheet"
+            type  = "text/css"
+            href  = "{{ url_for(
+                'static',
+                filename = 'styles/quiz.css'
+            )}}"
+        />
+    </head>
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'quiz_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Quiz
+        </button>
+    </form>   
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'round_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Round
+        </button>
+    </form>   
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'question_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Question
+        </button>
+    </form>   
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'category_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Category
+        </button>
+    </form> 
+    
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'question_type_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Question Type
+        </button>
+    </form>   
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'question_scoring_type_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit a Question Scoring Type
+        </button>
+    </form>   
+
+    <hr>
+
+    <form
+        method  = "POST"
+        action  = "{{ url_for(
+            'item_maker'
+        )}}"
+    >
+        <button
+            type  = "submit"
+            class = "registerbtn"
+        >
+            Make/Edit an Item
+        </button>
+    </form>   
+
+    <hr>
+    
+    <h4>To do:</h4>
+    <ul>
+        <li>Need to think of how to list completed quizzes under make/host a quiz</li>
+    </ul>
+
+{%endblock%}

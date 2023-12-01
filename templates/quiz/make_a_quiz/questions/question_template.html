@@ -1,0 +1,1202 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel= "stylesheet"
+      type= "text/css"
+      href= "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  <!-- !PAGE CONTENT! -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <!-- Maybe add loop for multiple messages -->
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+    {% endif %}
+  {% endwith %}
+
+  <hr/>
+
+  <form
+    method = "POST"
+    id     = "quiz_form"
+    action = "{{ url_for(
+      'quiz_template'
+    )}}"
+  >
+    <input
+      type = "hidden"
+      name = "quiz_id"
+      value = "{{question_info['quiz_id'][0]}}"
+    />
+    <a
+      onclick = "document.getElementById('quiz_form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Quiz: {{question_info['quiz_name'][0]}}
+      </h2>
+    </a>
+  </form>
+
+  <form
+  method = "POST"
+  id     = "round_form"
+  action = "{{ url_for(
+    'round_template'
+  )}}"
+  >
+    <input
+      type = "hidden"
+      name = "round_id"
+      value = "{{question_info['round_id'][0]}}"
+    />
+    <a
+      onclick = "document.getElementById('round_form').submit(); return false;"
+    >
+      <h3 style="color: #000000; cursor: pointer;">
+        Round {{question_info['round_order'][0]}}: {{question_info['round_name'][0]}}
+      </h3>
+    </a>
+  </form>
+
+<!-- Question Tag -->
+
+  <h4>
+    Question: {{question_info['question_order'][0]}}
+  </h4>
+
+  <form
+    method = "POST"
+    action = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <h5>
+      Question Tag: {{question_info['question_tag'][0]}}
+    </h5>
+    <input
+      type        = "text"
+      placeholder = "New Question Tag"
+      name        = "question_update"
+      id          = "question_update"
+      pattern     = "[^&quot,']+"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_tag"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_tag'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Question Tag
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add a Question Tag
+      </button>
+    {% endif %}
+  </form>
+
+<!-- Question Order -->
+
+  <hr>
+  <h4>
+    Question Order: {{question_info['question_order'][0]}}
+  </h4>
+  {% if no_of_questions > 1 %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'change_order'
+      )}}"
+    >
+      <div
+        class = "w3-button"
+      >
+        <button
+          type  = "submit"
+          name  = "question_id"
+          value = "{{question_info['question_id'][0]}}"
+          class = "registerbtn"
+        >
+          Update Question order to:
+        </button>
+      </div>
+
+      <select
+        name  = "new_order"
+        id    = "new_order"
+      >
+        {% for j in range(1, no_of_questions + 1) %}
+          {% if j != question_info['question_order'] %}
+            <option
+              value = "{{j}}"
+            >
+              {{j}}
+            </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <input
+        type  = "hidden"
+        name  = "old_order"
+        value = "{{question_info['question_order'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "order_type" 
+        value = "Question"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+    </form>
+  {% endif %}
+  <hr/>
+
+<!-- Question -->
+
+  <h4>
+    Question:
+  </h4>
+  <p>
+    {{question_info['question_text'][0]}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <textarea
+      rows          = "2"
+      cols          = "20"
+      placeholder   = "New Question"
+      name          = "question_update"
+      id            = "question_update"
+      required wrap = "soft"
+    ></textarea>
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_text"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_text'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Question
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add a Question
+      </button>
+    {% endif %}
+    <style>
+      #question_update {
+        width: 100%;
+      }
+    </style>
+  </form>
+
+  <hr/>
+
+  <!-- Question Type -->
+
+  <h4>
+    Question Type:
+  </h4>
+  <ol
+    start="0"
+  >
+    {% for question_type_selection in question_type %}
+      <li>{{question_type_selection}}: {{question_type[question_type_selection]}}</li>
+    {% endfor %}
+  </ol>
+
+
+  <p>
+    Current type: {{question_info['question_type'][0]}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <select
+      name  = "question_update"
+      id    = "question_update"
+    >
+      {% for question_type_selection in range(0, question_type | length) %}
+        {% if question_type_selection == question_info['question_type'][0]|int %}
+          <option
+            selected = "selected"
+            value = "{{question_type_selection}}"
+          >
+            {{question_type_selection}}
+          </option>
+        {% else %}
+          <option
+            value = "{{question_type_selection}}"
+          >
+            {{question_type_selection}}
+          </option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_type"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Question Type
+    </button>
+  </form>
+
+</hr>
+
+<!-- Question Answer -->
+  
+  <hr/>
+
+  <h4>
+    Answer:
+  </h4>
+  <p>
+    {{question_info['question_correct_answer'][0]}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+      )}}"
+    >
+      <textarea
+        rows          = "2"
+        cols          = "20"
+        placeholder   = "New Answer"
+        name          = "question_update"
+        id            = "question_update"
+        required wrap = "soft"
+      ></textarea>
+      <br/>
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_correct_answer"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      {% if question_info['question_correct_answer'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Answer
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add an Answer
+      </button>
+    {% endif %}
+  </form>
+
+  {% if question_info['question_correct_answer'][0] != "None" %}
+    <form
+      method  = "POST" 
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_correct_answer"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Remove Answer
+      </button>
+    </form>
+  {% endif %}
+  <hr/>
+
+  <!-- Hints -->
+  
+  <hr/>
+  {{question_info['question_hint'][0]}}
+  <h4>
+    Hints:
+  </h4>
+
+  <!-- This first if, is to see if the value is a list or string -->
+  {% if question_info['question_hint'] is iterable and (question_info['question_hint'] is not string and question_info['question_hint'] is not mapping) %}
+    <!-- If it's a list, this will then iterate over the list, using the index number to allow for hint number as well as the hint -->
+    {% for hint_number in range(question_info['question_hint'] | length) %}
+      Hint {{hint_number+1}}: {{question_info['question_hint'][hint_number]}}
+
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'update_question'
+          )}}"
+        >
+          <textarea
+            rows          = "2"
+            cols          = "20"
+            placeholder   = "New Hint"
+            name          = "question_update"
+            id            = "question_update"
+            required wrap = "soft"
+          ></textarea>
+          <br/>
+          <input
+            type  = "hidden"
+            name  = "question_update_field"
+            value = "question_hint"
+          />
+          <input
+            type  = "hidden"
+            name  = "question_id"
+            value = "{{question_info['question_id'][0]}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "question"
+          />
+          <input
+            type  = "hidden"
+            name  = "all_hints"
+            value = "{{question_info['question_hint']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "old_hint"
+            value = "{{question_info['question_hint'][hint_number][0]}}"
+          />
+          {% if question_info['question_hint'][0] != "None" %}
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            Update Hint {{hint_number+1}}
+          </button>
+        {% else %}
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            Add a Hint
+          </button>
+        {% endif %}
+      </form>
+
+      {% if question_info['question_hint'][0] != "None" %}
+        <form
+          method  = "POST" 
+          action  = "{{ url_for(
+            'update_question'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "question_update_field"
+            value = "question_hint"
+          />
+          <input
+            type  = "hidden"
+            name  = "question_update"
+            value = "NULL"
+          />
+          <input
+            type  = "hidden"
+            name  = "question_id"
+            value = "{{question_info['question_id'][0]}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "question"
+          />
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            Remove Hint {{hint_number+1}}
+          </button>
+        </form>
+      {% endif %}
+    {% endfor %}
+
+  <!-- If there's currently only one Hint -->
+  <!-- I think this could be done better -->
+  {% else %}
+    <p>
+      Hint 1: {{question_info['question_hint']}}
+    </p>
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+        )}}"
+    >
+      <textarea
+        rows          = "2"
+        cols          = "20"
+        placeholder   = "New Hint"
+        name          = "question_update"
+        id            = "question_update"
+        required wrap = "soft"
+      ></textarea>
+      <br/>
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_hint"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Hint 1
+      </button>
+    </form>
+    {% if question_info['question_hint'][0] != "None" %}
+      <form
+        method  = "POST" 
+        action  = "{{ url_for(
+          'update_question'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "question_update_field"
+          value = "question_hint"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_update"
+          value = "NULL"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{question_info['question_id'][0]}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "question"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Remove Hint 1
+        </button>
+      </form>
+    {% endif %}
+
+  {% endif %}
+
+  <hr/>
+
+  <!-- Points -->
+
+  <h4>
+    Points:
+  </h4>
+  <p>
+    Current question point value: {{question_info['question_points'][0]}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <input
+      type                = "text"
+      placeholder         = "New Points"
+      name                = "question_update"
+      id                  = "question_update"
+      required maxlength  = "3"
+      pattern             = "[^&quot,']+"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_points"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_points'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Points
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add Points
+      </button>
+    {% endif %}
+  </form>
+
+  {% if question_info['question_points'][0] != "None" %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_points"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Remove Points
+      </button>
+    </form>
+  {% endif %}
+
+  <hr/>
+
+  <!-- Question Scoring Type -->
+
+  <h4>
+    Question Scoring Type:
+  </h4>
+  <ol
+    start="0"
+  >
+    {% for question_scoring_type_selection in question_scoring_type %}
+      <li>{{question_scoring_type_selection}}: {{question_scoring_type[question_scoring_type_selection]}}</li>
+    {% endfor %}
+  </ol>
+  <p>
+    Current scoring type: {{question_info['question_scoring_type'][0]}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <select
+      name  = "question_update"
+      id    = "question_update"
+    >
+      {% for question_scoring_type_selection in range(0, question_scoring_type | length) %}
+        {% if question_scoring_type_selection == question_info['question_scoring_type'][0]|int %}
+          <option
+            selected = "selected"
+            value = "{{question_scoring_type_selection}}"
+          >
+            {{question_scoring_type_selection}}
+          </option>
+        {% else %}
+          <option
+            value = "{{question_scoring_type_selection}}"
+          >
+            {{question_scoring_type_selection}}
+          </option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_scoring_type"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Question Scoring Type
+    </button>
+  </form>
+
+<hr>
+
+<!-- Video -->
+  <h4>
+    Question Video:
+  </h4>
+  <!-- Update to be able to include multiple videos -->
+  <!-- Currently needs a special embeded link -->
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <input
+      type        = "text"
+      placeholder = "YouTube url"
+      name        = "question_update"
+      id          = "question_update"
+      pattern     = "[^&quot,']+"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_video_url"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_video_url'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Video
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add a Video
+      </button>
+    {% endif %}
+
+  </form>
+
+  {% if question_info['question_video_url'][0] != "None" %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_video_url"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+        <h5>
+          Current Video:
+        </h5>
+        <center>
+        <!-- Will look at eventually hosting the video in an S3 bucket -->
+        <iframe
+          width   = "80%"
+          height  = "345"
+          allow   = "fullscreen"
+          src     = "{{question_info['question_video_url'][0]}}"
+        >
+        </iframe>
+        <br/>
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Remove Video
+        </button>
+      </center>
+    </form>
+  {% endif %}
+
+  <hr/>
+
+  <!-- Image -->
+
+  <h4>
+    Question Image:
+  </h4>
+  <!-- Update to be able to include multiple images -->
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <input
+      type        = "text"
+      placeholder = "question_image url"
+      name        = "question_update"
+      id          = "question_update"
+      pattern     = "[^&quot']+"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_image_url"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_image_url'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Image
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add an Image
+      </button>
+    {% endif %}
+  </form>
+
+  {% if question_info['question_image_url'][0] != "None" %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_image_url"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <center>
+        <h4>
+          Current Image
+        </h4>
+        <!-- Will look at eventually hosting the image in an S3 bucket -->
+        <img
+          src   = "{{question_info['question_image_url'][0]}}"
+          alt   = "Question {{question_info['question_order'][0]}}"
+          width = "50%"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Remove Image
+        </button>
+        <br/>
+      </center>
+    </form>
+  {% endif %}
+  <hr/>
+
+<!-- Audio -->
+
+<h4>
+  Question Audio:
+</h4>
+  <!-- Update to be able to include multiple audio files -->
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <input
+      type        = "text"
+      placeholder = "question_audio url"
+      name        = "question_update"
+      id          = "question_update"
+      pattern     = "[^&quot,']+"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_audio_url"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question"
+    />
+    {% if question_info['question_audio_url'][0] != "None" %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Audio
+      </button>
+    {% else %}
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add Audio
+      </button>
+    {% endif %}
+  </form>
+  {% if question_info['question_audio_url'][0] != "None" %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_audio_url"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id'][0]}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <center>
+        <!-- Will look at eventually hosting the audio on Azure -->
+        <p>
+          Current Audio
+          {{question_info['question_audio_url'][0]}}
+        </p> 
+        <iframe
+          frameborder = "0"
+          width       = "400"
+          height      = "200"
+          src         = "{{question_info['question_audio_url'][0]}}">
+        </iframe>
+        <br/>
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Remove Audio
+        </button>
+      </center>
+    </form>
+  {% endif %}
+  <hr/>
+
+  {% if question_info['question_order'] != 1 %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'question_template'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{previous_question_info['question_id']}}"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Previous Question
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if question_info['question_order'] == no_of_questions %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'create_question'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "round_id"
+          value = "{{question_info['round_id'][0]}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "round"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Add a Question
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'question_template'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{next_question_info['question_id']}}"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Next Question
+        </button>
+      </form>
+    </div>
+  {% endif %}
+  <hr/>
+  
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'delete_question'
+    )}}"
+  >
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "round"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id'][0]}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "round_id"
+      value = "{{question_info['round_id'][0]}}"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Delete Question
+    </button>
+  </form>
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Need to add a way to have multiple videos, audio etc.</li>
+      <li>Some image, video and audio urls contain semi colons</li>
+      <li>Multiple hints doesn't work at the moment</li>
+      <li>Also, the link back to quiz and round take up the whole length of the page.</li>
+      <li>Also have it that you can either remove the question from the round or completely delete. This way rounds can be used in multiple quizzes as a many to many relationship. Currently there's a delete on cascade, so rounds are deleted with the quiz and questions are deleted with the round.</li>
+      <li>Allow special characters in the question tag etc.</li>
+      <li>Suggest an image using a google search</li>
+      <li>Question order, have a new list that is created in the python backend</li>
+      <li>Question scoring type, have a new list that is created in the python backend</li>
+      <li>Question type, have a new list that is created in the python backend</li>
+  </ul>
+
+
+  <!-- End page content -->
+{%endblock%}

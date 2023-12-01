@@ -1,0 +1,133 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+    {% endif %}
+  {% endwith %}
+
+  <h1
+    class = "title"
+  >
+    Welcome, {{ username }}!
+  </h1>
+
+  <hr/>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'username_update'
+    )}}"
+  >
+    <p>
+      Current username: {{ username }}
+    </p>
+    <input
+      type                = "text"
+      placeholder         = "New Username"
+      name                = "new_username"
+      id                  = "new_username"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Username
+    </button>
+  </form>
+
+  <hr/>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'email_update'
+    )}}"
+  >
+    <p>
+      Current email: {{ email }}
+    </p>
+    <input
+      type                = "email"
+      placeholder         = "New Email"
+      name                = "new_user_email"
+      id                  = "new_user_email"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Email
+    </button>
+  </form>
+
+  <hr/>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'password_update'
+    )}}"
+  >
+    <input
+      type                = "password"
+      placeholder         = "New Password"
+      name                = "new_user_password"
+      id                  = "new_user_password"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Password
+    </button>
+  </form>
+
+  <hr/>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'profile_delete'
+    )}}"
+  >
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Delete Account
+    </button>
+  </form>
+
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Add friends</li>
+      <li>Add profile pics and reaction pics (happy, sad etc.)</li>
+  </ul>
+
+{%endblock%}

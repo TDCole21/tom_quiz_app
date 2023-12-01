@@ -1,0 +1,102 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+    <head>
+        <link
+            rel     = "stylesheet"
+            type    = "text/css"
+            href    = "{{ url_for(
+                'static',
+                filename = 'styles/quiz.css'
+            )}}"
+        />
+    </head>
+
+
+    <!-- !PAGE CONTENT! -->
+    <div
+        class = "w3-container"
+    >
+        <h2>
+            Data Protection
+        </h2>
+            <ol>
+                <li>
+                    Passwords:
+                </li>
+                <p>
+                    All passwords are hashed before being stored on a publically hosted MySQL database on Microsoft Azure.
+                    <br/>
+                    For the purpose of this document, a password that has been hashed is called a secure password and an unsecure password if not hashed.
+                    <br/>
+                    Not even the web application developers are able to know secure passwords.
+                    <br/>
+                    If the User forgets their password and requires it to be reset, they are currently unable to do this without the web application developer.
+                    <br/>
+                    The user will need to contact the developer who will create a tempaoray unsecure password, which the User can then use to login and creat a new secure password.
+                </p>
+                <li>
+                    Emails:
+                </li>
+                <p>
+                    User's email addresses will not be made public on the web application and are for contacting the user about information about the web application.
+                    <br/>
+                    However, these features are not yet implemented in the web application, but the data is being collected in preparation for the update.
+                </p>
+            </ol>
+        <br/>
+        <h2>
+            Data Use
+        </h2>
+        <ol>
+            <li>
+                Personal Information:
+            </li>
+            <p>
+                User information is not sold, and only used for the personalisation of the web application.
+                <br/>
+                By creating an account you are giving permission for the web application to use display your "User Name".
+            </p>
+            <li>
+                Account deletion:
+            </li>
+            <p>
+                When you delete your account, all associated information with you account is also deleted.
+            </p>
+        </ol>
+        <br/>
+        <br/>
+        <p>
+            Information correct as of 12:08 on Tuesday 13th April 2021
+        </p>
+    </div>
+
+    <div
+        class = "w3-container signin"
+    >
+        <p>
+            If you're happy with these.
+            <a
+                href = "register"
+                >
+                Sign up
+            </a>
+            .
+            <br/>
+            If you require more information or are unhappy with these terms, please
+            <a
+                href = "about"
+            >
+                contact us
+            </a>.
+        </p>
+    </div>
+    <!-- End page content -->
+    <hr>
+    <h4>To do:</h4>
+    <ul>
+        <li>Nothing</li>
+
+
+{%endblock%}

@@ -1,0 +1,31 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div
+                class = "w3-container w3-red"
+            >
+                {{ messages[0] }}
+            </div>
+        {% else %}
+            <p>
+                Welcome!
+                {{ session }}
+            </p>
+        {% endif %}
+    {% endwith %}
+
+    <hr>
+    <h4>To do:</h4>
+    <ul>
+        <li>Modulise app.py</li>
+        <li>Add different styles instead of hard coding css into the html pages</li>
+        <li>Have got up to testing ready/unready on join_a_quiz/live_quiz, need to test the rest</li>
+        <li>Add a host to the quiz database so that they can view the results</li>
+        <li>Re-engineer the pages so that it uses common_values similar to the "all_results" page, to put less stress on the browser</li>
+        <li>Create a weighting for user xp, depending on number of participants and overall difficulty of questions</li>
+        <li>Add paths at the top of the pages e.g. Quiz -> Quiz_maker -> Quiz Template each a url</li>
+    </ul>
+
+{%endblock%}

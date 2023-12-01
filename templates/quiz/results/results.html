@@ -1,0 +1,55 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  <hr/>
+
+  {{participant_info}}
+
+  <table
+    class = "w3-table"
+  >
+    <tr>
+      <th>
+        Position
+      </th>
+      <th>
+        Name
+      </th>
+      <th>
+        Score
+      </th>
+    </tr>
+    {% for participant in participant_info %}
+      <tr>
+        <td>
+          {{participant['participant_position']}}
+        </td>
+        <td>
+          {{participant['username']}}
+        </td>
+        <td>
+          {{participant['participant_score']}}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  
+  <hr/>
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Need to add scoring for the quizzes</li>
+  </ul>
+  
+{%endblock%}

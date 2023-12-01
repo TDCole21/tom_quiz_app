@@ -1,0 +1,4 @@
+#To Do
+## Bugs found
+### Due to redirect code 307, the previous form submission is used. This means for example if I create a question in the quiz template, then select delete a question. The quiz id isn't being carried across with the form, so being redirected to the home page.
+### Create question needs source variable to return to relevent page where the user created the question.

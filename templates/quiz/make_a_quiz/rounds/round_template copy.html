@@ -1,0 +1,470 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div 
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+    {% endif %}
+  {% endwith %}
+
+<!-- Tells user what Quiz the round is in, and gives them ability to go back to edit Quiz -->
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'quiz_template'
+    )}}"
+  >
+    <input
+      type  = "hidden"
+      name  = "quiz_id"
+      value = "{{round_info['quiz_id']}}"
+    />
+    <a
+      onclick = "document.getElementById('form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Quiz: {{round_info['quiz_name']}}  
+      </h2>
+    </a>
+  </form>
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_round_name'
+    )}}"
+  >
+    <h3>
+      Round {{round_info['round_order']}}: {{round_info['round_name']}}
+    </h3>
+    <input
+      type                = "text"
+      placeholder         = "New Round name"
+      name                = "new_round_name"
+      id                  = "new_round_name"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+    type  = "hidden"
+    name  = "round_id"
+    value = "{{round_info['round_id']}}"
+    />
+    <input
+    type  = "hidden"
+    name  = "source_point"
+    value = "round"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Round name
+    </button>
+  </form>
+
+  <hr/>
+  <h2>
+    Round Description:
+  </h2>
+  <p>
+    {{round_info['round_description']}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_round_description'
+    )}}"
+  >
+    <textarea
+      rows          = "2"
+      cols          = "20"
+      placeholder   = "New Round description"
+      name          = "new_round_description"
+      id            = "new_round_description"
+      required wrap = "soft"
+    ></textarea>
+
+    <input
+      type  = "hidden"
+      name  = "round_id"
+      value = "{{round_info['round_id']}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "round"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Update Round description
+    </button>
+    <style>
+      #new_round_description {
+        width: 100%;
+      }
+    </style>
+  </form>
+
+
+
+  {% if number_of_rounds > 1 %}
+    <hr/>
+
+    <h2>
+      Round Order: {{round_info['round_order']}}
+    </h2>
+
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'change_order'
+      )}}"
+    >
+      <div
+        class = "w3-button"  
+      >
+        <button
+          type  = "submit"
+          name  = "round_id"
+          value = "{{round_info['round_id']}}"
+          class = "registerbtn"
+        >
+          Change Round order to:
+        </button>
+      </div>
+
+      <select
+        name  = "new_order"
+        id    = "new_order"
+      >
+        {% for round_number in range(1,number_of_rounds+1) %}
+          {% if round_number != round_info['round_order'] %}
+            <option
+              value = "{{round_number}}"
+            >
+              {{round_number}}
+            </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      
+      <input
+        type  = "hidden"
+        name  = "old_order"
+        value = "{{round_info['round_order']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "order_type"
+        value = "round"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "round"
+      />
+    </form>
+  {% endif %}
+
+  <hr/>
+
+  {% if question_info|length > 0 %}
+      <h2>
+        Current Questions:
+      </h2>
+    {% for question in question_info %}
+      <h4>
+        Question {{question['question_order']}}: {{question['question_tag']}}
+      </h4>
+      <div
+      class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'question_template'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+            class = "registerbtn"
+          >
+            Edit
+          </button>
+        </form>
+      </div>
+      
+      <div
+      class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'delete_question'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round"
+          />
+          <input
+            type  = "hidden"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+            class = "registerbtn"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
+      
+      
+      {% if question_info|length >1 %}
+        <form style="display: inline;"
+          method  = "POST"
+          action  = "{{ url_for(
+            'change_order'
+          )}}"
+        >
+        <div
+          class = "w3-button"
+        >
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+            class = "registerbtn"
+          >
+            Change Question order to:
+          </button>
+          <input
+            type  = "hidden"
+            name  = "old_order"
+            value = "{{question['question_order']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "order_type"
+            value = "question"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round"
+          />
+        </div>
+        <select
+          name  = "new_order"
+          id    = "new_order"
+        >
+          {% for m in (question_info[:question['question_order']-1]+question_info[question['question_order']:]) %}
+            <option
+              value = "{{m['question_order']}}"
+            >
+              {{m['question_order']}}
+            </option>
+          {% endfor %}
+        </select>
+        </form>
+      {% endif %}
+      <br>
+    {% endfor %}
+    <hr>
+  {% else %}
+  <p>
+    There are no questions in this round.
+  </p>
+
+  {% endif %}
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'create_question'
+    )}}"
+  >
+    <input
+      type = "hidden"
+      name = "quiz_id"
+      value = "{{round_info['quiz_id']}}"
+    />
+    <input
+      type = "hidden"
+      name = "source_point"
+      value = "round"
+    />
+    <button
+      type  = "submit"
+      name  = "round_id"
+      value = "{{round_info['round_id']}}"
+      class = "registerbtn"
+    >
+      Add Question to Round
+    </button>
+  </form>
+
+  <hr/>
+
+  {% if round_info['round_order'] != 1 %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'round_template'
+        )}}"
+      >
+        <input
+          type = "hidden"
+          name = "round_id"
+          value = "{{round_info['round_id']}}"
+        />
+        <input
+          type = "hidden"
+          name = "quiz_id"
+          value = "{{round_info['quiz_id']}}"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Previous Round
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if round_info['round_order'] == number_of_rounds %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'create_round'
+        )}}"
+      >
+        <input
+          type = "hidden"
+          name = "round_id"
+          value = "{{round_info['round_id']}}"
+        />
+        <input
+          type = "hidden"
+          name = "quiz_id"
+          value = "{{round_info['quiz_id']}}"
+        />
+        <input
+          type = "hidden"
+          name = "round_name"
+          value = "Round {{round_info['round_order']+1}}"
+        />
+        <input
+          type = "hidden"
+          name = "source_point"
+          value = "quiz"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Add a new Round
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div
+      class = "w3-button"
+    >
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'round_template'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "round_id"
+          value = "{{next_round_info['round_id']}}"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Next Round
+        </button>
+      </form>
+    </div>
+  {% endif %}
+  <hr/>
+
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'delete_round'
+    )}}"
+  >
+    <input
+      type = "hidden"
+      name = "round_id"
+      value = "{{round_info['round_id']}}"
+    />
+    <input
+      type = "hidden"
+      name = "quiz_id"
+      value = "{{round_info['quiz_id']}}"
+    />
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Delete Round
+    </button>
+  </form>
+
+  <hr/>
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>The link back to quiz and round take up the whole length of the page.</li>
+      <li>Also have it that you can either remove the round from the quiz or completely delete.</li>
+      <li>This way rounds can be used in multiple quizzes as a many to many relationship.</li>
+      <li>Currently there's a delete on cascade, so rounds are deleted with the quiz and questions are deleted with the round.</li>
+  </ul>
+
+
+{%endblock%}

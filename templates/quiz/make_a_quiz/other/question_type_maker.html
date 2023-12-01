@@ -1,0 +1,157 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div
+        class = "w3-container w3-red"
+      >
+        {{ messages[0] }}
+        {% if messages[1] == 'login' %}
+          Go to <a
+            href = "{{ url_for(
+              'login'
+            )}}"
+          >
+            login page
+          </a>.
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'quiz_manager'
+    )}}"
+  >
+    <a
+      onclick = "document.getElementById('form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Go back 
+      </h2>
+    </a>
+  </form>
+
+  <hr/>
+
+  <h2>
+    Question Types:
+  </h2>
+  {% for question_type in question_types %}
+    <form
+      method  = "POST"
+    >
+      <input
+        type                = "text"
+        placeholder         = "New Question Type Name"
+        value               = "{{question_type['question_type_name']}}"
+        name                = "new_question_type_name"
+        id                  = "new_question_type_name"
+        pattern             = "[^&quot,']+"
+      />
+      <input
+        type                = "text"
+        placeholder         = "New Question Type Description"
+        value               = "{{question_type['question_type_description']}}"
+        name                = "new_question_type_description"
+        id                  = "new_question_type_description"
+        pattern             = "[^&quot,']+"
+      />
+      <input
+        type  = "hidden"
+        name  = "old_question_type_name"
+        value = "{{question_type['question_type_name']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question_type_maker"
+      />
+      <div
+        class = "w3-button"
+      >
+        <button
+          type        = "submit"
+          class       = "registerbtn"
+          formaction  = "{{ url_for('update_question_type')}}"
+        >
+          Update Question Type
+        </button>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <button
+          type    = "submit"
+          class   = "registerbtn"
+          name    = "question_type_name"
+          value   = "{{question_type['question_type_name']}}"
+          formaction  = "{{ url_for('delete_question_type')}}"
+          >
+            Delete Question Type
+        </button>
+      </div>
+    </form>
+    <br/>
+    <hr style="width:40%; margin: auto; margin-bottom:2em">
+  {% endfor %}
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'add_question_type'
+    )}}"
+  >
+    <input
+      type                = "text"
+      placeholder         = "Question Type Name"
+      name                = "question_type_name"
+      id                  = "question_type_name"
+      pattern             = "[^&quot,']+"
+      required
+    />
+    <input
+      type                = "text"
+      placeholder         = "Question Type Description"
+      name                = "question_type_description"
+      id                  = "question_type_description"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question_type_maker"
+    />
+    <button
+      type    = "submit"
+      class   = "registerbtn"
+    >
+      Add Question Type
+    </button>
+  </form>
+
+
+  <hr/>
+
+
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+
+{%endblock%}

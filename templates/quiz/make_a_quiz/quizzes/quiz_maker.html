@@ -1,0 +1,140 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div
+        class = "w3-container w3-red"
+      >
+        {{ messages[0] }}
+        {% if messages[1] == 'login' %}
+          Go to <a
+            href = "{{ url_for(
+              'login'
+            )}}"
+          >
+            login page
+          </a>.
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'quiz_manager'
+    )}}"
+  >
+    <a
+      onclick = "document.getElementById('form').submit(); return false;"
+    >
+      <h2 style="color: #000000; cursor: pointer;">
+        Go back 
+      </h2>
+    </a>
+  </form>
+
+  <hr/>
+
+  <h2>
+    Make a new Quiz:
+  </h2>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'create_quiz'
+    )}}"
+  >
+    <input
+      type                = "text"
+      placeholder         = "Quiz name"
+      name                = "quiz_name"
+      id                  = "quiz_name"
+      required maxlength  = "50"
+      pattern             = "[^&quot,']+"
+    />
+    <input
+      type  = "hidden"
+      name  = "quiz_id"
+      value = ""
+    />
+    <button
+      type    = "submit"
+      class   = "registerbtn"
+    >
+      Create Quiz
+    </button>
+  </form>
+
+  <hr/>
+
+  {% if quiz_info|length > 0 %}
+    <h2>
+      Edit a Quiz:
+    </h2>
+    {% for quiz in quiz_info %}
+      <h3>
+        {{quiz["quiz_name"]}}
+      </h3>
+      <form
+        method  = "POST"
+      >
+        <input
+          type  = "hidden"
+          name  = "quiz_name"
+          value = "{{quiz['quiz_name']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "quiz_id"
+          value = "{{quiz['quiz_id']}}"
+        />
+        <div
+          class = "w3-button"
+        >
+          <button
+            type        = "submit"
+            class       = "registerbtn"
+            formaction  = "{{ url_for('quiz_template')}}"
+
+          >
+            Edit
+          </button>
+        </div>
+        <div
+          class = "w3-button"
+        >
+          <button
+            type        = "submit"
+            class       = "registerbtn"
+            formaction  = "{{ url_for('delete_quiz')}}"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+      <br/>
+    {% endfor %}
+    <hr/>
+  {% endif %}
+
+
+  <h4>To do:</h4>
+  <ul>
+      <li>Nothing</li>
+  </ul>
+
+{%endblock%}
