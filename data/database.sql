@@ -80,9 +80,6 @@ CREATE TABLE questions (
     question_correct_answer TEXT,
     question_points INT(3),
     question_scoring_type_id INT(1),
-    question_video_url TEXT,
-    question_image_url TEXT,
-    question_audio_url TEXT,
     question_tag TEXT,
     question_difficulty INT (3),
     FOREIGN KEY(question_category_id) REFERENCES categories (category_id),
@@ -157,9 +154,18 @@ CREATE TABLE friends (
 
 CREATE TABLE user_media (
     user_id INT(3) NOT NULL,
-    user_picture TEXT,
+    user_media_url TEXT,
+    user_media_type TEXT,
     user_picture_description TEXT,
     FOREIGN KEY(user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE question_media (
+    question_id INT(3) NOT NULL,
+    question_media_url TEXT,
+    question_media_type TEXT,
+    question_media_description TEXT,
+    FOREIGN KEY(question_id) REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
 COMMIT;

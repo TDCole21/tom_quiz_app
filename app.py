@@ -227,7 +227,7 @@ def password_update():
         # Updates the user's password in the database, using the session email as the identifier
         update_db_entry(
             "users",
-            "user_password = \"" + generate_password_hash(request.form.get('new_user_password'), method='sha256') + "\"",
+            "user_password = \"" + generate_password_hash(request.form.get('new_user_password'), method='pbkdf2') + "\"",
             "user_email = \"" + session['user_email'] + "\""
         )
 
@@ -285,7 +285,7 @@ def user_create():
                 insert_db_entry(
                     "users",
                     "username, user_email, user_password, user_admin",
-                    "\"" + request.form.get('username') + "\", \"" + request.form.get('user_email') + "\", \"" + generate_password_hash(request.form.get('user_password'), method='sha256') + "\", 0"
+                    "\"" + request.form.get('username') + "\", \"" + request.form.get('user_email') + "\", \"" + generate_password_hash(request.form.get('user_password'), method='pbkdf2') + "\", 0"
                 )
 
                 # This then grabs the information that was just entered into the database
@@ -1529,7 +1529,7 @@ def round_template():
             # If the Round does not exists, then the user is redirected to the quiz Maker/Editor overview page
             flash("This Round does not exist")
             return redirect(url_for(
-                'quiz_maker'
+                'round_maker'
             ))
 
 
@@ -1561,36 +1561,38 @@ def round_template():
             "round_id = \"" + request.form.get('round_id') + "\""
         )
 
+        # Collects information on all the quizzes this round is associated with
+        associated_question_info = common_values(
+            "questions.question_id, questions.question_tag, live.question_order",
+            "questions",
+            "live",
+            "questions.question_id",
+            "live.question_id WHERE live.round_id = " + request.form.get('round_id')
+        )
 
-        # # Collects information on all the rounds associated with the quiz
-        # associated_round_info = common_values(
-        #     "rounds.round_id, rounds.round_name, rounds.round_description, live.round_order",
-        #     "rounds",
-        #     "live",
-        #     "rounds.round_id",
-        #     "live.round_id WHERE live.quiz_id = " + request.form.get('quiz_id')
-        # )
+        # Sorts the dictionaries of rounds in order of their round_order
+        associated_question_info = sorted(associated_question_info, key=lambda k: k['question_id']) 
 
-        # # Sorts the dictionaries of rounds in order of their round_order
-        # associated_round_info = sorted(associated_round_info, key=lambda k: k['round_order']) 
+        # This finds all the quizzes this round is not currentlu associated with
+        unassociated_question_info = compare_two_tables(
+            "question_id, question_tag",
+            "questions",
+            "question_id",
+            "live",
+            "round_id = \"" + request.form.get('round_id') + "\""
+        )
 
-        # # This finds all the rounds not currentlu associated with the current quiz
-        # unassociated_round_info = compare_two_tables(
-        #     "round_id, round_name, round_description",
-        #     "rounds",
-        #     "round_id",
-        #     "live",
-        #     "quiz_id = \"" + request.form.get('quiz_id') + "\""
-        # )
 
 
         # Feeds data into HTML Jinja2 template
         return render_template(
             "quiz/make_a_quiz/rounds/round_template.html",
-            name                    = "Round Template",
-            round_info              = round_info,
-            associated_quiz_info    = associated_quiz_info,
-            unassociated_quiz_info  = unassociated_quiz_info
+            name                        = "Round Template",
+            round_info                  = round_info,
+            associated_quiz_info        = associated_quiz_info,
+            unassociated_quiz_info      = unassociated_quiz_info,
+            associated_question_info    = associated_question_info,
+            unassociated_question_info  = unassociated_question_info
         )
 
         # Uses an Inner Join to get all information required of the round
@@ -1722,93 +1724,86 @@ def update_round_description():
 def question_template():
 
     if admin_check() and request.method == "POST":
-        # Uses an Inner Join to get all information required of the question
-        question_info = get_values(
-            "one",
-            "SELECT "
-                "questions.question_id, questions.question_order, questions.question_text, questions.question_type, questions.question_correct_answer, questions.question_hint, questions.question_points, questions.question_scoring_type, questions.question_video_url, questions.question_image_url, questions.question_audio_url, questions.question_tag, "
-                "rounds.round_id, rounds.round_name, rounds.round_order, "
-                "quizzes.quiz_id, quizzes.quiz_name "
-            "FROM (("
-                "rounds INNER JOIN quizzes ON rounds.quiz_id = quizzes.quiz_id) "
-                "INNER JOIN questions ON rounds.round_id = questions.round_id) "
-            "WHERE "
-                "questions.question_id = " + request.form.get('question_id') + ";"    
-        )
-
-        # Calculates the amount of questions associated with a Round
-        no_of_questions = len(get_entries_from_db(
+        # Checks to see if a Round with the request round_id exists in the rounds table in the database
+        if not check_single_db(
             "question_id",
             "questions",
-            "round_id = " + str(question_info['round_id'])
-        ))
-        
-        # Checks if the current Question is the first in the round
-        if int(question_info['question_order']) != 1:
-            # Gets the question_id for the previous Question
-            previous_question_info = get_entry_from_db(
-                "question_id",
-                "questions",
-                "question_order = " + str(int(question_info['question_order'])-1)
+            "question_id = " + str(request.form.get('question_id'))
+        ):
+            # If the Round does not exists, then the user is redirected to the quiz Maker/Editor overview page
+            flash("This Question does not exist")
+            return redirect(url_for(
+                'question_maker'
+            ))
+
+
+        # Retrieves information about the quiz based of the quiz_id
+        question_info = get_entry_from_db(
+            "question_id, question_text, question_tag, question_correct_answer, question_points, question_difficulty, question_type_id, question_scoring_type_id",
+            "questions",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
+        if question_info['question_type_id'] is not None:
+            question_type = get_entry_from_db(
+                "*",
+                "question_type",
+                "question_type_id = \"" + str(question_info['question_type_id']) + "\""
             )
-        
-        # If it's the first Question
-        else:
-            # Creates a blank dictionary
-            previous_question_info = dict()
 
-        # Checks if the current Question is the last in the round
-        if int(question_info['question_order']) != no_of_questions:
-            # Gets the question_id for the next Question
-            next_question_info = get_entry_from_db(
-                "question_id",
+            question_info.update(question_type)
+
+
+            # This finds all the quizzes this round is not currentlu associated with
+            question_types = compare_two_tables(
+                "question_type_id, question_type_name",
+                "question_type",
+                "question_type_id",
                 "questions",
-                "question_order = " + str(int(question_info['question_order'])+1)
+                "question_id = \"" + request.form.get('question_id') + "\""
             )
-        # If it's the last Question of the round
+
         else:
-            # Creates a blank dictionary
-            next_question_info = dict()
+            question_types = get_entries_from_db(
+               "question_type_id, question_type_name",
+                "question_type",
+                "question_type_id is NOT NULL"
+            )
 
-        # Storing these as dictionaries in the function as opposed to in the database
-        # MUST NOT BE MORE THAN 10, WITHOUT UPDATING THE DATABASE
-        question_scoring_type = {
-            "Fastest Finger":"Most points for fastest correct answer",
-            "Right and Wrong":"Points if you get the correct answer and none for the wrong answer",
-            "Right and Unique":"Have the answer correct, and nobody give the same answer",
-            "Unique":"Have the style of question independent to other questions"
-        }
+        if question_info['question_scoring_type_id'] is not None:
+            question_scoring_type = get_entry_from_db(
+                "*",
+                "question_scoring_type",
+                "question_scoring_type_id = \"" + str(question_info['question_scoring_type_id']) + "\""
+            )
 
-        # MUST NOT BE MORE THAN 10, WITHOUT UPDATING THE DATABASE
-        question_type = {
-            "Standard":"One text answer to the question",
-            "Multiple choice":"Give the users multiple possible answers to the question",
-            "Media":"Have the user upload a photo/video/audio as their answer",
-            "Unique":"Have the style of question independent to other questions"
-        }
-        
-        # This will convert any values in the question info that contain a semi colon into a list
-        # for key, value in question_info.items():
-        #     if ";" in str(value):
-        #         question_info[key] = str(value).split(';')
-        
-        # This will convert all values in the question info that into a list, separated by a semi colon
-        # I did this for all values in question info, as I was having issues when doing it only for values containing ;
-        # However, none values are now strings reading "None"
-        for info in question_info:
-            if question_info[info] is not None:
-                question_info[info] = str(question_info[info]).split(';')
+            question_info.update(question_scoring_type)
+
+
+            # This finds all the quizzes this round is not currentlu associated with
+            question_scoring_types = compare_two_tables(
+                "question_scoring_type_id, question_scoring_type_name",
+                "question_scoring_type",
+                "question_scoring_type_id",
+                "questions",
+                "question_id = \"" + request.form.get('question_id') + "\""
+            )
+
+        else:
+            question_scoring_types = get_entries_from_db(
+               "question_scoring_type_id, question_scoring_type_name",
+                "question_scoring_type",
+                "question_scoring_type_id is NOT NULL"
+            )
+
 
         # Feeds data into HTML Jinja2 template
         return render_template(
             "quiz/make_a_quiz/questions/question_template.html",
             name                    = "Question Editor",
-            question_scoring_type   = question_scoring_type,
-            question_type           = question_type,
             question_info           = question_info,
-            no_of_questions         = no_of_questions,
-            previous_question_info  = previous_question_info,
-            next_question_info      = next_question_info
+            question_types          = question_types,
+            question_scoring_types  = question_scoring_types
         )
 
     else:
@@ -1854,7 +1849,7 @@ def update_question():
 
         # Redirects to the question template
         return redirect(url_for(
-            request.form.get("source_point") + '_template'
+            request.form.get("source_point")
         ),
             code = 307
         )
