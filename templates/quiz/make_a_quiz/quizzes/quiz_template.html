@@ -269,6 +269,9 @@
     {% endfor %}
   {% else %}
       There are no Rounds associated with this Quiz
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+
   {% endif %}
 
   <h2>
@@ -277,7 +280,7 @@
   {% if unassociated_round_info %}
     {% for unassociated_round in unassociated_round_info %}
       <h3>
-        Round {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
+        Round: {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
       </h3>
       <div
       class = "w3-button"
@@ -312,9 +315,25 @@
     {% endfor %}
   {% else %}
       There are no Rounds to add
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
   {% endif %}
     
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'round_maker'
+    )}}"
+  >
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Create a new Round
+    </button>
+  </form>
   <hr>
+
   <h2>
     Participants:
   </h2>

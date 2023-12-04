@@ -261,143 +261,172 @@
     {% endfor %}
   {% else %}
       There are no Quizzes to add to
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
   {% endif %}
 
-<hr>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'quiz_maker'
+    )}}"
+  >
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Create a new Quiz
+    </button>
+  </form>
 
+  <hr>
 
-<h2>
-  Associated Questions:
-</h2>
-{% if associated_question_info %}
-  {% for associated_question in associated_question_info %}
-    <h3>
-      Question: {{associated_question['question_tag']}}
-    </h3>
-    Question Order: {{associated_question['question_order']}}
-    <br>
-    {% if associated_question['question_active'] %}
-      Question is in progress
-    {% elif associated_question['question_completed'] %}
-      The Question is completed
-    {% else %}
-      This Question has yet to be played
-    {% endif %}
-    <br>
-    <div
+  <h2>
+    Associated Questions:
+  </h2>
+  {% if associated_question_info %}
+    {% for associated_question in associated_question_info %}
+      <h3>
+        Question: {{associated_question['question_tag']}}
+      </h3>
+      Question Order: {{associated_question['question_order']}}
+      <br>
+      {% if associated_question['question_active'] %}
+        Question is in progress
+      {% elif associated_question['question_completed'] %}
+        The Question is completed
+      {% else %}
+        This Question has yet to be played
+      {% endif %}
+      <br>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'unassociate_round'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "question_id"
+            value = "{{associated_question['question_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round_template"
+          />
+          <input
+            type  = "hidden"
+            name  = "round_name"
+            value = "{{round_info['round_name']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "round_order"
+            value = "{{associated_question['question_order']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+            class = "registerbtn"
+          >
+            Remove from Quiz
+          </button>
+        </form>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'question_template'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{associated_question['question_id']}}"
+            class = "registerbtn"
+          >
+            Edit Question
+          </button>
+        </form>
+      </div>
+
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+      There are no Questions associated with this Round
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+
+  {% endif %}
+
+  <h2>
+    Add a Question to this Round:
+  </h2>
+  {% if unassociated_question_info %}
+    {% for unassociated_question in unassociated_question_info %}
+      <h3>
+        Question: {{unassociated_question['question_tag']}}
+      </h3>
+      <div
       class = "w3-button"
-    >
-      <form
-        method  = "POST"
-        action  = "{{ url_for(
-          'unassociate_round'
-        )}}"
       >
-        <input
-          type  = "hidden"
-          name  = "quiz_id"
-          value = "{{associated_quiz['quiz_id']}}"
-        />
-        <input
-          type  = "hidden"
-          name  = "source_point"
-          value = "round_template"
-        />
-        <input
-          type  = "hidden"
-          name  = "round_name"
-          value = "{{round_info['round_name']}}"
-        />
-        <input
-          type  = "hidden"
-          name  = "round_order"
-          value = "{{associated_quiz['round_order']}}"
-        />
-        <button
-          type  = "submit"
-          name  = "round_id"
-          value = "{{round_info['round_id']}}"
-          class = "registerbtn"
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'associate_round'
+          )}}"
         >
-          Remove from Quiz
-        </button>
-      </form>
-    </div>
-    <div
-      class = "w3-button"
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{unassociated_question['question_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round_template"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{round_info['round_id']}}"
+            class = "registerbtn"
+          >
+            Add to Round
+          </button>
+        </form>
+      </div>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+      There are no Questions to add
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+  {% endif %}
+
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'question_maker'
+    )}}"
     >
-      <form
-        method  = "POST"
-        action  = "{{ url_for(
-          'quiz_template'
-        )}}"
-      >
-        <input
-          type  = "hidden"
-          name  = "quiz_id"
-          value = "{{associated_quiz['quiz_id']}}"
-        />
-        <button
-          type  = "submit"
-          name  = "round_id"
-          value = "{{associated_quiz['quiz_id']}}"
-          class = "registerbtn"
-        >
-          Edit Quiz
-        </button>
-      </form>
-    </div>
-
-    <hr style="width:40%; margin: auto; margin-bottom:2em">
-  {% endfor %}
-{% else %}
-    There are no Questions associated with this Round
-{% endif %}
-
-<h2>
-  Add a Question to this Round:
-</h2>
-{% if unassociated_question_info %}
-  {% for unassociated_question in unassociated_question_info %}
-    <h3>
-      Question: {{unassociated_question['question_tag']}}
-    </h3>
-    <div
-    class = "w3-button"
+    <button
+      type  = "submit"
+      class = "registerbtn"
     >
-      <form
-        method  = "POST"
-        action  = "{{ url_for(
-          'associate_round'
-        )}}"
-      >
-        <input
-          type  = "hidden"
-          name  = "quiz_id"
-          value = "{{unassociated_question['question_id']}}"
-        />
-        <input
-          type  = "hidden"
-          name  = "source_point"
-          value = "round_template"
-        />
-        <button
-          type  = "submit"
-          name  = "round_id"
-          value = "{{round_info['round_id']}}"
-          class = "registerbtn"
-        >
-          Add to Round
-        </button>
-      </form>
-    </div>
-    <hr style="width:40%; margin: auto; margin-bottom:2em">
-  {% endfor %}
-{% else %}
-    There are no Questions to add
-{% endif %}
+      Create a new Question
+    </button>
+  </form>
 
-<hr>
+  <hr>
 
   <form
     method = "POST"
@@ -433,10 +462,10 @@
   <h4>To do:</h4>
   <ul>
       <li>Show associated Questions, with unassociate_question button, edit question and change order buttons</li>
-      <li>Maybe add option to change round order from this page... not sure</li>
       <li>Show unassociated Questions, with associate_question button</li>
       <li>Show average question difficulty</li>
       <li>Show mode question category</li>
+      <li>Rearrange question order</li>
       <li>Can't associate to a Quiz if ROund is not fully completed</li>
       <li>Unnasociate question only deletes live table entry if the round is not associated with a quiz, otherwise it just removes the question_id and other question related fields</li>
       <li>Unnasociate from quiz only deletes live table entry if the round is not associated with a question, otherwise it just removes the quiz_id and other quiz related fields</li>

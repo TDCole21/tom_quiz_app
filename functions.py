@@ -186,6 +186,15 @@ def compare_two_tables(output, table1, common_column, table2, conditions):
     cur.close()   
     return data
 
+# This function selects entries from table1 that aren't in table 2
+def compare_two_tables_name(output, table1, common_column1, common_column2, table2, conditions): 
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s WHERE %s)" % (output, table1, common_column1, common_column2, table2, conditions))
+    mysql.connection.commit()    
+    data = cur.fetchall() #built in function to return a tuple, list or dictionary
+    cur.close()   
+    return data
+
 # This function deletes a table entry based on a condition
 def delete_db_entry(table, conditions):
     cur = mysql.connection.cursor()

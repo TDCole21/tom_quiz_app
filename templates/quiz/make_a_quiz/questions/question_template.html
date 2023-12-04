@@ -24,7 +24,7 @@
     {% endif %}
   {% endwith %}
 
-  <hr/>
+  <hr>
 
   <form
     method = "POST"
@@ -66,7 +66,7 @@
       </button>
   </form>
 
-<!-- Question Order -->
+  <hr>
 
 <!-- Question -->
 
@@ -119,18 +119,22 @@
     </style>
   </form>
 
-  <hr/>
+  <hr>
 
   <!-- Question Type -->
   <h4>
     Question Type:
   </h4>
-
-  <p>
-    {{question_info['question_type_name']}}
-    <br>
-    {{question_info['question_type_description']}}
-  </p>
+  {% if question_info['question_type_name'] %}
+    <p>
+      {{question_info['question_type_name']}}
+      <br>
+      {{question_info['question_type_description']}}
+    </p>
+  {% else %}
+    None
+  {% endif %}
+  <br>
   {% if question_types %}
     <form
       method  = "POST"
@@ -146,7 +150,7 @@
             <option
               value = "{{question_type['question_type_id']}}"
             >
-              {{question_type['question_type_name']}}
+              {{question_type['question_type_name']}}: {{question_type['question_type_description']}}
             </option>
         {% endfor %}
       </select>
@@ -173,13 +177,28 @@
         Update Question Type
       </button>
     </form>
+  {% else %}
+    There are no Question types to choose
   {% endif %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'question_type_maker'
+      )}}"
+      >
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Create a new Question Type
+      </button>
+    </form>
 
 </hr>
 
 <!-- Question Answer -->
   
-  <hr/>
+  <hr>
 
   <h4>
     Answer:
@@ -261,7 +280,7 @@
       </button>
     </form>
   {% endif %}
-  <hr/>
+  <hr>
 
 
   <!-- Points -->
@@ -279,12 +298,13 @@
     )}}"
   >
     <input
-      type                = "text"
+      type                = "number"
       placeholder         = "New Points"
       name                = "question_update"
       id                  = "question_update"
       required maxlength  = "3"
-      pattern             = "[^&quot,']+"
+      min                 = "0"
+      step                = "1"
     />
     <br/>
     <input
@@ -346,18 +366,107 @@
     </form>
   {% endif %}
 
-  <hr/>
+  <hr>
+
+  <!-- Points -->
+
+  <h4>
+    Difficulty:
+  </h4>
+  <p>
+    Current question difficulty: {{question_info['question_difficulty']}}
+  </p>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'update_question'
+    )}}"
+  >
+    <input
+      type                = "number"
+      placeholder         = "New Points"
+      name                = "question_update"
+      id                  = "question_update"
+      required maxlength  = "3"
+      min                 = "0"
+      step                = "1"
+    />
+    <br/>
+    <input
+      type  = "hidden"
+      name  = "question_update_field"
+      value = "question_difficulty"
+    />
+    <input
+      type  = "hidden"
+      name  = "question_id"
+      value = "{{question_info['question_id']}}"
+    />
+    <input
+      type  = "hidden"
+      name  = "source_point"
+      value = "question_template"
+    />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+      {% if question_info['question_difficulty'] %}Update Difficulty{% else %}Add Difficulty{% endif %}
+      </button>
+  </form>
+
+  {% if question_info['question_difficulty'] %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_difficulty"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_update"
+        value = "NULL"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question_template"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Remove Difficulty
+      </button>
+    </form>
+  {% endif %}
+
+  <hr>
 
    <!-- Question Scoring Type -->
    <h4>
     Question Scoring Type:
   </h4>
-
-  <p>
-    {{question_info['question_scoring_type_name']}}
-    <br>
-    {{question_info['question_scoring_type_description']}}
-  </p>
+    {% if question_info['question_scoring_type_name'] %}
+      <p>
+        {{question_info['question_scoring_type_name']}}
+        <br>
+          {{question_info['question_scoring_type_description']}}
+      </p>
+    {% else %}
+      None
+    {% endif %}
+      <br>
   {% if question_scoring_types %}
     <form
       method  = "POST"
@@ -373,7 +482,7 @@
             <option
               value = "{{question_scoring_type['question_scoring_type_id']}}"
             >
-              {{question_scoring_type['question_scoring_type_name']}}
+              {{question_scoring_type['question_scoring_type_name']}}: {{question_scoring_type['question_scoring_type_description']}}
             </option>
         {% endfor %}
       </select>
@@ -397,15 +506,556 @@
         type  = "submit"
         class = "registerbtn"
       >
-        Update Question Type
+        Update Question Scoring Type
       </button>
     </form>
+    {% else %}
+      There are no Question Scoring Types to choose
+    {% endif %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'question_scoring_type_maker'
+      )}}"
+      >
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Create a new Question Scoring Type
+      </button>
+    </form>
+  
+
+  <hr>
+
+   <!-- Categories -->
+   <h4>
+    Question Category:
+  </h4>
+    {% if question_info['category_name'] %}
+      <p>
+        {{question_info['category_name']}}
+        <br>
+          {{question_info['category_description']}}
+      </p>
+    {% else %}
+      None
+    {% endif %}
+      <br>
+  {% if question_categories %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'update_question'
+      )}}"
+    >
+      <select
+        name  = "question_update"
+        id    = "question_update"
+      >
+        {% for question_category in question_categories %}
+            <option
+              value = "{{question_category['category_id']}}"
+            >
+              {{question_category['category_name']}}: {{question_category['category_description']}}
+            </option>
+        {% endfor %}
+      </select>
+      <br/>
+      <input
+        type  = "hidden"
+        name  = "question_update_field"
+        value = "question_category_id"
+      />
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question_template"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Question Category
+      </button>
+    </form>
+    {% else %}
+      There are no Question Categories to choose
+    {% endif %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'category_maker'
+      )}}"
+      >
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Create a new Question Category
+      </button>
+    </form>
+  
+
+  <hr>
+
+<!-- Hints -->
+
+  <h4>
+    Hints:
+  </h4>
+  {% if hints %}
+    {% for hint in hints %}
+      <p>
+        Hint {{hint['hint_number']}}: {{hint['hint_text']}}
+      </p>
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'update_hint'
+        )}}"
+      >
+        <textarea
+          rows          = "2"
+          cols          = "20"
+          placeholder   = "New Hint"
+          name          = "hint_text"
+          id            = "hint_text"
+          required wrap = "soft"
+        ></textarea>
+        <br/>
+        <input
+          type  = "hidden"
+          name  = "hint_id"
+          value = "{{hint['hint_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "question_template"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Update Hint
+        </button>
+        <style>
+          #hint_text {
+            width: 100%;
+          }
+        </style>
+      </form>
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'delete_hint'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "hint_id"
+          value = "{{hint['hint_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "question_template"
+        />
+        <input
+          type  = "hidden"
+          name  = "hint_number"
+          value = "{{hint['hint_id']}}"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Delete Hint
+        </button>
+      </form>
+      {% if hints|length > 1 %}
+        <form style="display: inline;"
+          method  = "POST"
+          action  = "{{ url_for(
+            'change_hint_order'
+          )}}"
+        >
+
+          <div
+          class = "w3-button"
+          >
+            <button
+              type  = "submit"
+              name  = "hint_id"
+              value = "{{hint['hint_id']}}"
+              class = "registerbtn"
+            >
+              Change Hint order to:
+            </button>
+            <input
+              type  = "hidden"
+              name  = "old_order"
+              value = "{{hint['hint_number']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "source_point"
+              value = "question_template"
+            />
+            <input
+              type  = "hidden"
+              name  = "question_id"
+              value = "{{question_info['question_id']}}"
+            />
+          </div>
+
+          <select
+            name  = "new_order"
+            id    = "new_order"
+          >
+            {% for hint_order in (hints[:hint['hint_number']-1]+hints[hint['hint_number']:]) %}
+              <option
+                value = "{{hint_order['hint_number']}}"
+              >
+                {{hint_order['hint_number']}}
+              </option>
+            {% endfor %}
+          </select>
+
+        </form>
+      {% endif %}
+
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+    None
+  {% endif %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'add_hint'
+      )}}"
+    >
+      <textarea
+        rows          = "2"
+        cols          = "20"
+        placeholder   = "New Hint"
+        name          = "hint_text"
+        id            = "hint_text"
+        required wrap = "soft"
+      ></textarea>
+      <br/>
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question_template"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add a Hint
+      </button>
+      <style>
+        #hint_text {
+          width: 100%;
+        }
+      </style>
+    </form>
+
+  <hr>
+
+  <!-- Media -->
+
+  <h4>
+    Media:
+  </h4>
+  {% if question_media_info %}
+    {% for question_media in question_media_info %}
+      <p>
+        {{question_media['question_media_type']}}: {{question_media['question_media_description']}}
+        {{question_media['question_media_url']}}
+      </p>
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'update_question_media'
+        )}}"
+      >
+        <input
+          type        = "text"
+          placeholder = "New Media URL"
+          name        = "question_media_url"
+          id          = "question_media_url"
+          pattern     = "[^&quot,']+"
+        />
+        <br>
+        <select
+          name  = "question_media_type"
+          id    = "question_media_type"
+        >
+          <option
+            value = "audio"
+          >
+            Audio
+          </option>
+          <option
+            value = "video"
+          >
+            Video
+          </option>
+          <option
+            value = "image"
+          >
+            Image
+          </option>
+        </select>
+        <input
+          type  = "hidden"
+          name  = "question_media_id"
+          value = "{{question_media['question_media_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "question_template"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Update Question URL
+        </button>
+        <style>
+          #hint_text {
+            width: 100%;
+          }
+        </style>
+      </form>
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'delete_question_media'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "question_media_id"
+          value = "{{question_media['question_media_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "source_point"
+          value = "question_template"
+        />
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Delete Media
+        </button>
+      </form>
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+    None
+  {% endif %}
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'add_question_media'
+      )}}"
+    >
+      <input
+        type        = "text"
+        placeholder = "New Media URL"
+        name        = "question_media_url"
+        id          = "question_media_url"
+        pattern     = "[^&quot,']+"
+      />
+      <br>
+      <select
+        name  = "question_media_type"
+        id    = "question_media_type"
+      >
+        <option
+          value = "audio"
+        >
+          Audio
+        </option>
+        <option
+          value = "video"
+        >
+          Video
+        </option>
+        <option
+          value = "image"
+        >
+          Image
+        </option>
+      </select>
+      <input
+        type  = "hidden"
+        name  = "question_id"
+        value = "{{question_info['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "source_point"
+        value = "question_template"
+      />
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Add Media
+      </button>
+      <style>
+        #hint_text {
+          width: 100%;
+        }
+      </style>
+    </form>
+
+
+    <hr>
+
+    <h2>
+      Associated Rounds:
+    </h2>
+    {% if associated_round_info %}
+    <br>
+      {% for associated_round in associated_round_info %}
+        {{associated_round['round_name']}}{% if associated_round['round_description'] %}: {{associated_round['round_description']}}{% endif %}
+        <br>
+        <div
+          class = "w3-button"
+        >
+          <form
+            method  = "POST"
+            action  = "{{ url_for(
+              'round_template'
+            )}}"
+          >
+            <button
+              type  = "submit"
+              name  = "round_id"
+              value = "{{associated_round['round_id']}}"
+              class = "registerbtn"
+            >
+              Edit Round
+            </button>
+          </form>
+        </div>
+        <hr style="width:40%; margin: auto; margin-bottom:2em">
+      {% endfor %}
+    {% else %}
+        There are no Rounds associated with this Question
+        <hr style="width:40%; margin: auto; margin-bottom:2em">
+
+    {% endif %}
+
+
+  <h2>
+    Unassociated Rounds:
+  </h2>
+  {% if unassociated_round_info %}
+  <br>
+    {% for unassociated_round in unassociated_round_info %}
+      {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
+      <br>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'associate_question'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "round_id"
+            value = "{{unassociated_round['round_id']}}"
+          />
+          <input
+            type  = "hidden"
+            name  = "source_point"
+            value = "round_template"
+          />
+          <input
+            type  = "hidden"
+            name  = "question_id"
+            value = "{{question_info['question_id']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{question_info['question_id']}}"
+            class = "registerbtn"
+          >
+            Add to Round
+          </button>
+        </form>
+      </div>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
+    {% endfor %}
+  {% else %}
+      There are no Rounds to be added to
+      <br><br>
   {% endif %}
 
-<hr>
+  <form
+    method  = "POST"
+    action  = "{{ url_for(
+      'round_maker'
+    )}}"
+    >
+    <button
+      type  = "submit"
+      class = "registerbtn"
+    >
+      Create a new Round
+    </button>
+  </form>
 
-  <hr/>
+  <hr>
 
+  <!-- Delete Question  -->
   <form
     method  = "POST"
     action  = "{{ url_for(
@@ -439,14 +1089,10 @@
   <h4>To do:</h4>
   <ul>
       <li>Allow special characters in the question tag etc.</li>
-      <li>Show associated Quizzes</li>
-      <li>Show associated Rounds</li>
-      <li>Option to chose question scoring type, and link to make more</li>
-      <li>Option to chose category, and link to make more</li>
-      <li>Add a link to make more question types</li>
-      <li>Add hints</li>
-      <li>Add media</li>
-      <li>Add difficulty</li>
+      <li>Add unassociate from Round</li>
+      <li>Have delete question take in to account question order in rounds</li>
+      <li>Sort rounds by Quizzes they're in (this can have repeat rounds)</li>
+      <li>Add media backend to upload content to S3</li>
       <li>Make double buttons next to each other</li>
       <li>Can't associate to a Round without every field completed</li>
   </ul>

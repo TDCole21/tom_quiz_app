@@ -153,14 +153,16 @@ CREATE TABLE friends (
 );
 
 CREATE TABLE user_media (
+    user_media_id INT(3) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     user_id INT(3) NOT NULL,
     user_media_url TEXT,
     user_media_type TEXT,
-    user_picture_description TEXT,
+    user_media_description TEXT,
     FOREIGN KEY(user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE question_media (
+    question_media_id INT(3) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     question_id INT(3) NOT NULL,
     question_media_url TEXT,
     question_media_type TEXT,

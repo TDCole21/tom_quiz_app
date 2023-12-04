@@ -776,7 +776,6 @@ def delete_question_scoring_type():
             'home'
         ))
     
-# Delete question order, when refresh DB
 @app.route('/associate_round', methods=['GET', 'POST'])
 def associate_round():
     if request.method == "POST":
@@ -853,6 +852,101 @@ def unassociate_round():
         return redirect(url_for(
             'home'
         ))
+
+# Hints
+@app.route('/add_hint', methods=['GET', 'POST'])
+def add_hint():
+    if request.method == "POST":
+        # Find if there are any hints already created for this Question
+        number_of_associated_hints = get_entries_from_db(
+            "hint_id",
+            "hints",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
+        number_of_associated_hints=len(number_of_associated_hints)+1
+
+        insert_db_entry(
+            "hints",
+            "question_id, hint_text, hint_number",
+            "\"" + request.form.get('question_id') + "\", \"" + request.form.get('hint_text') + "\", \"" + str(number_of_associated_hints) + "\""
+        )
+
+        flash("Hint added to Question")
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
+
+@app.route('/update_hint', methods=['GET', 'POST'])
+def update_hint():
+    if request.method == "POST":
+        update_db_entry(
+            "hints",
+            "hint_text = \"" + request.form.get('hint_text') + "\"",
+            "hint_id = \"" + request.form.get('hint_id') + "\""
+        )
+
+        flash("Hint updated")
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ),
+            code = 307    
+        )
+    
+@app.route('/delete_hint', methods=['GET', 'POST'])
+def delete_hint():
+    if request.method == "POST":
+        delete_db_entry(
+            "hints",
+            "hint_id = \"" + request.form.get('hint_id') + "\""
+        )
+
+        # Need to find how many rounds are in the quiz
+        number_of_associated_hints = get_entries_from_db(
+            "hint_id",
+            "hints",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
+        number_of_associated_hints = len(number_of_associated_hints) +1
+
+        # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
+        for i in range(int(request.form.get('hint_number')), number_of_associated_hints):
+            update_db_entry(
+                "hints",
+                "hint_number = " + str(i),
+                "question_id = \"" + request.form.get('question_id') + "\" AND hint_number = \"" + str(i+1) + "\""
+            )
+
+        flash("Hint deleted")
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
+
 
 # ROUNDS #
 
@@ -1318,7 +1412,136 @@ def delete_question():
         return redirect(url_for(
             'home'
         ))
+    
+
+@app.route('/associate_question', methods=['GET', 'POST'])
+def associate_question():
+    if request.method == "POST":
+        # Need to find how many rounds are in the quiz
+        number_of_associated_questions = get_entries_from_db(
+            "question_id",
+            "live",
+            "round_id = \"" + request.form.get('round_id') + "\""
+        )
+
+        unique_associated_questions = set()
+        for associated_question in number_of_associated_questions:
+            unique_associated_questions.add(associated_question["question_id"])
+
+        number_of_associated_questions = len(unique_associated_questions)+1
+
+        insert_db_entry(
+            "live",
+            "round_id, question_id, question_order",
+            request.form.get('round_id') + ", " + request.form.get('question_id') + ", " +str(number_of_associated_questions)
+        )
+
+        flash("Question added to Round")
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
+
+@app.route('/unassociate_question', methods=['GET', 'POST'])
+def unassociate_question():
+    if request.method == "POST":
+        delete_db_entry(
+            "live",
+            "round_id = \"" + request.form.get('round_id') + "\""
+        )
+
+        # Need to find how many rounds are in the quiz
+        number_of_associated_rounds = get_entries_from_db(
+            "round_id",
+            "live",
+            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+        )
+
+        unique_associated_rounds = set()
+        for associated_round in number_of_associated_rounds:
+            unique_associated_rounds.add(associated_round["round_id"])
+
+        number_of_associated_rounds = len(unique_associated_rounds) +1
+
+        # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
+        for i in range(int(request.form.get('round_order')), number_of_associated_rounds):
+            update_db_entry(
+                "live",
+                "round_order = " + str(i),
+                "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_order = \"" + str(i+1) + "\""
+            )
+
+        flash("Round " + request.form.get('round_name') + " removed from Quiz")
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
   
+
+
+# Question Media #
+# Hints
+@app.route('/add_question_media', methods=['GET', 'POST'])
+def add_question_media():
+    if request.method == "POST":
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
+
+@app.route('/update_question_media', methods=['GET', 'POST'])
+def update_question_media():
+    if request.method == "POST":
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ),
+            code = 307    
+        )
+    
+@app.route('/delete_question_media', methods=['GET', 'POST'])
+def delete_question_media():
+    if request.method == "POST":
+        return redirect(url_for(
+                request.form.get('source_point')
+            ),
+                code = 307
+            )
+    else:
+        flash("Please use the forms on the website")
+        # Redirects user to the quiz Maker/Editor page
+        return redirect(url_for(
+            'home'
+        ))
+
 
 # PARTICIPANTS #
  
@@ -1739,11 +1962,12 @@ def question_template():
 
         # Retrieves information about the quiz based of the quiz_id
         question_info = get_entry_from_db(
-            "question_id, question_text, question_tag, question_correct_answer, question_points, question_difficulty, question_type_id, question_scoring_type_id",
+            "question_id, question_text, question_tag, question_correct_answer, question_points, question_difficulty, question_type_id, question_scoring_type_id, question_category_id",
             "questions",
             "question_id = \"" + request.form.get('question_id') + "\""
         )
 
+        # Question Type information
         if question_info['question_type_id'] is not None:
             question_type = get_entry_from_db(
                 "*",
@@ -1756,7 +1980,7 @@ def question_template():
 
             # This finds all the quizzes this round is not currentlu associated with
             question_types = compare_two_tables(
-                "question_type_id, question_type_name",
+                "*",
                 "question_type",
                 "question_type_id",
                 "questions",
@@ -1765,11 +1989,12 @@ def question_template():
 
         else:
             question_types = get_entries_from_db(
-               "question_type_id, question_type_name",
+               "*",
                 "question_type",
                 "question_type_id is NOT NULL"
             )
 
+        # Question Scoring Type information
         if question_info['question_scoring_type_id'] is not None:
             question_scoring_type = get_entry_from_db(
                 "*",
@@ -1782,7 +2007,7 @@ def question_template():
 
             # This finds all the quizzes this round is not currentlu associated with
             question_scoring_types = compare_two_tables(
-                "question_scoring_type_id, question_scoring_type_name",
+                "*",
                 "question_scoring_type",
                 "question_scoring_type_id",
                 "questions",
@@ -1791,10 +2016,71 @@ def question_template():
 
         else:
             question_scoring_types = get_entries_from_db(
-               "question_scoring_type_id, question_scoring_type_name",
+               "*",
                 "question_scoring_type",
                 "question_scoring_type_id is NOT NULL"
             )
+
+        # Question Category information
+        if question_info['question_category_id'] is not None:
+            question_category = get_entry_from_db(
+                "*",
+                "categories",
+                "category_id = \"" + str(question_info['question_category_id']) + "\""
+            )
+
+            question_info.update(question_category)
+
+
+            # This finds all the quizzes this round is not currentlu associated with
+            question_categories = compare_two_tables_name(
+                "*",
+                "categories",
+                "category_id",
+                "question_category_id",
+                "questions",
+                "question_id = \"" + request.form.get('question_id') + "\""
+            )
+
+        else:
+            question_categories = get_entries_from_db(
+               "*",
+                "categories",
+                "category_id is NOT NULL"
+            )
+
+        # Question Hints information
+        hints = get_entries_from_db(
+            "*",
+            "hints",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
+        hints = sorted(hints, key=lambda k: k['hint_number']) 
+
+
+        # Round information
+        # Collects information on all the quizzes this round is associated with
+        associated_round_info = common_values(
+            "rounds.round_id, rounds.round_name, rounds.round_description, live.question_order",
+            "rounds",
+            "live",
+            "rounds.round_id",
+            "live.round_id WHERE live.question_id = " + request.form.get('question_id')
+        )
+
+        # Sorts the dictionaries of rounds in order of their round_order
+        associated_round_info = sorted(associated_round_info, key=lambda k: k['round_name']) 
+
+        # This finds all the quizzes this round is not currentlu associated with
+        unassociated_round_info = compare_two_tables(
+            "round_id, round_name, round_description",
+            "rounds",
+            "round_id",
+            "live",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
 
 
         # Feeds data into HTML Jinja2 template
@@ -1803,7 +2089,11 @@ def question_template():
             name                    = "Question Editor",
             question_info           = question_info,
             question_types          = question_types,
-            question_scoring_types  = question_scoring_types
+            question_scoring_types  = question_scoring_types,
+            question_categories     = question_categories,
+            hints                   = hints,
+            unassociated_round_info = unassociated_round_info,
+            associated_round_info   = associated_round_info
         )
 
     else:
@@ -1830,15 +2120,6 @@ def update_question():
         # Puts quotation marks either side of the question update
         if question_update != "NULL":
             question_update = "\"" + question_update + "\""
-
-
-        # Checks if the update is for hints
-        if question_update_field == 'question_hint' and request.form.get('all_hints'):
-            all_hints = ";".join(request.form.get('all_hints'))
-            all_hints = all_hints.strip()
-            question_update = all_hints.replace(request.form.get('old_hint'), question_update)
-            question_update = "\"" + question_update + "\""
-
 
         # Updates the question in the database    
         update_db_entry(
@@ -1918,6 +2199,79 @@ def change_order():
                 "live",
                 request.form.get("order_type")+"_order = " + request.form.get("new_order"),
                 "quiz_id = \"" + request.form.get("quiz_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+            )
+
+        # These three if/else statments will return the user back to the appropriate pages
+        # If this function was called from the round edit page, then it'll return you to the round edit page
+        return redirect(url_for(
+            request.form.get("source_point")
+        ),
+            code = 307
+        )
+    
+    else:
+        return redirect(url_for(
+            'home'
+        ))  
+
+# This will update the hint orders
+@app.route('/change_hint_order', methods=['GET', 'POST'])
+def change_hint_order():
+    # Check to see if the user is an admin       
+    if admin_check() and request.method == "POST":
+
+        # If the new order is lower than the old order
+        if int(request.form.get("old_order")) > int(request.form.get("new_order")):
+            # Create a list of numbers from the new order to the old order.
+            # Python range needs to be range(x,y,s) where x<y and s is step. So making s=-1 you can have a reverse list.
+            order = list(range(int(request.form.get("old_order"))-1, int(request.form.get("new_order"))-1, -1))
+            # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
+            update_db_entry(
+                "hints",
+                "hint_number = 0",
+                "hint_id = \"" + request.form.get("hint_id") + "\""
+            )
+
+            # This will shift all other orders up 1 from the "new order" to the "old order-1"
+            for i in order:
+                update_db_entry(
+                    "hints",
+                    "hint_number = " + str(i+1),
+                    "question_id = \"" + request.form.get("question_id") + "\" AND " + "hint_number = " + str(i)
+                )
+
+            # This then changes the order from the placeholder order, to the new one
+            update_db_entry(
+                "hints",
+                "hint_number = " + request.form.get("new_order"),
+                "hint_id = \"" + request.form.get("hint_id") + "\""
+            )
+    
+
+        # If the new order is higher than the old order 
+        else:
+            # Create a list of numbers from the old order to the new order.
+            order = list(range(int(request.form.get("old_order")),int(request.form.get("new_order"))+1))
+            # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
+            update_db_entry(
+                "hints",
+                "hint_number = 0",
+                "hint_id = \"" + request.form.get("hint_id") + "\""
+            )
+
+            # This will shift all other orders down 1 from the "new order +1" to the "old order"
+            for i in range(len(order)):
+                update_db_entry(
+                    "hints",
+                    "hint_number = " + str(order[i-1]),
+                    "question_id = \"" + request.form.get("question_id") + "\" AND " + "hint_number = " + str(order[i])
+                )
+
+            # This then changes the order from the placeholder order, to the new one
+            update_db_entry(
+                "hints",
+                "hint_number = " + request.form.get("new_order"),
+                "hint_id = \"" + request.form.get("hint_id") + "\""
             )
 
         # These three if/else statments will return the user back to the appropriate pages
