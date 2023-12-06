@@ -953,14 +953,24 @@
 
 
     <hr>
-
+{{associated_round_info}}
     <h2>
       Associated Rounds:
     </h2>
     {% if associated_round_info %}
-    <br>
       {% for associated_round in associated_round_info %}
-        {{associated_round['round_name']}}{% if associated_round['round_description'] %}: {{associated_round['round_description']}}{% endif %}
+        <h3>
+          Round: {{associated_round['round_name']}}
+        </h3>
+        {% if associated_round['round_description'] %}
+        Round Description: {{associated_round['round_description']}}
+          <br>
+        {% endif %}
+        {% if associated_round['quiz_name'] %}
+        Quiz Name: {{associated_round['quiz_name']}}
+          <br>
+        {% endif %}
+        Question Order: {{associated_round['question_order']}}
         <br>
         <div
           class = "w3-button"
@@ -979,6 +989,40 @@
             >
               Edit Round
             </button>
+          </form>
+        </div>
+        <div
+          class = "w3-button"
+        >
+          <form
+            method  = "POST"
+            action  = "{{ url_for(
+              'unassociate_question'
+            )}}"
+          >
+            <button
+              type  = "submit"
+              name  = "round_id"
+              value = "{{associated_round['round_id']}}"
+              class = "registerbtn"
+            >
+              Remove from Round
+            </button>
+            <input
+              type  = "hidden"
+              name  = "question_id"
+              value = "{{question_info['question_id']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "question_order"
+              value = "{{associated_round['question_order']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "source_point"
+              value = "question_template"
+            />
           </form>
         </div>
         <hr style="width:40%; margin: auto; margin-bottom:2em">
@@ -1015,7 +1059,7 @@
           <input
             type  = "hidden"
             name  = "source_point"
-            value = "round_template"
+            value = "question_template"
           />
           <input
             type  = "hidden"

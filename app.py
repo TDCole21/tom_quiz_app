@@ -1454,31 +1454,31 @@ def unassociate_question():
     if request.method == "POST":
         delete_db_entry(
             "live",
+            "question_id = \"" + request.form.get('question_id') + "\" AND round_id = \"" + request.form.get('round_id') + "\""
+        )
+
+        # Need to find how many questions are in the round
+        number_of_associated_questions = get_entries_from_db(
+            "question_id",
+            "live",
             "round_id = \"" + request.form.get('round_id') + "\""
         )
 
-        # Need to find how many rounds are in the quiz
-        number_of_associated_rounds = get_entries_from_db(
-            "round_id",
-            "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
-        )
+        unique_associated_questions = set()
+        for associated_question in number_of_associated_questions:
+            unique_associated_questions.add(associated_question["question_id"])
 
-        unique_associated_rounds = set()
-        for associated_round in number_of_associated_rounds:
-            unique_associated_rounds.add(associated_round["round_id"])
-
-        number_of_associated_rounds = len(unique_associated_rounds) +1
+        number_of_associated_questions = len(unique_associated_questions) +1
 
         # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
-        for i in range(int(request.form.get('round_order')), number_of_associated_rounds):
+        for i in range(int(request.form.get('question_order')), number_of_associated_questions):
             update_db_entry(
                 "live",
-                "round_order = " + str(i),
-                "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_order = \"" + str(i+1) + "\""
+                "question_order = " + str(i),
+                "round_id = \"" + request.form.get('round_id') + "\" AND question_order = \"" + str(i+1) + "\""
             )
 
-        flash("Round " + request.form.get('round_name') + " removed from Quiz")
+        flash("Question removed from Round")
         return redirect(url_for(
                 request.form.get('source_point')
             ),
@@ -2060,14 +2060,26 @@ def question_template():
 
 
         # Round information
-        # Collects information on all the quizzes this round is associated with
+        # Collects information on all the rounds this question is associated with
         associated_round_info = common_values(
-            "rounds.round_id, rounds.round_name, rounds.round_description, live.question_order",
+            "rounds.round_id, rounds.round_name, rounds.round_description, live.question_order, live.quiz_id",
             "rounds",
             "live",
             "rounds.round_id",
             "live.round_id WHERE live.question_id = " + request.form.get('question_id')
         )
+
+        # Loop through all the associated rounds to find their associated quizzes
+        for associated_round in associated_round_info:
+            # Question Category information
+            if associated_round['quiz_id'] is not None:
+                quiz_name = get_entry_from_db(
+                    "quiz_name",
+                    "quizzes",
+                    "quiz_id = \"" + str(associated_round['quiz_id']) + "\""
+                )
+
+                associated_round.update(quiz_name)
 
         # Sorts the dictionaries of rounds in order of their round_order
         associated_round_info = sorted(associated_round_info, key=lambda k: k['round_name']) 

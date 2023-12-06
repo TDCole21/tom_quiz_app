@@ -218,6 +218,8 @@
     {% endfor %}
   {% else %}
       There are no Rounds associated with this Quiz
+      <br><br>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
   {% endif %}
 
   <h2>
@@ -305,7 +307,7 @@
         <form
           method  = "POST"
           action  = "{{ url_for(
-            'unassociate_round'
+            'unassociate_question'
           )}}"
         >
           <input
@@ -320,12 +322,7 @@
           />
           <input
             type  = "hidden"
-            name  = "round_name"
-            value = "{{round_info['round_name']}}"
-          />
-          <input
-            type  = "hidden"
-            name  = "round_order"
+            name  = "question_order"
             value = "{{associated_question['question_order']}}"
           />
           <button
@@ -334,7 +331,7 @@
             value = "{{round_info['round_id']}}"
             class = "registerbtn"
           >
-            Remove from Quiz
+            Remove from Round
           </button>
         </form>
       </div>
@@ -381,12 +378,12 @@
         <form
           method  = "POST"
           action  = "{{ url_for(
-            'associate_round'
+            'associate_question'
           )}}"
         >
           <input
             type  = "hidden"
-            name  = "quiz_id"
+            name  = "question_id"
             value = "{{unassociated_question['question_id']}}"
           />
           <input
