@@ -283,16 +283,15 @@
 
   <hr>
 
+  {{associated_question_info}}
   <h2>
     Associated Questions:
   </h2>
   {% if associated_question_info %}
     {% for associated_question in associated_question_info %}
       <h3>
-        Question: {{associated_question['question_tag']}}
+        Question {{associated_question['question_order']}}: {{associated_question['question_tag']}}
       </h3>
-      Question Order: {{associated_question['question_order']}}
-      <br>
       {% if associated_question['question_active'] %}
         Question is in progress
       {% elif associated_question['question_completed'] %}
@@ -354,7 +353,62 @@
           </button>
         </form>
       </div>
+      {% if associated_question_info|length > 1 %}
+        <form style="display: inline;"
+          method  = "POST"
+          action  = "{{ url_for(
+            'change_question_order'
+          )}}"
+        >
 
+          <div
+          class = "w3-button"
+          >
+            <button
+              type  = "submit"
+              name  = "question_id"
+              value = "{{associated_question['question_id']}}"
+              class = "registerbtn"
+            >
+              Change Question order to:
+            </button>
+            <input
+              type  = "hidden"
+              name  = "old_order"
+              value = "{{associated_question['question_order']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "order_type"
+              value = "question"
+            />
+            <input
+              type  = "hidden"
+              name  = "source_point"
+              value = "round_template"
+            />
+            <input
+              type  = "hidden"
+              name  = "round_id"
+              value = "{{round_info['round_id']}}"
+            />
+          </div>
+
+          <select
+            name  = "new_order"
+            id    = "new_order"
+          >
+            {% for associated_question_order in (associated_question_info[:associated_question['question_order']-1]+associated_question_info[associated_question['question_order']:]) %}
+              <option
+                value = "{{associated_question_order['question_order']}}"
+              >
+                {{associated_question_order['question_order']}}
+              </option>
+            {% endfor %}
+          </select>
+
+        </form>
+      {% endif %}
       <hr style="width:40%; margin: auto; margin-bottom:2em">
     {% endfor %}
   {% else %}
@@ -363,6 +417,7 @@
       <hr style="width:40%; margin: auto; margin-bottom:2em">
 
   {% endif %}
+{{unassociated_question_info}}
 
   <h2>
     Add a Question to this Round:
@@ -458,14 +513,13 @@
   <hr>
   <h4>To do:</h4>
   <ul>
-      <li>Show associated Questions, with unassociate_question button, edit question and change order buttons</li>
-      <li>Show unassociated Questions, with associate_question button</li>
       <li>Show average question difficulty</li>
       <li>Show mode question category</li>
-      <li>Rearrange question order</li>
-      <li>Can't associate to a Quiz if ROund is not fully completed</li>
-      <li>Unnasociate question only deletes live table entry if the round is not associated with a quiz, otherwise it just removes the question_id and other question related fields</li>
-      <li>Unnasociate from quiz only deletes live table entry if the round is not associated with a question, otherwise it just removes the quiz_id and other quiz related fields</li>
+      <li>Unassociated quizzes and questions are hard coded in mysql</li>
+      <li>Can't associate to a Quiz if Round is not fully completed</li>
+      <li>Change question order is it's own function</li>
+      <li>Adding questions doesn't work if they're already in another round</li>
+      <li>Question order when adding to round is also broken</li>
   </ul>
 
 

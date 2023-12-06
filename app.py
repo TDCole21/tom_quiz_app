@@ -1196,27 +1196,28 @@ def delete_round():
             "round_id = \"" + request.form.get('round_id') + "\""
         )
 
-        for quiz in unique_associated_quizzes:
-            # Need to find how many rounds are in the quiz
-            number_of_associated_rounds = get_entries_from_db(
-                "round_id",
-                "live",
-                "quiz_id = \"" + str(quiz['quiz_id']) + "\""
-            )
-
-            unique_associated_rounds = set()
-            for associated_round in number_of_associated_rounds:
-                unique_associated_rounds.add(associated_round["round_id"])
-
-            number_of_associated_rounds = len(unique_associated_rounds) +1
-
-            # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
-            for i in range(int(quiz['round_order']), number_of_associated_rounds):
-                update_db_entry(
+        if unique_associated_quizzes is not None:
+            for quiz in unique_associated_quizzes:
+                # Need to find how many rounds are in the quiz
+                number_of_associated_rounds = get_entries_from_db(
+                    "round_id",
                     "live",
-                    "round_order = " + str(i),
-                    "quiz_id = \"" + str(quiz['quiz_id']) + "\" AND round_order = \"" + str(i+1) + "\""
+                    "quiz_id = \"" + str(quiz['quiz_id']) + "\""
                 )
+
+                unique_associated_rounds = set()
+                for associated_round in number_of_associated_rounds:
+                    unique_associated_rounds.add(associated_round["round_id"])
+
+                number_of_associated_rounds = len(unique_associated_rounds) +1
+
+                # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
+                for i in range(int(quiz['round_order']), number_of_associated_rounds):
+                    update_db_entry(
+                        "live",
+                        "round_order = " + str(i),
+                        "quiz_id = \"" + str(quiz['quiz_id']) + "\" AND round_order = \"" + str(i+1) + "\""
+                    )
 
 
         # Redirects users to the quiz template based on the quiz_id
@@ -1393,13 +1394,54 @@ def create_new_question():
 def delete_question():
 
     if admin_check() and request.method == "POST":
-        # Retreives Question information based on the question_id, before the question is deleted.
-  
+        # This finds out all the live table entries involving the round
+        associated_rounds = get_entries_from_db(
+            "round_id",
+            "live",
+            "question_id = \"" + request.form.get('question_id') + "\""
+        )
+
+        unique_associated_rounds_id = set()
+        for associated_round in associated_rounds:
+            unique_associated_rounds_id.add(associated_round["round_id"])
+
+        unique_associated_rounds = []
+        for unique_associated_round in unique_associated_rounds_id:
+            all_unique_associated_rounds = get_entry_from_db(
+                "round_id, question_order",
+                "live",
+                "round_id = \"" + str(unique_associated_round) + "\" AND question_id = \"" + request.form.get('question_id') + "\""
+            )
+            unique_associated_rounds.append(all_unique_associated_rounds)
+
         # Removes the Question from the questions table in the database
         delete_db_entry(
             "questions",
             "question_id = " + request.form.get('question_id')
         )
+
+        if unique_associated_rounds is not None:
+            for round in unique_associated_rounds:
+                # Need to find how many rounds are in the quiz
+                number_of_associated_questions = get_entries_from_db(
+                    "question_id",
+                    "live",
+                    "round_id = \"" + str(round['round_id']) + "\""
+                )
+
+                unique_associated_questions = set()
+                for associated_question in number_of_associated_questions:
+                    unique_associated_questions.add(associated_question["question_id"])
+
+                number_of_associated_questions = len(unique_associated_questions) +1
+
+                # For all other rounds with round_orders greater than the one that was removed, their round_order is reduced by one
+                for i in range(int(round['question_order']), number_of_associated_questions):
+                    update_db_entry(
+                        "live",
+                        "question_order = " + str(i),
+                        "round_id = \"" + str(round['round_id']) + "\" AND question_order = \"" + str(i+1) + "\""
+                    )
 
 
         flash("Question deleted")
@@ -1428,7 +1470,7 @@ def associate_question():
         for associated_question in number_of_associated_questions:
             unique_associated_questions.add(associated_question["question_id"])
 
-        number_of_associated_questions = len(unique_associated_questions)+1
+        number_of_associated_questions = len(unique_associated_questions)
 
         insert_db_entry(
             "live",
@@ -1775,14 +1817,15 @@ def round_template():
         # Sorts the dictionaries of rounds in order of their round_order
         associated_quiz_info = sorted(associated_quiz_info, key=lambda k: k['quiz_name']) 
 
-        # This finds all the quizzes this round is not currentlu associated with
-        unassociated_quiz_info = compare_two_tables(
-            "quiz_id, quiz_name, quiz_description",
-            "quizzes",
-            "quiz_id",
-            "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+        # This finds all the quizzes this round is not currently associated with
+        unassociated_quiz_info = compare_two_tables_new_quizzes(
+            request.form.get('round_id')
         )
+
+        # This removes all the duplicate questions
+        unassociated_quiz_info = remove_dictionary_duplicates(unassociated_quiz_info, "quiz_id")
+        # This removes the question if it appears in the associated list
+        unassociated_quiz_info = compare_dictionary_lists(unassociated_quiz_info, associated_quiz_info, "quiz_id")
 
         # Collects information on all the quizzes this round is associated with
         associated_question_info = common_values(
@@ -1794,17 +1837,17 @@ def round_template():
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
-        associated_question_info = sorted(associated_question_info, key=lambda k: k['question_id']) 
+        associated_question_info = sorted(associated_question_info, key=lambda k: k['question_order']) 
 
         # This finds all the quizzes this round is not currentlu associated with
-        unassociated_question_info = compare_two_tables(
-            "question_id, question_tag",
-            "questions",
-            "question_id",
-            "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+        unassociated_question_info = compare_two_tables_new_questions(
+            request.form.get('round_id')
         )
 
+        # This removes all the duplicate questions
+        unassociated_question_info = remove_dictionary_duplicates(unassociated_question_info, "question_id")
+        # This removes the question if it appears in the associated list
+        unassociated_question_info = compare_dictionary_lists(unassociated_question_info, associated_question_info, "question_id")
 
 
         # Feeds data into HTML Jinja2 template
@@ -2224,7 +2267,80 @@ def change_order():
     else:
         return redirect(url_for(
             'home'
-        ))  
+        ))
+    
+# This will update the question or round number orders
+@app.route('/change_question_order', methods=['GET', 'POST'])
+def change_question_order():
+    # Check to see if the user is an admin       
+    if admin_check() and request.method == "POST":
+
+        # If the new order is lower than the old order
+        if int(request.form.get("old_order")) > int(request.form.get("new_order")):
+            # Create a list of numbers from the new order to the old order.
+            # Python range needs to be range(x,y,s) where x<y and s is step. So making s=-1 you can have a reverse list.
+            order = list(range(int(request.form.get("old_order"))-1, int(request.form.get("new_order"))-1, -1))
+            # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
+            update_db_entry(
+                "live",
+                request.form.get("order_type")+"_order = 0",
+                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+            )
+
+            # This will shift all other orders up 1 from the "new order" to the "old order-1"
+            for i in order:
+                update_db_entry(
+                    "live",
+                    request.form.get("order_type")+"_order = " + str(i+1),
+                    "round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type") + "_order = " + str(i)
+                )
+
+            # This then changes the order from the placeholder order, to the new one
+            update_db_entry(
+                "live",
+                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
+                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+            )
+    
+
+        # If the new order is higher than the old order 
+        else:
+            # Create a list of numbers from the old order to the new order.
+            order = list(range(int(request.form.get("old_order")),int(request.form.get("new_order"))+1))
+            # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
+            update_db_entry(
+                "live",
+                request.form.get("order_type")+"_order = 0",
+                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+            )
+
+            # This will shift all other orders down 1 from the "new order +1" to the "old order"
+            for i in range(len(order)):
+                update_db_entry(
+                    "live",
+                    request.form.get("order_type")+"_order = " + str(order[i-1]),
+                    "round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + str(order[i])
+                )
+
+            # This then changes the order from the placeholder order, to the new one
+            update_db_entry(
+                "live",
+                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
+                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+            )
+
+        # These three if/else statments will return the user back to the appropriate pages
+        # If this function was called from the round edit page, then it'll return you to the round edit page
+        return redirect(url_for(
+            request.form.get("source_point")
+        ),
+            code = 307
+        )
+    
+    else:
+        return redirect(url_for(
+            'home'
+        ))
 
 # This will update the hint orders
 @app.route('/change_hint_order', methods=['GET', 'POST'])

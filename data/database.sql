@@ -101,7 +101,6 @@ CREATE TABLE live (
     quiz_id INT(3),
     quiz_active BOOLEAN,
     quiz_completed DATETIME,
-    quiz_difficulty INT (3),
     round_id INT(3) NOT NULL,
     round_order INT(3),
     round_active BOOLEAN,

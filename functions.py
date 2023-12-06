@@ -187,9 +187,27 @@ def compare_two_tables(output, table1, common_column, table2, conditions):
     return data
 
 # This function selects entries from table1 that aren't in table 2
-def compare_two_tables_name(output, table1, common_column1, common_column2, table2, conditions): 
+def compare_two_tables_new_quizzes(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
-    cur.execute("SELECT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s WHERE %s)" % (output, table1, common_column1, common_column2, table2, conditions))
+    cur.execute("SELECT quizzes.quiz_id, quizzes.quiz_name FROM quizzes LEFT JOIN live ON quizzes.quiz_id = live.quiz_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    mysql.connection.commit()    
+    data = cur.fetchall() #built in function to return a tuple, list or dictionary
+    cur.close()   
+    return data
+
+
+def compare_two_tables_new_questions(round_id): 
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT questions.question_id, questions.question_tag FROM questions LEFT JOIN live ON questions.question_id = live.question_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    mysql.connection.commit()    
+    data = cur.fetchall() #built in function to return a tuple, list or dictionary
+    cur.close()   
+    return data
+
+# This function selects entries from table1 that aren't in table 2
+def compare_two_tables_name(output, table1, foreign_key_column, referenced_column, table2, conditions): 
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s WHERE %s)" % (output, table1, foreign_key_column, referenced_column, table2, conditions))
     mysql.connection.commit()    
     data = cur.fetchall() #built in function to return a tuple, list or dictionary
     cur.close()   
@@ -255,3 +273,41 @@ def update_db_entry(table, updates, conditions):
     cur.execute("UPDATE %s SET %s WHERE %s" % (table, updates, conditions))
     mysql.connection.commit()
     cur.close() 
+
+
+def remove_dictionary_duplicates(input_list, key):
+    unique_list = []
+    hash_table = {}
+    name_hash_table = {}
+
+    for dictionary in input_list:
+        dictionary_key = tuple(dictionary.items())
+
+        if dictionary_key not in hash_table:
+            if dictionary[key] not in name_hash_table:
+                unique_list.append(dictionary)
+                name_hash_table[dictionary[key]] = True
+                hash_table[dictionary_key] = dictionary
+
+    return unique_list
+
+def compare_dictionary_lists(input_list, exclude_list, key):
+    # #Create a dictionary to store the unique dictionaries from list1
+    # dict1 = {}
+    # for item in exclude_list:
+    #     if key in item:
+    #         dict1[item[key]] = item
+
+    # # Remove common dictionaries from list2
+    # for item in input_list:
+    #     if key in item and item[key] in dict1:
+    #         input_list.remove(item)
+    
+    # return input_list
+
+    for input_dictionary in input_list:
+        for exclude_dictionary in exclude_list:
+            if input_dictionary[key] == exclude_dictionary[key]:
+                input_list.remove(input_dictionary)
+
+    return input_list
