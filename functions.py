@@ -189,20 +189,28 @@ def compare_two_tables(output, table1, common_column, table2, conditions):
 # This function selects entries from table1 that aren't in table 2
 def compare_two_tables_new_quizzes(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
-    cur.execute("SELECT quizzes.quiz_id, quizzes.quiz_name FROM quizzes LEFT JOIN live ON quizzes.quiz_id = live.quiz_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    cur.execute("SELECT quizzes.quiz_id, quizzes.quiz_name FROM quizzes LEFT OUTER JOIN live ON quizzes.quiz_id = live.quiz_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
     mysql.connection.commit()    
     data = cur.fetchall() #built in function to return a tuple, list or dictionary
     cur.close()   
     return data
-
 
 def compare_two_tables_new_questions(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
-    cur.execute("SELECT questions.question_id, questions.question_tag FROM questions LEFT JOIN live ON questions.question_id = live.question_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    cur.execute("SELECT questions.question_id, questions.question_tag, live.round_id FROM questions LEFT OUTER JOIN live ON questions.question_id = live.question_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
     mysql.connection.commit()    
     data = cur.fetchall() #built in function to return a tuple, list or dictionary
     cur.close()   
     return data
+
+
+# def compare_two_tables_new_questions(): 
+#     cur = mysql.connection.cursor(cursorclass=DictCursor)
+#     cur.execute("SELECT questions.question_id, questions.question_tag, live.round_id FROM questions LEFT OUTER JOIN live ON questions.question_id = live.question_id")
+#     mysql.connection.commit()    
+#     data = cur.fetchall() #built in function to return a tuple, list or dictionary
+#     cur.close()   
+#     return data
 
 # This function selects entries from table1 that aren't in table 2
 def compare_two_tables_name(output, table1, foreign_key_column, referenced_column, table2, conditions): 
@@ -292,22 +300,40 @@ def remove_dictionary_duplicates(input_list, key):
     return unique_list
 
 def compare_dictionary_lists(input_list, exclude_list, key):
-    # #Create a dictionary to store the unique dictionaries from list1
-    # dict1 = {}
-    # for item in exclude_list:
-    #     if key in item:
-    #         dict1[item[key]] = item
+    question_id_set = set()
+    removed = False
 
-    # # Remove common dictionaries from list2
-    # for item in input_list:
-    #     if key in item and item[key] in dict1:
-    #         input_list.remove(item)
-    
-    # return input_list
+    while not removed:
+        for item in exclude_list:
+            question_id_set.add(item[key])
 
-    for input_dictionary in input_list:
-        for exclude_dictionary in exclude_list:
-            if input_dictionary[key] == exclude_dictionary[key]:
-                input_list.remove(input_dictionary)
+        removed = True
+
+        for item in input_list:
+            index = input_list.index(item)
+            if index == (len(input_list) - 1):
+                if item[key] in question_id_set:
+                    input_list.remove(item)
+                    removed = False
+            else:
+                if item[key] in question_id_set:
+                    input_list.remove(item)
+                    removed = False
 
     return input_list
+
+def average(questions):
+    if not questions:
+        raise ValueError("The list of questions is empty.")
+
+    total_difficulty = 0
+    for question in questions:
+        if "question_difficulty" not in question:
+            raise ValueError("The list of questions does not contain the key 'question_difficulty'.")
+
+        question_difficulty = question.get("question_difficulty", 0)
+        if question_difficulty is not None:
+            total_difficulty += question_difficulty
+
+    average_difficulty = total_difficulty / len(questions)
+    return int(average_difficulty)

@@ -384,7 +384,7 @@
   >
     <input
       type                = "number"
-      placeholder         = "New Points"
+      placeholder         = "New Difficulty"
       name                = "question_update"
       id                  = "question_update"
       required maxlength  = "3"
@@ -624,7 +624,7 @@
         <textarea
           rows          = "2"
           cols          = "20"
-          placeholder   = "New Hint"
+          placeholder   = "Update Hint"
           name          = "hint_text"
           id            = "hint_text"
           required wrap = "soft"
@@ -966,8 +966,8 @@
         Round Description: {{associated_round['round_description']}}
           <br>
         {% endif %}
-        {% if associated_round['quiz_name'] %}
-        Quiz Name: {{associated_round['quiz_name']}}
+        {% if associated_round['quiz_names'] %}
+        Associated Quizzes: {{associated_round['quiz_names']}}
           <br>
         {% endif %}
         Question Order: {{associated_round['question_order']}}
@@ -1033,15 +1033,22 @@
 
     {% endif %}
 
-
   <h2>
     Unassociated Rounds:
   </h2>
   {% if unassociated_round_info %}
-  <br>
     {% for unassociated_round in unassociated_round_info %}
-      {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
-      <br>
+      <h3>
+        {{unassociated_round['round_name']}}
+      </h3>
+      {% if unassociated_round['round_description'] %}
+      Round Description: {{unassociated_round['round_description']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['quiz_names'] %}
+      Associated Quizzes: {{unassociated_round['quiz_names']}}
+        <br>
+      {% endif %}      
       <div
         class = "w3-button"
       >
@@ -1133,12 +1140,12 @@
   <h4>To do:</h4>
   <ul>
       <li>Allow special characters in the question tag etc.</li>
-      <li>Sort rounds by Quizzes they're in (this can have repeat rounds)</li>
       <li>Add media backend to upload content to S3</li>
       <li>Make double buttons next to each other</li>
-      <li>Can't associate to a Round without every field completed</li>
+      <li>Maybe have it that you can't associate to a Round without every field completed</li>
+      <li>Maybe add path to previous pages at the top</li>
+      <li>Add round info to unassociated Rounds</li>
   </ul>
-
 
   <!-- End page content -->
 {%endblock%}

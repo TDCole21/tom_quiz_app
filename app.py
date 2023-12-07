@@ -518,6 +518,11 @@ def update_item():
 @app.route('/delete_item', methods=['GET', 'POST'])
 def delete_item():
     if request.method == "POST":
+        update_db_entry(
+            "participants",
+            "participant_item_id = NULL",
+            "participant_item_id = \"" + request.form.get('participant_item_id') + "\""
+        )
         delete_db_entry(
             "items",
             "item_name = \"" + request.form.get('item_name') + "\""
@@ -599,6 +604,11 @@ def update_category():
 @app.route('/delete_category', methods=['GET', 'POST'])
 def delete_category():
     if request.method == "POST":
+        update_db_entry(
+            "questions",
+            "question_category_id = NULL",
+            "question_category_id = \"" + request.form.get('category_id') + "\""
+        )
         delete_db_entry(
             "categories",
             "category_name = \"" + request.form.get('category_name') + "\""
@@ -680,6 +690,11 @@ def update_question_type():
 @app.route('/delete_question_type', methods=['GET', 'POST'])
 def delete_question_type():
     if request.method == "POST":
+        update_db_entry(
+            "questions",
+            "question_type_id = NULL",
+            "question_type_id = \"" + request.form.get('question_type_id') + "\""
+        )
         delete_db_entry(
             "question_type",
             "question_type_name = \"" + request.form.get('question_type_name') + "\""
@@ -761,6 +776,11 @@ def update_question_scoring_type():
 @app.route('/delete_question_scoring_type', methods=['GET', 'POST'])
 def delete_question_scoring_type():
     if request.method == "POST":
+        update_db_entry(
+            "questions",
+            "question_scoring_type_id = NULL",
+            "question_scoring_type_id = \"" + request.form.get('question_scoring_type_id') + "\""
+        )
         delete_db_entry(
             "question_scoring_type",
             "question_scoring_type_name = \"" + request.form.get('question_scoring_type_name') + "\""
@@ -783,7 +803,7 @@ def associate_round():
         number_of_associated_rounds = get_entries_from_db(
             "round_id",
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id IS NOT NULL"
         )
 
         unique_associated_rounds = set()
@@ -816,14 +836,14 @@ def unassociate_round():
     if request.method == "POST":
         delete_db_entry(
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id = \"" + request.form.get('round_id') + "\""
         )
 
         # Need to find how many rounds are in the quiz
         number_of_associated_rounds = get_entries_from_db(
             "round_id",
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id IS NOT NULL"
         )
 
         unique_associated_rounds = set()
@@ -1460,17 +1480,17 @@ def delete_question():
 def associate_question():
     if request.method == "POST":
         # Need to find how many rounds are in the quiz
-        number_of_associated_questions = get_entries_from_db(
+        associated_questions = get_entries_from_db(
             "question_id",
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"" + request.form.get('round_id') + "\" AND question_id IS NOT NULL"
         )
 
         unique_associated_questions = set()
-        for associated_question in number_of_associated_questions:
+        for associated_question in associated_questions:
             unique_associated_questions.add(associated_question["question_id"])
 
-        number_of_associated_questions = len(unique_associated_questions)
+        number_of_associated_questions = len(unique_associated_questions)+1
 
         insert_db_entry(
             "live",
@@ -1503,7 +1523,7 @@ def unassociate_question():
         number_of_associated_questions = get_entries_from_db(
             "question_id",
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"" + request.form.get('round_id') + "\" AND question_id IS NOT NULL"
         )
 
         unique_associated_questions = set()
@@ -1815,7 +1835,7 @@ def round_template():
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
-        associated_quiz_info = sorted(associated_quiz_info, key=lambda k: k['quiz_name']) 
+        associated_quiz_info = sorted(associated_quiz_info, key=lambda k: (k['quiz_name'] is not None, k['quiz_name']))
 
         # This finds all the quizzes this round is not currently associated with
         unassociated_quiz_info = compare_two_tables_new_quizzes(
@@ -1829,24 +1849,30 @@ def round_template():
 
         # Collects information on all the quizzes this round is associated with
         associated_question_info = common_values(
-            "questions.question_id, questions.question_tag, live.question_order",
+            "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_points, questions.question_difficulty, live.question_order, live.round_id",
             "questions",
             "live",
             "questions.question_id",
             "live.question_id WHERE live.round_id = " + request.form.get('round_id')
         )
 
+        if associated_question_info:
+            round_info['average_question_difficulty'] = average(associated_question_info)
+            round_info['mode_question_category'] = 1
+            round_info['total_points'] = 10
+
         # Sorts the dictionaries of rounds in order of their round_order
         associated_question_info = sorted(associated_question_info, key=lambda k: k['question_order']) 
 
-        # This finds all the quizzes this round is not currentlu associated with
+        #This finds all the quizzes this round is not currentlu associated with
         unassociated_question_info = compare_two_tables_new_questions(
             request.form.get('round_id')
         )
 
-        # This removes all the duplicate questions
+        unassociated_question_info = sorted(unassociated_question_info, key=lambda k: (k['round_id'] is not None, k['round_id']))
+        # # This removes all the duplicate questions
         unassociated_question_info = remove_dictionary_duplicates(unassociated_question_info, "question_id")
-        # This removes the question if it appears in the associated list
+        # # This removes the question if it appears in the associated list
         unassociated_question_info = compare_dictionary_lists(unassociated_question_info, associated_question_info, "question_id")
 
 
@@ -2105,7 +2131,7 @@ def question_template():
         # Round information
         # Collects information on all the rounds this question is associated with
         associated_round_info = common_values(
-            "rounds.round_id, rounds.round_name, rounds.round_description, live.question_order, live.quiz_id",
+            "rounds.round_id, rounds.round_name, rounds.round_description, live.question_order",
             "rounds",
             "live",
             "rounds.round_id",
@@ -2114,15 +2140,19 @@ def question_template():
 
         # Loop through all the associated rounds to find their associated quizzes
         for associated_round in associated_round_info:
-            # Question Category information
-            if associated_round['quiz_id'] is not None:
-                quiz_name = get_entry_from_db(
-                    "quiz_name",
-                    "quizzes",
-                    "quiz_id = \"" + str(associated_round['quiz_id']) + "\""
-                )
+            quiz_names = []
+        # Question Category information
+            quiz_info = common_values(
+                "quizzes.quiz_name",
+                "quizzes",
+                "live",
+                "quizzes.quiz_id",
+                "live.quiz_id WHERE live.round_id = \"" + str(associated_round['round_id']) + "\""
+            )
 
-                associated_round.update(quiz_name)
+            for quiz in quiz_info:
+                quiz_names.append(quiz['quiz_name'])
+            associated_round['quiz_names'] = ', '.join([str(elem) for elem in quiz_names])
 
         # Sorts the dictionaries of rounds in order of their round_order
         associated_round_info = sorted(associated_round_info, key=lambda k: k['round_name']) 
@@ -2135,6 +2165,22 @@ def question_template():
             "live",
             "question_id = \"" + request.form.get('question_id') + "\""
         )
+
+        # Loop through all the associated rounds to find their associated quizzes
+        for unassociated_round in unassociated_round_info:
+            quiz_names = []
+        # Question Category information
+            quiz_info = common_values(
+                "quizzes.quiz_name",
+                "quizzes",
+                "live",
+                "quizzes.quiz_id",
+                "live.quiz_id WHERE live.round_id = \"" + str(unassociated_round['round_id']) + "\""
+            )
+
+            for quiz in quiz_info:
+                quiz_names.append(quiz['quiz_name'])
+            unassociated_round['quiz_names'] = ', '.join([str(elem) for elem in quiz_names])
 
 
 
