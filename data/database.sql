@@ -22,7 +22,7 @@ CREATE DATABASE IF NOT EXISTS quiz;
 
 USE quiz;
 
-DROP TABLE IF EXISTS users, quizzes, categories, question_type, question_scoring_type, items, hints, participants, rounds, questions, live, answers, friends, user_media;
+DROP TABLE IF EXISTS users, question_media, quizzes, categories, question_type, question_scoring_type, items, hints, participants, rounds, questions, live, answers, friends, user_media;
 
 CREATE TABLE users (
     user_id INT(3) AUTO_INCREMENT NOT NULL PRIMARY KEY,
