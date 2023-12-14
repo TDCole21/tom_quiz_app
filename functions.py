@@ -322,18 +322,64 @@ def compare_dictionary_lists(input_list, exclude_list, key):
 
     return input_list
 
-def average(questions):
-    if not questions:
-        raise ValueError("The list of questions is empty.")
+def average(list_of_dicts, key):
+    if not list_of_dicts:
+        raise ValueError("The list of list_of_dicts is empty.")
 
-    total_difficulty = 0
-    for question in questions:
-        if "question_difficulty" not in question:
-            raise ValueError("The list of questions does not contain the key 'question_difficulty'.")
+    total_value = 0
+    for dict in list_of_dicts:
+        if key not in dict:
+            raise ValueError("The list of list_of_dicts does not contain the key " + key + ".")
 
-        question_difficulty = question.get("question_difficulty", 0)
-        if question_difficulty is not None:
-            total_difficulty += question_difficulty
+        dict_value = dict.get(key, 0)
+        if dict_value is not None:
+            total_value += dict_value
 
-    average_difficulty = total_difficulty / len(questions)
-    return int(average_difficulty)
+    average_value = total_value / len(list_of_dicts)
+    # average_value is a float e.g. 5.0, remove int to make it 100 scale
+    return int(average_value)
+
+def mode(list_of_dicts, key):
+    if not list_of_dicts:
+        raise ValueError("The list of list_of_dicts is empty.")
+
+    counts = {}
+    for dict in list_of_dicts:
+        if key not in dict:
+            raise ValueError("The list of list_of_dicts does not contain the key " + key + ".")
+
+        if dict[key] in counts:
+            counts[dict[key]] += 1
+        else:
+            counts[dict[key]] = 1
+
+    # Check if there are multiple modes
+    if len(counts) > 1:
+        mode_values = []
+        mode_counts = max(counts.values())
+        for dict[key], count in counts.items():
+            if count == mode_counts:
+                mode_values.append(dict[key])
+        return mode_values
+    else:
+        # Only one mode found
+        return [max(counts, key=counts.get)]
+
+
+
+
+
+
+def total(list_of_dicts, key):
+    if not list_of_dicts:
+        raise ValueError("The list of list_of_dicts is empty.")
+
+    total_value = 0
+    for dict in list_of_dicts:
+        try:
+            if dict[key] is not None:
+                total_value += dict[key]
+        except KeyError:
+            pass
+
+    return total_value

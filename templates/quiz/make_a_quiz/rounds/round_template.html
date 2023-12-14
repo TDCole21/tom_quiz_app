@@ -121,13 +121,19 @@
       }
     </style>
   </form>
-  <hr>
 
-  Average Question Difficulty: {{round_info['average_question_difficulty']}}/10
-  <br>
-  Most common category: {{round_info['mode_question_category']}}
-  <br>
-  Total points in this Round: {{round_info['total_points']}}
+  {% if associated_question_info %}
+    <hr>
+
+    <h2>
+      Round Info:
+    </h2>
+    Average Question Difficulty: {{round_info['average_question_difficulty']}}/10
+    <br>
+    Most common category: {{round_info['mode_question_category']}}
+    <br>
+    Total points in this Round: {{round_info['total_points']}}
+  {% endif %}
 
   <hr>
 
@@ -518,12 +524,9 @@
   <hr>
   <h4>To do:</h4>
   <ul>
-      <li>Show average question difficulty</li>
-      <li>Show mode question category</li>
       <li>Unassociated quizzes and questions are hard coded in mysql</li>
       <li>Maybe change so that a Round can't be associated to a Quiz if Round is not fully completed</li>
       <li>Change question order is it's own function</li>
-      <li>Adding questions doesn't work if they're already in another round</li>
   </ul>
 
 

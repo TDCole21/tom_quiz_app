@@ -1857,9 +1857,28 @@ def round_template():
         )
 
         if associated_question_info:
-            round_info['average_question_difficulty'] = average(associated_question_info)
-            round_info['mode_question_category'] = 1
-            round_info['total_points'] = 10
+            # Average question difficulty
+            round_info['average_question_difficulty'] = average(associated_question_info, "question_difficulty")
+            # Total question points
+            round_info['total_points'] = total(associated_question_info, "question_points")
+            # Mode question category
+            question_category_id = mode(associated_question_info, "question_category_id")
+            if len(question_category_id) > 1:
+                mode_question_categories = []
+                for question_category in question_category_id:
+                    question_category_name = get_entry_from_db(
+                        "category_name",
+                        "categories",
+                        "category_id = \"" + str(question_category) + "\""
+                    )['category_name']
+                    mode_question_categories.append(question_category_name)
+                round_info['mode_question_category'] = " and ".join(mode_question_categories)
+            else:
+                round_info['mode_question_category'] = get_entry_from_db(
+                    "category_name",
+                    "categories",
+                    "category_id = \"" + str(question_category_id[0]) + "\""
+                )['category_name']
 
         # Sorts the dictionaries of rounds in order of their round_order
         associated_question_info = sorted(associated_question_info, key=lambda k: k['question_order']) 
