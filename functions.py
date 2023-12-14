@@ -339,31 +339,26 @@ def average(list_of_dicts, key):
     # average_value is a float e.g. 5.0, remove int to make it 100 scale
     return int(average_value)
 
-def mode(list_of_dicts, key):
-    if not list_of_dicts:
-        raise ValueError("The list of list_of_dicts is empty.")
-
+def mode(data, key):
     counts = {}
-    for dict in list_of_dicts:
-        if key not in dict:
-            raise ValueError("The list of list_of_dicts does not contain the key " + key + ".")
+    for item in data:
+        value = item.get(key)
+        if value is not None:
+            if value in counts:
+                counts[value] += 1
+            else:
+                counts[value] = 1
 
-        if dict[key] in counts:
-            counts[dict[key]] += 1
-        else:
-            counts[dict[key]] = 1
+    # Check for modes and handle None values
+    if len(counts) == 0:
+        return []
 
-    # Check if there are multiple modes
-    if len(counts) > 1:
-        mode_values = []
-        mode_counts = max(counts.values())
-        for dict[key], count in counts.items():
-            if count == mode_counts:
-                mode_values.append(dict[key])
-        return mode_values
-    else:
-        # Only one mode found
-        return [max(counts, key=counts.get)]
+    mode_values = []
+    mode_counts = max(counts.values())
+    for value, count in counts.items():
+        if count == mode_counts and value is not None:
+            mode_values.append(value)
+    return mode_values or []
 
 
 

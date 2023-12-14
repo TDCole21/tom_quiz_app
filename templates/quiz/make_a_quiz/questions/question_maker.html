@@ -58,18 +58,31 @@
       <h3>
         Question tag: {{question['question_tag']}}
       </h3>
-      <h4>
-        Associated Quizzes:
-      </h4>
-      <h4>
-        Associated Questions:
-      </h4>
-      <h4>
-        Categories include:
-      </h4>
-      <h4>
-        Mode Category:
-      </h4>          
+      {% if question['associated_quizzes'] %}
+        <h5>
+          Associated Quizzes: {{question['associated_quizzes']}}
+        </h5>
+      {% endif %}
+      {% if question['associated_rounds'] %}
+        <h5>
+          Associated Rounds: {{question['associated_rounds']}}
+        </h5>
+      {% endif %}
+      {% if question['question_category'] %}
+        <h5>
+          Category: {{question['question_category']}}
+        </h5>
+      {% endif %}
+      {% if question['question_difficulty'] %}  
+        <h5>
+          Difficulty: {{question['question_difficulty']}}/10
+        </h5>
+      {% endif %}
+      {% if question['question_points'] %}
+        <h5>
+          Points: {{question['question_points']}}
+        </h5>  
+      {% endif %}      
       <div
       class = "w3-button"
       >
@@ -168,13 +181,7 @@
 
   <h4>To do:</h4>
   <ul>
-      <li>Have the edit question button work</li>
-      <li>Remove question info at top of page</li>
-      <li>Give information on associated quizzes</li>
-      <li>Maybe give information on associated questions</li>
-      <li>Give information on associated categories</li>
-      <li>Have an if statement to say if there are no associated quizzes</li>
-      <li>Have default values for question type and question scoring type etc.</li>
+      <li>Have default values for question point, question type and question scoring type when created</li>
 
   </ul>
 

@@ -47,7 +47,7 @@
     </a>
 </form>
 
-  <hr/>
+  <hr>
   {% if round_info|length > 0 %}
     <!-- Information about Rounds -->
     <h2>
@@ -57,21 +57,36 @@
       <h3>
         Round name: {{round['round_name']}}
       </h3>
-      <h4>
-        Round description: {{round['round_description']}}
-      </h4>
-      <h4>
-        Associated Quizzes:
-      </h4>
-      <h4>
-        Associated Questions:
-      </h4>
-      <h4>
-        Categories include:
-      </h4>
-      <h4>
-        Mode Category:
-      </h4>          
+      {% if round['round_description'] %}
+        <h5>
+          Round description: {{round['round_description']}}
+        </h5>
+      {% endif %}
+      {% if round['associated_quizzes'] %}
+      <h5>
+        Associated Quizzes: {{round['associated_quizzes']}}
+      </h5>
+      {% endif %}
+      {% if round['associated_questions'] %}
+      <h5>
+        Associated Questions: {{round['associated_questions']}}
+      </h5>
+      {% endif %}
+      {% if round['mode_category'] %}
+      <h5>
+        Mode Category: {{round['mode_category']}}
+      </h5>
+      {% endif %}         
+      {% if round['average_difficulty'] %}
+      <h5>
+        Average Difficulty: {{round['average_difficulty']}}/10
+      </h5>
+      {% endif %}
+      {% if round['total_points'] %}
+      <h5>
+        Total Points: {{round['total_points']}}
+      </h5>
+      {% endif %}   
       <div
       class = "w3-button"
       >
