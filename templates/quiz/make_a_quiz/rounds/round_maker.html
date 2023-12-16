@@ -64,10 +64,16 @@
       {% endif %}
       {% if round['associated_quizzes'] %}
       <h5>
+        Number of associated Quizzes: {{round['number_of_associated_quizzes']}}
+      </h5>
+      <h5>
         Associated Quizzes: {{round['associated_quizzes']}}
       </h5>
       {% endif %}
       {% if round['associated_questions'] %}
+      <h5>
+        Number of associated Questions: {{round['number_of_associated_questions']}}
+      </h5>
       <h5>
         Associated Questions: {{round['associated_questions']}}
       </h5>
@@ -185,10 +191,8 @@
 
   <h4>To do:</h4>
   <ul>
-      <li>Give information on associated quizzes</li>
-      <li>Maybe give information on associated questions</li>
-      <li>Give information on associated categories</li>
       <li>Have an if statement to say if there are no associated quizzes</li>
+      <li>Maybe have Quiz and Question names under a collapsable</li>
   </ul>
 
 {%endblock%}

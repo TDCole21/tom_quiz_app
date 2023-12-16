@@ -355,11 +355,75 @@ def quiz_maker():
     # Check to see if the user is an admin
     if admin_check():
         # Gets all quizzes from the quiz table
-        quiz_info = get_entries_from_db(
-            "quiz_id, quiz_name",
+        quiz_info = join_tables(
+            "DISTINCT quizzes.quiz_id, quizzes.quiz_name, live.quiz_active, live.quiz_completed",
             "quizzes",
-            "quiz_name IS NOT NULL"
+            "live",
+            "quizzes.quiz_id",
+            "live.quiz_id WHERE quizzes.quiz_id IS NOT NULL"
         )
+
+        for quiz in quiz_info:
+            associated_rounds = []
+            # Collects information on all the quizzes this round is associated with
+            associated_round_info = common_values(
+                "rounds.round_name, rounds.round_id",
+                "rounds",
+                "live",
+                "rounds.round_id",
+                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+            )
+            for associated_round in associated_round_info:
+                associated_rounds.append(associated_round['round_name'])
+
+            quiz['number_of_associated_rounds'] = len(associated_rounds)
+            quiz['associated_rounds'] = " and ".join(associated_rounds)
+
+            associated_questions = []
+            for round in associated_round_info:
+                # Collects information on all the quizzes this round is associated with
+                associated_question_info = common_values(
+                    "questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points",
+                    "questions",
+                    "live",
+                    "questions.question_id",
+                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                )
+                for associated_question in associated_question_info:
+                    associated_questions.append(associated_question['question_tag'])
+
+            # associated_questions = set(associated_questions)
+            quiz['associated_questions'] = " and ".join(associated_questions)
+            quiz['number_of_associated_questions'] = len(associated_questions)
+
+            if associated_questions:
+                # Average question difficulty
+                quiz['average_difficulty'] = average(associated_question_info, "question_difficulty")
+                # Total question points
+                quiz['total_points'] = total(associated_question_info, "question_points")
+                # Mode question category
+                question_category_id = mode(associated_question_info, "question_category_id")
+                if question_category_id == []:
+                    quiz['mode_category'] = "None set"
+                else:
+                    if len(question_category_id) > 1:
+                        mode_question_categories = []
+                        for question_category in question_category_id:
+                            question_category_name = get_entry_from_db(
+                                "category_name",
+                                "categories",
+                                "category_id = \"" + str(question_category) + "\""
+                            )['category_name']
+                            mode_question_categories.append(question_category_name)
+                        quiz['mode_category'] = " and ".join(mode_question_categories)
+                    elif question_category_id is not None:
+                        quiz['mode_category'] = get_entry_from_db(
+                            "category_name",
+                            "categories",
+                            "category_id = \"" + str(question_category_id[0]) + "\""
+                        )['category_name']
+                    else:
+                        quiz['mode_category'] = "Not set"
 
 
         # Feeds data into HTML Jinja2 template
@@ -995,6 +1059,7 @@ def round_maker():
             for associated_quiz in associated_quiz_info:
                 associated_quizzes.append(associated_quiz['quiz_name'])
 
+            round['number_of_associated_quizzes'] = len(associated_quizzes)
             round['associated_quizzes'] = " and ".join(associated_quizzes)
 
             associated_questions = []
@@ -1009,6 +1074,7 @@ def round_maker():
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question['question_tag'])
 
+            round['number_of_associated_questions'] = len(associated_questions)
             round['associated_questions'] = " and ".join(associated_questions)
 
             if associated_question_info:
@@ -1336,6 +1402,7 @@ def question_maker():
             for associated_round in associated_round_info:
                 associated_rounds.append(associated_round['round_name'])
 
+            question['number_of_associated_rounds'] = len(associated_rounds)
             question['associated_rounds'] = " and ".join(associated_rounds)
 
             associated_quizzes = []
@@ -1353,6 +1420,7 @@ def question_maker():
 
             associated_quizzes = set(associated_quizzes)
             question['associated_quizzes'] = " and ".join(associated_quizzes)
+            question['number_of_associated_quizzes'] = len(associated_quizzes)
 
 
 
@@ -1927,6 +1995,9 @@ def round_template():
         # Sorts the dictionaries of rounds in order of their round_order
         associated_quiz_info = sorted(associated_quiz_info, key=lambda k: (k['quiz_name'] is not None, k['quiz_name']))
 
+        # Number of associated quizzes
+        round_info['number_of_associated_quizzes'] = len(associated_quiz_info)
+
         # This finds all the quizzes this round is not currently associated with
         unassociated_quiz_info = compare_two_tables_new_quizzes(
             request.form.get('round_id')
@@ -1947,6 +2018,8 @@ def round_template():
         )
 
         if associated_question_info:
+            # Number of associated questions
+            round_info['number_of_associated_questions'] = len(associated_question_info)
             # Average question difficulty
             round_info['average_question_difficulty'] = average(associated_question_info, "question_difficulty")
             # Total question points
@@ -2268,9 +2341,11 @@ def question_template():
             for quiz in quiz_info:
                 quiz_names.append(quiz['quiz_name'])
             associated_round['quiz_names'] = ', '.join([str(elem) for elem in quiz_names])
+            associated_round['number_of_associated_quizzes'] = len(quiz_names)
 
         # Sorts the dictionaries of rounds in order of their round_order
         associated_round_info = sorted(associated_round_info, key=lambda k: k['round_name']) 
+        question_info['number_of_associated_rounds'] = len(associated_round_info)
 
         # This finds all the quizzes this round is not currentlu associated with
         unassociated_round_info = compare_two_tables(

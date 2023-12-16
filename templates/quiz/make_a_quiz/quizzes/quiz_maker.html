@@ -89,6 +89,37 @@
       <h3>
         {{quiz["quiz_name"]}}
       </h3>
+      {% if quiz['associated_rounds'] %}
+        Number of associated Rounds: {{quiz['number_of_associated_rounds']}}
+        <br>
+        Associated Rounds: {{quiz['associated_rounds']}}
+        <br>
+      {% endif %}
+      {% if quiz['number_of_associated_questions'] %}
+        Number of associated Questions: {{quiz['number_of_associated_questions']}}
+        <br>
+        Associated Questions: {{quiz['associated_questions']}}
+        <br>
+      {% endif %}
+      {% if quiz['average_difficulty'] %}
+      Average difficulty: {{quiz['average_difficulty']}}
+      <br>
+      {% endif %}
+      {% if quiz['mode_category'] %}
+      Mode Category: {{quiz['mode_category']}}
+      <br>
+      {% endif %}
+      {% if quiz['total_points'] %}
+      Total Points: {{quiz['total_points']}}
+      <br>
+      {% endif %}
+      {% if quiz['quiz_completed'] %}
+        This Quiz has been played
+      {% elif quiz['quiz_active'] %}
+        This Quiz is in progress
+      {% else %}
+        This Quiz hasn't been played
+      {% endif %}
       <form
         method  = "POST"
       >
@@ -134,13 +165,7 @@
 
   <h4>To do:</h4>
   <ul>
-      <li>Add total points in quiz</li>
-      <li>Add associated Round names</li>
-      <li>Add total number of questions</li>
-      <li>Add mode category... maybe</li>
-      <li>Add average question difficulty</li>
-      <li>Add if the Quiz has been completed</li>
-
+      <li>Make these changes to quiz_template</li>
   </ul>
 
 {%endblock%}

@@ -159,6 +159,15 @@ def common_values(output, table1, table2, table1_column_name, table2_column_name
     cur.close()   
     return data
 
+# This function selects common values between two tables
+def join_tables(output, table1, table2, table1_column_name, table2_column_name):
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s = %s" % (output, table1, table2, table1_column_name, table2_column_name))
+    mysql.connection.commit()    
+    data = cur.fetchall()
+    cur.close()   
+    return data
+
 # This function selects common values from two tables
 def common_values_not_unique(output, table1, common_column, table2, conditions): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)

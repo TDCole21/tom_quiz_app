@@ -60,10 +60,16 @@
       </h3>
       {% if question['associated_quizzes'] %}
         <h5>
+          Number of associated Quizzes: {{question['number_of_associated_quizzes']}}
+        </h5>
+        <h5>
           Associated Quizzes: {{question['associated_quizzes']}}
         </h5>
       {% endif %}
       {% if question['associated_rounds'] %}
+      <h5>
+        Number of associated Rounds: {{question['number_of_associated_rounds']}}
+      </h5>
         <h5>
           Associated Rounds: {{question['associated_rounds']}}
         </h5>

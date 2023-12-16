@@ -958,6 +958,10 @@
       Associated Rounds:
     </h2>
     {% if associated_round_info %}
+      <h3>
+        Number of Associated Rounds: {{question_info['number_of_associated_rounds']}}
+      </h3>
+      <hr style="width:40%; margin: auto; margin-bottom:2em">
       {% for associated_round in associated_round_info %}
         <h3>
           Round: {{associated_round['round_name']}}
@@ -967,6 +971,8 @@
           <br>
         {% endif %}
         {% if associated_round['quiz_names'] %}
+        Number of associated Quizzes: {{associated_round['number_of_associated_quizzes']}}
+        <br>
         Associated Quizzes: {{associated_round['quiz_names']}}
           <br>
         {% endif %}
