@@ -127,26 +127,59 @@
     </style>
   </form>
 
+  {% if associated_round_info %}
+  <hr>
+
+  <h2>
+    Quiz Info:
+  </h2>
+    Number of associated Rounds: {{quiz_info['number_of_associated_rounds']}}
+    <br>
+    Number of associated Questions: {{quiz_info['number_of_associated_questions']}}
+    <br>
+    Most common Question category: {{quiz_info['mode_question_category']}}
+    <br>
+    Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
+    <br>
+    Total points in this Quiz: {{quiz_info['total_points']}}
+  {% endif %}
+
+
   <hr>
   <h2>
     Associated Rounds:
   </h2>
   {% if associated_round_info %}
+    <h3>
+      Number of associated Rounds: {{quiz_info['number_of_associated_rounds']}}
+    </h3>
+    <hr style="width:40%; margin: auto; margin-bottom:2em">
     {% for associated_round in associated_round_info %}
       <h3>
         Round {{associated_round['round_order']}}: {{associated_round['round_name']}}
       </h3>
       {% if associated_round['round_description'] %}
         Round Description: {{associated_round['round_description']}}
+        <br>
       {% endif %}
-      {% if associated_round['round_questions'] %}
-        Number of Questions: {{associated_round['round_questions']}}
+      {% if associated_round['number_of_associated_questions'] %}
+        Number of Questions: {{associated_round['number_of_associated_questions']}}
+        <br>
       {% endif %}
-      {% if associated_round['round_category'] %}
-        Category Type: {{associated_round['round_category']}}
+      {% if associated_round['associated_questions'] %}
+        Associated Questions: {{associated_round['associated_questions']}}
+        <br>
       {% endif %}
-      {% if associated_round['round_difficulty'] %}
-        Round Difficulty: {{associated_round['round_difficulty']}}
+      {% if associated_round['mode_question_category'] %}
+        Category Type: {{associated_round['mode_question_category']}}
+        <br>
+      {% endif %}
+      {% if associated_round['average_question_difficulty'] %}
+        Round Difficulty: {{associated_round['average_question_difficulty']}}
+        <br>
+      {% endif %}
+      {% if associated_round['total_points'] %}
+        Total number of Points in round: {{associated_round['total_points']}}
       {% endif %}
       <br>
       <div
@@ -456,9 +489,8 @@
 
   <h4>To do:</h4>
   <ul>
-      <li>Give information on rounds (round description, how many questions associated, what's the most common question type, average question difficulty)</li>
       <li>Maybe have it that you can't associate two rounds in a quiz with the same name</li>
-      <li>Unnasociate round only deletes live table entry if the round is also not associated with a question, otherwise it just removes the quiz_id and other quiz related fields</li>
+      <li>Add information on unassociated Rounds</li>
   </ul>
 
   {%endblock%}

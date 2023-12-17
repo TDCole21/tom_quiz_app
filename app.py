@@ -356,7 +356,7 @@ def quiz_maker():
     if admin_check():
         # Gets all quizzes from the quiz table
         quiz_info = join_tables(
-            "DISTINCT quizzes.quiz_id, quizzes.quiz_name, live.quiz_active, live.quiz_completed",
+            "DISTINCT quizzes.quiz_id, quizzes.quiz_description, quizzes.quiz_name, live.quiz_active, live.quiz_completed",
             "quizzes",
             "live",
             "quizzes.quiz_id",
@@ -1860,7 +1860,90 @@ def quiz_template():
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
-        associated_round_info = sorted(associated_round_info, key=lambda k: k['round_order']) 
+        associated_round_info = sorted(associated_round_info, key=lambda k: k['round_order'])
+
+
+        quiz_info['number_of_associated_rounds'] = len(associated_round_info)
+
+        associated_questions = []
+        for round in associated_round_info:
+            associated_questions_names = []
+            # Collects information on all the quizzes this round is associated with
+            associated_question_info = common_values(
+                "questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points",
+                "questions",
+                "live",
+                "questions.question_id",
+                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+            )
+            for associated_question in associated_question_info:
+                associated_questions.append(associated_question)
+                associated_questions_names.append(associated_question['question_tag'])
+            
+            round['number_of_associated_questions'] = len(associated_question_info)
+            round['associated_questions'] = " and ".join(associated_questions_names)
+            
+            if associated_question_info:
+                # Average question difficulty
+                round['average_question_difficulty'] = average(associated_question_info, "question_difficulty")
+                # Total question points
+                round['total_points'] = total(associated_question_info, "question_points")
+                # Mode question category
+                question_category_id = mode(associated_question_info, "question_category_id")
+                if question_category_id == []:
+                    round['mode_question_category'] = "None set"
+                else:
+                    if len(question_category_id) > 1:
+                        mode_question_categories = []
+                        for question_category in question_category_id:
+                            question_category_name = get_entry_from_db(
+                                "category_name",
+                                "categories",
+                                "category_id = \"" + str(question_category) + "\""
+                            )['category_name']
+                            mode_question_categories.append(question_category_name)
+                        round['mode_question_category'] = " and ".join(mode_question_categories)
+                    elif question_category_id is not None:
+                        round['mode_question_category'] = get_entry_from_db(
+                            "category_name",
+                            "categories",
+                            "category_id = \"" + str(question_category_id[0]) + "\""
+                        )['category_name']
+                    else:
+                        round['mode_question_category'] = "Not set"
+
+        # associated_questions = set(associated_questions)
+        quiz_info['number_of_associated_questions'] = len(associated_questions)
+
+        if associated_questions:
+            # Average question difficulty
+            quiz_info['average_question_difficulty'] = average(associated_questions, "question_difficulty")
+            # Total question points
+            quiz_info['total_points'] = total(associated_questions, "question_points")
+            # Mode question category
+            question_category_id = mode(associated_questions, "question_category_id")
+            if question_category_id == []:
+                quiz_info['mode_question_category'] = "None set"
+            else:
+                if len(question_category_id) > 1:
+                    mode_question_categories = []
+                    for question_category in question_category_id:
+                        question_category_name = get_entry_from_db(
+                            "category_name",
+                            "categories",
+                            "category_id = \"" + str(question_category) + "\""
+                        )['category_name']
+                        mode_question_categories.append(question_category_name)
+                    quiz_info['mode_question_category'] = " and ".join(mode_question_categories)
+                elif question_category_id is not None:
+                    quiz_info['mode_question_category'] = get_entry_from_db(
+                        "category_name",
+                        "categories",
+                        "category_id = \"" + str(question_category_id[0]) + "\""
+                    )['category_name']
+                else:
+                    quiz_info['mode_question_category'] = "Not set"
+
 
         # This finds all the rounds not currentlu associated with the current quiz
         unassociated_round_info = compare_two_tables(

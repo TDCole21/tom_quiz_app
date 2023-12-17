@@ -89,6 +89,10 @@
       <h3>
         {{quiz["quiz_name"]}}
       </h3>
+      {% if quiz['quiz_description'] %}
+        Quiz Description: {{quiz['quiz_description']}}
+        <br>
+      {% endif %}
       {% if quiz['associated_rounds'] %}
         Number of associated Rounds: {{quiz['number_of_associated_rounds']}}
         <br>
