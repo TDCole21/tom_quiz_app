@@ -308,14 +308,26 @@
       <h3>
         Question {{associated_question['question_order']}}: {{associated_question['question_tag']}}
       </h3>
-      {% if associated_question['question_active'] %}
-        Question is in progress
-      {% elif associated_question['question_completed'] %}
-        The Question is completed
-      {% else %}
-        This Question has yet to be played
+      {% if associated_question['number_of_associated_rounds'] %}
+        Number of associated Rounds: {{associated_question['number_of_associated_rounds']}}
+        <br>
       {% endif %}
-      <br>
+      {% if associated_question['associated_rounds'] %}
+        Associated Rounds: {{associated_question['associated_rounds']}}
+        <br>
+      {% endif %}
+      {% if associated_question['question_category'] %}
+        Category: {{associated_question['question_category']}}
+        <br>
+      {% endif %}
+      {% if associated_question['question_difficulty'] %}
+        Difficulty: {{associated_question['question_difficulty']}}/10
+        <br>
+      {% endif %}
+      {% if associated_question['question_points'] %}
+        Points: {{associated_question['question_points']}}
+        <br>
+      {% endif %}
       <div
         class = "w3-button"
       >

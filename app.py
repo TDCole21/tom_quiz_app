@@ -2150,6 +2150,29 @@ def round_template():
         )
 
         if associated_question_info:
+            for associated_question in associated_question_info:
+                associate_round_names =[]
+                associated_question['question_category'] = get_entry_from_db(
+                        "category_name",
+                        "categories",
+                        "category_id = \"" + str(associated_question['question_category_id']) + "\""
+                    )['category_name']
+                
+                associated_round_info = common_values(
+                    "rounds.round_name",
+                    "rounds",
+                    "live",
+                    "rounds.round_id",
+                    "live.round_id WHERE live.question_id = " + str(associated_question['question_id'])
+                )
+                
+                for associated_round in associated_round_info:
+                    associate_round_names.append(associated_round['round_name'])
+                
+                associated_question['number_of_associated_rounds'] = len(associate_round_names)
+                associated_question['associated_rounds'] = " and ".join(associate_round_names)
+
+
             # Number of associated questions
             round_info['number_of_associated_questions'] = len(associated_question_info)
             # Average question difficulty
