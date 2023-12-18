@@ -964,7 +964,7 @@
       <hr style="width:40%; margin: auto; margin-bottom:2em">
       {% for associated_round in associated_round_info %}
         <h3>
-          Round: {{associated_round['round_name']}}
+          {{associated_round['round_name']}}
         </h3>
         {% if associated_round['round_description'] %}
         Round Description: {{associated_round['round_description']}}
@@ -972,11 +972,33 @@
         {% endif %}
         {% if associated_round['quiz_names'] %}
         Number of associated Quizzes: {{associated_round['number_of_associated_quizzes']}}
-        <br>
+          <br>
+        {% endif %}
+        {% if associated_round['quiz_names'] %}
         Associated Quizzes: {{associated_round['quiz_names']}}
           <br>
         {% endif %}
-        Question Order: {{associated_round['question_order']}}
+        {% if associated_round['number_of_associated_questions'] %}
+        Number of associated Questions in Round: {{associated_round['number_of_associated_questions']}}
+          <br>
+        {% endif %}
+        {% if associated_round['number_of_associated_questions'] %}
+        Associated Questions in Round: {{associated_round['question_names']}}
+          <br>
+        {% endif %}
+        {% if associated_round['mode_question_category'] %}
+        Round Category: {{associated_round['mode_question_category']}}
+          <br>
+        {% endif %}
+        {% if associated_round['average_question_difficulty'] %}
+        Round Difficulty: {{associated_round['average_question_difficulty']}}/10
+          <br>
+        {% endif %}
+        {% if associated_round['total_points'] %}
+        Total Points in Round: {{associated_round['total_points']}}
+          <br>
+        {% endif %}
+          Question Order in Round: {{associated_round['question_order']}}
         <br>
         <div
           class = "w3-button"
@@ -1052,9 +1074,33 @@
         <br>
       {% endif %}
       {% if unassociated_round['quiz_names'] %}
+      Number of associated Quizzes: {{unassociated_round['number_of_associated_quizzes']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['quiz_names'] %}
       Associated Quizzes: {{unassociated_round['quiz_names']}}
         <br>
-      {% endif %}      
+      {% endif %}
+      {% if unassociated_round['number_of_associated_questions'] %}
+      Number of associated Questions in Round: {{unassociated_round['number_of_associated_questions']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['number_of_associated_questions'] %}
+      Associated Questions in Round: {{unassociated_round['question_names']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['mode_question_category'] %}
+      Round Category: {{unassociated_round['mode_question_category']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['average_question_difficulty'] %}
+      Round Difficulty: {{unassociated_round['average_question_difficulty']}}/10
+        <br>
+      {% endif %}
+      {% if unassociated_round['total_points'] %}
+      Total Points in Round: {{unassociated_round['total_points']}}
+        <br>
+      {% endif %}
       <div
         class = "w3-button"
       >
@@ -1150,8 +1196,6 @@
       <li>Make double buttons next to each other</li>
       <li>Maybe have it that you can't associate to a Round without every field completed</li>
       <li>Maybe add path to previous pages at the top</li>
-      <li>Add round info to unassociated Rounds</li>
-      <li>Add information about Rounds (e.g. number of questions, mode category)</li>
   </ul>
 
   <!-- End page content -->

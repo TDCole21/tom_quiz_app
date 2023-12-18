@@ -58,40 +58,32 @@
         Round name: {{round['round_name']}}
       </h3>
       {% if round['round_description'] %}
-        <h5>
-          Round description: {{round['round_description']}}
-        </h5>
+        Round description: {{round['round_description']}}
+        <br>
       {% endif %}
       {% if round['associated_quizzes'] %}
-      <h5>
         Number of associated Quizzes: {{round['number_of_associated_quizzes']}}
-      </h5>
-      <h5>
+        <br>
         Associated Quizzes: {{round['associated_quizzes']}}
-      </h5>
+        <br>
       {% endif %}
       {% if round['associated_questions'] %}
-      <h5>
         Number of associated Questions: {{round['number_of_associated_questions']}}
-      </h5>
-      <h5>
+        <br>
         Associated Questions: {{round['associated_questions']}}
-      </h5>
+        <br>
       {% endif %}
       {% if round['mode_category'] %}
-      <h5>
         Mode Category: {{round['mode_category']}}
-      </h5>
+        <br>
       {% endif %}         
       {% if round['average_difficulty'] %}
-      <h5>
         Average Difficulty: {{round['average_difficulty']}}/10
-      </h5>
+        <br>
       {% endif %}
       {% if round['total_points'] %}
-      <h5>
         Total Points: {{round['total_points']}}
-      </h5>
+        <br>
       {% endif %}   
       <div
       class = "w3-button"

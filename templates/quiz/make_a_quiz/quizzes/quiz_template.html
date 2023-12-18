@@ -150,10 +150,6 @@
     Associated Rounds:
   </h2>
   {% if associated_round_info %}
-    <h3>
-      Number of associated Rounds: {{quiz_info['number_of_associated_rounds']}}
-    </h3>
-    <hr style="width:40%; margin: auto; margin-bottom:2em">
     {% for associated_round in associated_round_info %}
       <h3>
         Round {{associated_round['round_order']}}: {{associated_round['round_name']}}
@@ -313,10 +309,30 @@
   {% if unassociated_round_info %}
     {% for unassociated_round in unassociated_round_info %}
       <h3>
-        Round: {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
+        {{unassociated_round['round_name']}}{% if unassociated_round['round_description'] %}: {{unassociated_round['round_description']}}{% endif %}
       </h3>
+      {% if unassociated_round['number_of_associated_questions'] %}
+        Number of Questions: {{unassociated_round['number_of_associated_questions']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['associated_questions'] %}
+        Associated Questions: {{unassociated_round['associated_questions']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['mode_question_category'] %}
+        Category Type: {{unassociated_round['mode_question_category']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['average_question_difficulty'] %}
+        Round Difficulty: {{unassociated_round['average_question_difficulty']}}
+        <br>
+      {% endif %}
+      {% if unassociated_round['total_points'] %}
+        Total number of Points in round: {{unassociated_round['total_points']}}
+        <br>
+      {% endif %}
       <div
-      class = "w3-button"
+        class = "w3-button"
       >
         <form
           method  = "POST"
@@ -490,7 +506,6 @@
   <h4>To do:</h4>
   <ul>
       <li>Maybe have it that you can't associate two rounds in a quiz with the same name</li>
-      <li>Add information on unassociated Rounds</li>
   </ul>
 
   {%endblock%}

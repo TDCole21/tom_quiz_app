@@ -59,35 +59,28 @@
         Question tag: {{question['question_tag']}}
       </h3>
       {% if question['associated_quizzes'] %}
-        <h5>
-          Number of associated Quizzes: {{question['number_of_associated_quizzes']}}
-        </h5>
-        <h5>
-          Associated Quizzes: {{question['associated_quizzes']}}
-        </h5>
+        Number of associated Quizzes: {{question['number_of_associated_quizzes']}}
+        <br>
+        Associated Quizzes: {{question['associated_quizzes']}}
+        <br>
       {% endif %}
       {% if question['associated_rounds'] %}
-      <h5>
         Number of associated Rounds: {{question['number_of_associated_rounds']}}
-      </h5>
-        <h5>
-          Associated Rounds: {{question['associated_rounds']}}
-        </h5>
+        <br>
+        Associated Rounds: {{question['associated_rounds']}}
+        <br>
       {% endif %}
       {% if question['question_category'] %}
-        <h5>
-          Category: {{question['question_category']}}
-        </h5>
+        Category: {{question['question_category']}}
+        <br>
       {% endif %}
       {% if question['question_difficulty'] %}  
-        <h5>
-          Difficulty: {{question['question_difficulty']}}/10
-        </h5>
+        Difficulty: {{question['question_difficulty']}}/10
+        <br>
       {% endif %}
       {% if question['question_points'] %}
-        <h5>
-          Points: {{question['question_points']}}
-        </h5>  
+        Points: {{question['question_points']}}
+        <br>
       {% endif %}      
       <div
       class = "w3-button"
@@ -187,7 +180,7 @@
 
   <h4>To do:</h4>
   <ul>
-      <li>Have default values for question point, question type and question scoring type when created</li>
+      <li>None</li>
 
   </ul>
 
