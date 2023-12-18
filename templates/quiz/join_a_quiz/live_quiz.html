@@ -14,6 +14,17 @@
     />
   </head>
 
+    <!-- Displays any messages to the use -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
   <center>
     {% if round_info %}
       <h2>
@@ -54,9 +65,10 @@
   </center>
 
   <hr/>
-
+  Quiz info: <br>
+{{quiz_info}} <hr>
   <!-- Quiz starting page -->
-  {% if not quiz_info['quiz_completed'] and quiz_info['quiz_active'] == 0  %}
+  {% if not quiz_info['quiz_completed'] and not quiz_info['quiz_active']  %}
     {{quiz_info['quiz_description']}}
     {% if ready['participant_ready'] == 1 %}
       <p>

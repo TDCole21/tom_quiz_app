@@ -232,7 +232,7 @@
             value = "{{associated_round['round_id']}}"
             class = "registerbtn"
           >
-            Edit
+            Edit Round
           </button>
         </form>
       </div>
@@ -357,6 +357,25 @@
             class = "registerbtn"
           >
             Add to Quiz
+          </button>
+        </form>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'round_template'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{unassociated_round['round_id']}}"
+            class = "registerbtn"
+          >
+            Edit Round
           </button>
         </form>
       </div>

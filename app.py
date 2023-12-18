@@ -1044,7 +1044,7 @@ def round_maker():
             "rounds",
             "round_id IS NOT NULL"
         )
-        
+        associated_quiz_info=[]
        
         for round in round_info:
             associated_quizzes = []
@@ -1112,8 +1112,7 @@ def round_maker():
             "quiz/make_a_quiz/rounds/round_maker.html",
             name                    = "Round Maker",
             round_info              = round_info,
-            associated_quiz_info      = associated_quiz_info
-            # category_info           = category_info
+            associated_quiz_info    = associated_quiz_info
         )
     
     else:
@@ -1328,6 +1327,7 @@ def delete_round():
             "round_id = \"" + request.form.get('round_id') + "\""
         )
 
+        # This if statement doesn't work
         if unique_associated_quizzes is not None:
             for quiz in unique_associated_quizzes:
                 # Need to find how many rounds are in the quiz
@@ -2127,6 +2127,71 @@ def round_template():
         # Sorts the dictionaries of rounds in order of their round_order
         associated_quiz_info = sorted(associated_quiz_info, key=lambda k: (k['quiz_name'] is not None, k['quiz_name']))
 
+        for quiz in associated_quiz_info:
+            associated_rounds = []
+            # Collects information on all the quizzes this round is associated with
+            associated_round_info = common_values(
+                "rounds.round_name, rounds.round_id",
+                "rounds",
+                "live",
+                "rounds.round_id",
+                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+            )
+            for associated_round in associated_round_info:
+                associated_rounds.append(associated_round['round_name'])
+
+            quiz['number_of_associated_rounds'] = len(associated_rounds)
+            quiz['associated_rounds'] = " and ".join(associated_rounds)
+
+            associated_questions = []
+            for round in associated_round_info:
+                # Collects information on all the quizzes this round is associated with
+                associated_question_info = common_values(
+                    "questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points",
+                    "questions",
+                    "live",
+                    "questions.question_id",
+                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                )
+                for associated_question in associated_question_info:
+                    associated_questions.append(associated_question['question_tag'])
+
+            # associated_questions = set(associated_questions)
+            quiz['associated_questions'] = " and ".join(associated_questions)
+            quiz['number_of_associated_questions'] = len(associated_questions)
+
+            if associated_questions:
+                # Average question difficulty
+                quiz['average_difficulty'] = average(associated_question_info, "question_difficulty")
+                # Total question points
+                quiz['total_points'] = total(associated_question_info, "question_points")
+                # Mode question category
+                question_category_id = mode(associated_question_info, "question_category_id")
+                if question_category_id == []:
+                    quiz['mode_category'] = "None set"
+                else:
+                    if len(question_category_id) > 1:
+                        mode_question_categories = []
+                        for question_category in question_category_id:
+                            question_category_name = get_entry_from_db(
+                                "category_name",
+                                "categories",
+                                "category_id = \"" + str(question_category) + "\""
+                            )['category_name']
+                            mode_question_categories.append(question_category_name)
+                        quiz['mode_category'] = " and ".join(mode_question_categories)
+                    elif question_category_id is not None:
+                        quiz['mode_category'] = get_entry_from_db(
+                            "category_name",
+                            "categories",
+                            "category_id = \"" + str(question_category_id[0]) + "\""
+                        )['category_name']
+                    else:
+                        quiz['mode_category'] = "Not set"
+
+
+
+
         # Number of associated quizzes
         round_info['number_of_associated_quizzes'] = len(associated_quiz_info)
 
@@ -2140,6 +2205,69 @@ def round_template():
         # This removes the question if it appears in the associated list
         unassociated_quiz_info = compare_dictionary_lists(unassociated_quiz_info, associated_quiz_info, "quiz_id")
 
+        for quiz in unassociated_quiz_info:
+            associated_rounds = []
+            # Collects information on all the quizzes this round is associated with
+            associated_round_info = common_values(
+                "rounds.round_name, rounds.round_id",
+                "rounds",
+                "live",
+                "rounds.round_id",
+                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+            )
+            for associated_round in associated_round_info:
+                associated_rounds.append(associated_round['round_name'])
+
+            quiz['number_of_associated_rounds'] = len(associated_rounds)
+            quiz['associated_rounds'] = " and ".join(associated_rounds)
+
+            associated_questions = []
+            for round in associated_round_info:
+                # Collects information on all the quizzes this round is associated with
+                associated_question_info = common_values(
+                    "questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points",
+                    "questions",
+                    "live",
+                    "questions.question_id",
+                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                )
+                for associated_question in associated_question_info:
+                    associated_questions.append(associated_question['question_tag'])
+
+            # associated_questions = set(associated_questions)
+            quiz['associated_questions'] = " and ".join(associated_questions)
+            quiz['number_of_associated_questions'] = len(associated_questions)
+
+            if associated_questions:
+                # Average question difficulty
+                quiz['average_difficulty'] = average(associated_question_info, "question_difficulty")
+                # Total question points
+                quiz['total_points'] = total(associated_question_info, "question_points")
+                # Mode question category
+                question_category_id = mode(associated_question_info, "question_category_id")
+                if question_category_id == []:
+                    quiz['mode_category'] = "None set"
+                else:
+                    if len(question_category_id) > 1:
+                        mode_question_categories = []
+                        for question_category in question_category_id:
+                            question_category_name = get_entry_from_db(
+                                "category_name",
+                                "categories",
+                                "category_id = \"" + str(question_category) + "\""
+                            )['category_name']
+                            mode_question_categories.append(question_category_name)
+                        quiz['mode_category'] = " and ".join(mode_question_categories)
+                    elif question_category_id is not None:
+                        quiz['mode_category'] = get_entry_from_db(
+                            "category_name",
+                            "categories",
+                            "category_id = \"" + str(question_category_id[0]) + "\""
+                        )['category_name']
+                    else:
+                        quiz['mode_category'] = "Not set"
+        
+
         # Collects information on all the quizzes this round is associated with
         associated_question_info = common_values(
             "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_points, questions.question_difficulty, live.question_order, live.round_id",
@@ -2151,7 +2279,7 @@ def round_template():
 
         if associated_question_info:
             for associated_question in associated_question_info:
-                associate_round_names =[]
+                associated_round_names =[]
                 associated_question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
@@ -2167,10 +2295,10 @@ def round_template():
                 )
                 
                 for associated_round in associated_round_info:
-                    associate_round_names.append(associated_round['round_name'])
+                    associated_round_names.append(associated_round['round_name'])
                 
-                associated_question['number_of_associated_rounds'] = len(associate_round_names)
-                associated_question['associated_rounds'] = " and ".join(associate_round_names)
+                associated_question['number_of_associated_rounds'] = len(associated_round_names)
+                associated_question['associated_rounds'] = " and ".join(associated_round_names)
 
 
             # Number of associated questions
@@ -2217,6 +2345,29 @@ def round_template():
         unassociated_question_info = remove_dictionary_duplicates(unassociated_question_info, "question_id")
         # # This removes the question if it appears in the associated list
         unassociated_question_info = compare_dictionary_lists(unassociated_question_info, associated_question_info, "question_id")
+
+        if unassociated_question_info:
+            for unassociated_question in unassociated_question_info:
+                associated_round_names =[]
+                unassociated_question['question_category'] = get_entry_from_db(
+                        "category_name",
+                        "categories",
+                        "category_id = \"" + str(unassociated_question['question_category_id']) + "\""
+                    )['category_name']
+                
+                associated_round_info = common_values(
+                    "rounds.round_name",
+                    "rounds",
+                    "live",
+                    "rounds.round_id",
+                    "live.round_id WHERE live.question_id = " + str(unassociated_question['question_id'])
+                )
+                
+                for associated_round in associated_round_info:
+                    associated_round_names.append(associated_round['round_name'])
+                
+                unassociated_question['number_of_associated_rounds'] = len(associated_round_names)
+                unassociated_question['associated_rounds'] = " and ".join(associated_round_names)
 
 
         # Feeds data into HTML Jinja2 template
@@ -2915,7 +3066,7 @@ def host_a_quiz():
         quiz_info= get_entries_from_db(
             "quiz_id, quiz_name",
             "quizzes",
-            "quiz_name IS NOT NULL"
+            "quiz_id IS NOT NULL"
         )
 
         # Feeds data into HTML Jinja2 template
@@ -2934,26 +3085,35 @@ def host_a_quiz():
 def start_quiz():
     # This will lable a quiz as active
     if admin_check() and request.method == "POST":
-        # This update the value of active to TRUE in the database for the quiz  
-        update_db_entry(
-            "quizzes",
-            "quiz_active = 1",
-            "quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
-        )
+        if count("participants", "participant_ready", "1")[0] > 0:
+            flash("Quiz not started, someone isn't ready")
+            return redirect(url_for(
+                'host_live_quiz'
+            ),
+                code = 307
+            )
+        
+        else:
+            # This updates the value of active to TRUE in the database for the quiz  
+            update_db_entry(
+                "live",
+                "quiz_active = 1, round_active = 1, round_completed = 0",
+                "quiz_id = " + str(request.form.get('quiz_id')) + " AND round_order = 1"
+            )
 
-        # This update the value of active to TRUE in the database for the round  
-        update_db_entry(
-            "rounds",
-            "round_active = 1, round_completed = 0",
-            "quiz_id = " + str(request.form.get('quiz_id')) + " AND round_order = 1"
-        )
+            # This update the value of active to TRUE in the database for the round  
+            # update_db_entry(
+            #     "live",
+            #     "round_active = 1, round_completed = 0",
+            #     "quiz_id = " + str(request.form.get('quiz_id')) + " AND round_order = 1"
+            # )
 
-        # Redirects the user back to the host live quiz
-        return redirect(url_for(
-            'host_live_quiz'
-        ),
-            code = 307
-        )
+            # Redirects the user back to the host live quiz
+            return redirect(url_for(
+                'host_live_quiz'
+            ),
+                code = 307
+            )
     
     else:
         flash("test")
@@ -3074,26 +3234,44 @@ def host_live_quiz():
     if admin_check() and request.method == 'POST':
         # Gets information on the current quiz based of the quiz_id
         quiz_info = get_entry_from_db(
-            "quiz_id, quiz_name, quiz_description, quiz_active, quiz_completed", 
+            "quiz_id, quiz_name, quiz_description", 
             "quizzes", 
             "quiz_id = " + str(request.form.get('quiz_id'))
         )
 
-        # Gets information about the completed rounds in this quiz.
-        active_rounds = get_entries_from_db(
-            "round_id, round_name, round_order, round_description, round_active, round_completed", 
-            "rounds", 
-            "(round_completed = TRUE OR round_active = TRUE) AND quiz_id = " + str(request.form.get('quiz_id'))
+        # Collects information on all the rounds associated with the quiz
+        active_rounds = common_values(
+            "rounds.round_id, rounds.round_name, rounds.round_description, live.round_order, live.round_completed, live.round_active",
+            "rounds",
+            "live",
+            "rounds.round_id",
+            "live.round_id WHERE (live.round_completed = TRUE OR live.round_active = TRUE) AND live.quiz_id = " + request.form.get('quiz_id')
         )
 
-        # Gets information about all the questions in the quiz
-        all_questions = common_values_not_unique(
-            "question_id, round_id, question_order, question_tag, question_active, question_completed", 
-            "questions",
-            "round_id",
-            "quizzes",
-            "quiz_id = " + str(request.form.get('quiz_id'))
-        )
+        # Sorts the dictionaries of rounds in order of their round_order
+        active_rounds = sorted(active_rounds, key=lambda k: k['round_order'])
+
+        all_questions = []
+        for round in active_rounds:
+            # Collects information on all the quizzes this round is associated with
+            associated_question_info = common_values(
+                "questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed",
+                "questions",
+                "live",
+                "questions.question_id",
+                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+            )
+
+            all_questions.extend(associated_question_info)
+
+        # # Gets information about all the questions in the quiz
+        # all_questions = common_values_not_unique(
+        #     "question_id, round_id, question_order, question_tag, question_active, question_completed", 
+        #     "questions",
+        #     "round_id",
+        #     "quizzes",
+        #     "quiz_id = " + str(request.form.get('quiz_id'))
+        # )
 
         active_questions = []
         for question in all_questions:
@@ -3129,10 +3307,12 @@ def host_live_quiz():
 
         else:
             # Gets information about the round that is currently active
-            round_info = get_entry_from_db(
-                "round_id, round_name, round_order, round_description, round_active, round_completed",  
-                "rounds", 
-                "round_active = TRUE AND quiz_id = " + str(request.form.get('quiz_id'))
+            round_info = common_value(
+                "rounds.round_id, rounds.round_name, rounds.round_description, live.round_order, live.round_completed, live.round_active",
+                "rounds",
+                "live",
+                "rounds.round_id",
+                "live.round_id WHERE live.round_active = TRUE AND live.quiz_id = " + request.form.get('quiz_id')
             )
 
             if(round_info is not None):
@@ -3231,23 +3411,25 @@ def join_a_quiz():
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id WHERE quiz_active = 1 AND user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active = 1 AND participants.user_id = " + str(session['user_id'])
     )
 
     upcoming_quiz_info = common_values(
-        "quizzes.quiz_id, quizzes.quiz_name",
+        "DISTINCT quizzes.quiz_id, quizzes.quiz_name",
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id WHERE quiz_active = 0 AND quiz_completed IS NULL AND user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active IS NULL AND live.quiz_completed IS NULL AND participants.user_id = " + str(session['user_id'])
     )
+
+
 
     previous_quiz_info = common_values(
         "quizzes.quiz_id, quizzes.quiz_name",
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id WHERE quiz_completed IS NOT NULL AND user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_completed IS NOT NULL AND participants.user_id = " + str(session['user_id'])
     )
 
     # Feeds data into HTML Jinja2 template
@@ -3266,26 +3448,30 @@ def live_quiz():
     # Check to see if the user is part of the quiz, and redirect to the home page if not
     if request.method == 'POST':
         # Gets information on the current quiz based of the quiz_id
-        quiz_info = get_entry_from_db(
-            "quiz_id, quiz_name, quiz_description, quiz_active, quiz_completed", 
-            "quizzes", 
-            "quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+        quiz_info = common_value(
+            "quizzes.quiz_id, quizzes.quiz_name, quizzes.quiz_description, live.quiz_active, live.quiz_completed",
+            "quizzes",
+            "live",
+            "quizzes.quiz_id",
+            "live.quiz_id WHERE quizzes.quiz_id = " + str(request.form.get('quiz_id')) 
         )
 
         # Gets information about the completed rounds in this quiz.
-        active_rounds = get_entries_from_db(
-            "round_id, round_name, round_order", 
-            "rounds", 
-            "(round_completed = TRUE OR round_active = TRUE) AND quiz_id = " + str(request.form.get('quiz_id'))
+        active_rounds = common_values(
+            "rounds.round_id, rounds.round_name, live.round_order",
+            "rounds",
+            "live",
+            "rounds.round_id",
+            "live.round_id WHERE (live.round_completed = TRUE OR live.round_active = TRUE) AND live.quiz_id = " + str(request.form.get('quiz_id'))
         )
 
         # Gets information about all the questions in the quiz
-        all_questions = common_values_not_unique(
-            "question_id, round_id, question_order, question_tag, question_active, question_completed", 
+        all_questions = common_values(
+            "questions.question_id, live.round_id, live.question_order, questions.question_tag, live.question_active, live.question_completed",
             "questions",
-            "round_id",
-            "quizzes",
-            "quiz_id = " + str(request.form.get('quiz_id'))
+            "live",
+            "questions.question_id",
+            "live.question_id WHERE live.quiz_id = " + str(request.form.get('quiz_id'))
         )
 
         active_questions = []
@@ -3330,10 +3516,12 @@ def live_quiz():
             )
 
             # Gets information about the round that is currently active
-            round_info = get_entry_from_db(
-                "round_id, round_name, round_order, round_description", 
-                "rounds", 
-                "round_active = TRUE AND quiz_id = " + str(request.form.get('quiz_id'))
+            round_info = common_value(
+                "rounds.round_id, rounds.round_name, rounds.round_description, live.round_order",
+                "rounds",
+                "live",
+                "rounds.round_id",
+                "live.round_id WHERE live.round_active = TRUE AND live.quiz_id = " + str(request.form.get('quiz_id'))
             )
 
             if(round_info is not None):

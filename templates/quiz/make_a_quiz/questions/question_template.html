@@ -1135,6 +1135,25 @@
           </button>
         </form>
       </div>
+      <div
+      class = "w3-button"
+    >
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'round_template'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "round_id"
+          value = "{{unassociated_round['round_id']}}"
+          class = "registerbtn"
+        >
+          Edit Round
+        </button>
+      </form>
+    </div>
       <hr style="width:40%; margin: auto; margin-bottom:2em">
     {% endfor %}
   {% else %}

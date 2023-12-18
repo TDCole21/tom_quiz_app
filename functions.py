@@ -128,6 +128,14 @@ def check_single_db(output, table, conditions):
     else:
         return False
     
+def count(table, column, value):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT COUNT(%s) FROM %s WHERE %s != %s" % (column, table, column, value))
+    mysql.connection.commit()
+    output = cur.fetchone()
+    cur.close() 
+    return output
+
 def check_multiple_db_not_unique(output, table1, common_column, table2, conditions): 
     cur = mysql.connection.cursor()
     cur.execute("SELECT %s FROM %s WHERE %s IN (SELECT %s FROM %s WHERE %s)" % (output, table1, common_column, common_column, table2, conditions))
@@ -156,6 +164,15 @@ def common_values(output, table1, table2, table1_column_name, table2_column_name
     cur.execute("SELECT %s FROM %s INNER JOIN %s ON %s = %s" % (output, table1, table2, table1_column_name, table2_column_name))
     mysql.connection.commit()    
     data = cur.fetchall()
+    cur.close()   
+    return data
+
+# This function selects common values between two tables
+def common_value(output, table1, table2, table1_column_name, table2_column_name):
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT %s FROM %s INNER JOIN %s ON %s = %s" % (output, table1, table2, table1_column_name, table2_column_name))
+    mysql.connection.commit()    
+    data = cur.fetchone()
     cur.close()   
     return data
 
@@ -198,7 +215,7 @@ def compare_two_tables(output, table1, common_column, table2, conditions):
 # This function selects entries from table1 that aren't in table 2
 def compare_two_tables_new_quizzes(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
-    cur.execute("SELECT quizzes.quiz_id, quizzes.quiz_name FROM quizzes LEFT OUTER JOIN live ON quizzes.quiz_id = live.quiz_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    cur.execute("SELECT quizzes.quiz_id, quizzes.quiz_description, quizzes.quiz_name FROM quizzes LEFT OUTER JOIN live ON quizzes.quiz_id = live.quiz_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
     mysql.connection.commit()    
     data = cur.fetchall() #built in function to return a tuple, list or dictionary
     cur.close()   
@@ -206,7 +223,7 @@ def compare_two_tables_new_quizzes(round_id):
 
 def compare_two_tables_new_questions(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
-    cur.execute("SELECT questions.question_id, questions.question_tag, live.round_id FROM questions LEFT OUTER JOIN live ON questions.question_id = live.question_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
+    cur.execute("SELECT questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.round_id FROM questions LEFT OUTER JOIN live ON questions.question_id = live.question_id WHERE live.round_id IS NULL OR live.round_id != %s;" % (round_id))
     mysql.connection.commit()    
     data = cur.fetchall() #built in function to return a tuple, list or dictionary
     cur.close()   

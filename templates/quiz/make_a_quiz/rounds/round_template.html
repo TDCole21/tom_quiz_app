@@ -147,26 +147,46 @@
   {% if associated_quiz_info %}
     {% for associated_quiz in associated_quiz_info %}
       <h3>
-        Quiz: {{associated_quiz['quiz_name']}}
+        {{associated_quiz["quiz_name"]}}
       </h3>
       {% if associated_quiz['quiz_description'] %}
-      Quiz Description: {{associated_quiz['quiz_description']}}
+        Quiz Description: {{associated_quiz['quiz_description']}}
         <br>
       {% endif %}
-      Round Order: {{associated_quiz['round_order']}}
+      {% if associated_quiz['associated_rounds'] %}
+        Number of associated Rounds: {{associated_quiz['number_of_associated_rounds']}}
+        <br>
+        Associated Rounds: {{associated_quiz['associated_rounds']}}
+        <br>
+      {% endif %}
+      {% if associated_quiz['number_of_associated_questions'] %}
+        Number of associated Questions: {{associated_quiz['number_of_associated_questions']}}
+        <br>
+        Associated Questions: {{associated_quiz['associated_questions']}}
+        <br>
+      {% endif %}
+      {% if associated_quiz['average_difficulty'] %}
+      Average difficulty: {{associated_quiz['average_difficulty']}}
       <br>
-      {% if associated_quiz['round_questions'] %}
-        Number of Questions: {{associated_round['round_questions']}}
-        <br>
       {% endif %}
-      {% if associated_quiz['quiz_active'] %}
-        Quiz is in progress
-      {% elif associated_quiz['quiz_completed'] %}
-        The Quiz is completed
+      {% if associated_quiz['mode_category'] %}
+      Mode Category: {{associated_quiz['mode_category']}}
+      <br>
+      {% endif %}
+      {% if associated_quiz['total_points'] %}
+      Total Points: {{associated_quiz['total_points']}}
+      <br>
+      {% endif %}
+      {% if associated_quiz['quiz_completed'] %}
+        This Quiz has been played
+        <br>
+      {% elif associated_quiz['quiz_active'] %}
+        This Quiz is in progress
+        <br>
       {% else %}
-        This Quiz has yet to be played
+        This Quiz hasn't been played
+        <br>
       {% endif %}
-      <br>
       <div
         class = "w3-button"
       >
@@ -245,8 +265,46 @@
   {% if unassociated_quiz_info %}
     {% for unassociated_quiz in unassociated_quiz_info %}
       <h3>
-        Quiz: {{unassociated_quiz['quiz_name']}}{% if unassociated_quiz['quiz_description'] %}: {{unassociated_quiz['quiz_description']}}{% endif %}
+        {{unassociated_quiz["quiz_name"]}}
       </h3>
+      {% if unassociated_quiz['quiz_description'] %}
+        Quiz Description: {{unassociated_quiz['quiz_description']}}
+        <br>
+      {% endif %}
+      {% if unassociated_quiz['associated_rounds'] %}
+        Number of associated Rounds: {{unassociated_quiz['number_of_associated_rounds']}}
+        <br>
+        Associated Rounds: {{unassociated_quiz['associated_rounds']}}
+        <br>
+      {% endif %}
+      {% if unassociated_quiz['number_of_associated_questions'] %}
+        Number of associated Questions: {{unassociated_quiz['number_of_associated_questions']}}
+        <br>
+        Associated Questions: {{unassociated_quiz['associated_questions']}}
+        <br>
+      {% endif %}
+      {% if unassociated_quiz['average_difficulty'] %}
+      Average difficulty: {{unassociated_quiz['average_difficulty']}}
+      <br>
+      {% endif %}
+      {% if unassociated_quiz['mode_category'] %}
+      Mode Category: {{unassociated_quiz['mode_category']}}
+      <br>
+      {% endif %}
+      {% if unassociated_quiz['total_points'] %}
+      Total Points: {{unassociated_quiz['total_points']}}
+      <br>
+      {% endif %}
+      {% if unassociated_quiz['quiz_completed'] %}
+        This Quiz has been played
+        <br>
+      {% elif unassociated_quiz['quiz_active'] %}
+        This Quiz is in progress
+        <br>
+      {% else %}
+        This Quiz hasn't been played
+        <br>
+      {% endif %}
       <div
       class = "w3-button"
       >
@@ -273,6 +331,30 @@
             class = "registerbtn"
           >
             Add to Quiz
+          </button>
+        </form>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'quiz_template'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{unassociated_quiz['quiz_id']}}"
+          />
+          <button
+            type  = "submit"
+            name  = "round_id"
+            value = "{{unassociated_quiz['quiz_id']}}"
+            class = "registerbtn"
+          >
+            Edit Quiz
           </button>
         </form>
       </div>
@@ -452,8 +534,31 @@
   {% if unassociated_question_info %}
     {% for unassociated_question in unassociated_question_info %}
       <h3>
-        Question: {{unassociated_question['question_tag']}}
+        Question {{unassociated_question['question_order']}}: {{unassociated_question['question_tag']}}
       </h3>
+      {% if unassociated_question['number_of_associated_rounds'] %}
+        Number of associated Rounds: {{unassociated_question['number_of_associated_rounds']}}
+        <br>
+      {% else %}
+        This Question isn't currently associated to any Rounds
+        <br>
+      {% endif %}
+      {% if unassociated_question['associated_rounds'] %}
+        Associated Rounds: {{unassociated_question['associated_rounds']}}
+        <br>
+      {% endif %}
+      {% if unassociated_question['question_category'] %}
+        Category: {{unassociated_question['question_category']}}
+        <br>
+      {% endif %}
+      {% if unassociated_question['question_difficulty'] %}
+        Difficulty: {{unassociated_question['question_difficulty']}}/10
+        <br>
+      {% endif %}
+      {% if unassociated_question['question_points'] %}
+        Points: {{unassociated_question['question_points']}}
+        <br>
+      {% endif %}
       <div
       class = "w3-button"
       >
@@ -480,6 +585,25 @@
             class = "registerbtn"
           >
             Add to Round
+          </button>
+        </form>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'question_template'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "question_id"
+            value = "{{unassociated_question['question_id']}}"
+            class = "registerbtn"
+          >
+            Edit Question
           </button>
         </form>
       </div>
@@ -543,9 +667,6 @@
       <li>Unassociated quizzes and questions are hard coded in mysql</li>
       <li>Maybe change so that a Round can't be associated to a Quiz if Round is not fully completed</li>
       <li>Change question order is it's own function</li>
-      <li>Add information about questions (associated and unassociated)</li>
-      <li>Add information about unassociated Quizzes</li>
-      <li>Add more information about associated Quizzes</li>
   </ul>
 
 
