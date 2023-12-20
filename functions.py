@@ -130,6 +130,14 @@ def check_single_db(output, table, conditions):
     
 def count(table, column, value):
     cur = mysql.connection.cursor()
+    cur.execute("SELECT COUNT(%s) FROM %s WHERE %s = %s" % (column, table, column, value))
+    mysql.connection.commit()
+    output = cur.fetchone()
+    cur.close() 
+    return output
+
+def count_not(table, column, value):
+    cur = mysql.connection.cursor()
     cur.execute("SELECT COUNT(%s) FROM %s WHERE %s != %s" % (column, table, column, value))
     mysql.connection.commit()
     output = cur.fetchone()

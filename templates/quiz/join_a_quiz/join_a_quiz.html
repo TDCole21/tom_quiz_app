@@ -16,7 +16,9 @@
 
   <!-- This will display upcoming quizzes.
   Unsure if I'll create a separate page to display basic info on the quiz or to have it displayed on this page -->
-
+{{active_quiz_info}}
+<br>
+{{upcoming_quiz_info}}
   <h2>
     Upcoming Quizzes:
   </h2>
@@ -72,7 +74,7 @@
   Unsure if I'll create a separate page to display basic info on the quiz or to have it displayed on this page -->
 
   <h2>
-    Previous Quizzes:
+    Finished Quizzes:
   </h2>
 
   {% for quiz in previous_quiz_info %}

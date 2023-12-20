@@ -128,20 +128,20 @@
   </form>
 
   {% if associated_round_info %}
-  <hr>
+    <hr>
 
-  <h2>
-    Quiz Info:
-  </h2>
-    Number of associated Rounds: {{quiz_info['number_of_associated_rounds']}}
-    <br>
-    Number of associated Questions: {{quiz_info['number_of_associated_questions']}}
-    <br>
-    Most common Question category: {{quiz_info['mode_question_category']}}
-    <br>
-    Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
-    <br>
-    Total points in this Quiz: {{quiz_info['total_points']}}
+    <h2>
+      Quiz Info:
+    </h2>
+      Number of associated Rounds: {{quiz_info['number_of_associated_rounds']}}
+      <br>
+      Number of associated Questions: {{quiz_info['number_of_associated_questions']}}
+      <br>
+      Most common Question category: {{quiz_info['mode_question_category']}}
+      <br>
+      Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
+      <br>
+      Total points in this Quiz: {{quiz_info['total_points']}}
   {% endif %}
 
 

@@ -1,0 +1,490 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename = 'styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+    <!-- Displays any messages to the use -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+  quiz_info = {{quiz_info}}
+  round_info = {{round_info}}
+  participant_info = {{participant_info}}
+
+  <center>
+    {% if round_info %}
+      <h2>
+        Round {{round_info['round_order']}}: {{round_info['round_name']}}
+      </h2>
+    {% endif %}
+
+    {% if question_info %}
+      <h3>
+        Question {{question_info['question_order']}}
+      </h3>
+    {% endif %}
+
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'host_live_quiz'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+      />
+      <a
+        onclick = "document.getElementById('form').submit(); return false;"
+      >
+        <p style="color: #000000; cursor: pointer;">
+          Latest Question  
+        </p>
+      </a>
+    </form>
+
+  </center>
+
+  <hr/>
+
+  <!-- Quiz starting page -->
+  <!-- Participants ready list -->
+  {% if not round_info %}
+    <p>
+      {{quiz_info['quiz_description']}}
+    </p>
+    <h4>
+      Participants
+    </h4>
+    <table
+      class = "w3-table"
+    >
+      {% if participant_info == () %}
+        <p>
+          You have not entered any participants in this Quiz
+        </p>
+      {% else %}
+        <tr>
+          <th>
+            Name
+          </th>
+          <th>
+            Ready?
+          </th>
+        </tr>
+        {% for participant in participant_info %}
+        <tr>
+            <td>
+              {{participant['username']}}
+            </td>
+          {% if participant['participant_ready'] == 1 %}
+            <td>
+              Yes
+            </td>
+          {% else %}
+            <td>
+              No
+            </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      {% endif %}
+    </table>
+    <hr/>
+
+    {% if start %}
+      {% if not quiz_info['quiz_completed'] %}
+        <form
+          method = "POST"
+          id     = "form"
+          action = "{{ url_for(
+            'start_quiz'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "quiz_id"
+            value = "{{quiz_info['quiz_id']}}"
+            class = "registerbtn"
+          >
+            Start Quiz
+          </button>
+        </form>
+      {% else %}
+        <h5>
+          The Quiz has finished
+        </h5>
+        <form
+          method = "POST"
+          id     = "form"
+          action = "{{ url_for(
+            'results'
+          )}}"
+        >
+          <button
+            type  = "submit"
+            name  = "quiz_id"
+            value = "{{quiz_info['quiz_id']}}"
+            class = "registerbtn"
+          >
+            View Results
+          </button>
+        </form>
+      {% endif %}
+
+    {% else %}
+      <p>
+        Not all users are ready
+      </p>
+    {% endif %}
+
+    <hr/>
+
+  {% endif %}
+
+  <!-- Round starting page -->
+  {% if round_info and not question_info %}
+    <p>
+      {{round_info['round_description']}}
+    </p>
+
+    <hr/>
+
+    {% if round_info['round_completed'] == 0  %}
+      <form
+        method  = "POST"
+        id      = "form"
+        action  = "{{ url_for(
+          'start_round'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+        />
+        <button
+          type  = "submit"
+          name  = "round_id"
+          class = "registerbtn"
+          value = "{{round_info['round_id']}}"
+        >
+          Start Round
+        </button>
+      </form>
+    {% endif %}
+
+    <hr/>
+
+  {% endif %}
+
+  <!-- Question Information -->
+  {% if question_info %}
+    <h4>
+      Question:
+    </h4>
+    <p>
+      {{question_info['question_text']}}
+    </p>
+
+    {% if question_info['question_video_url'] is not none %}
+      <center>
+        <iframe
+          width   = "80%"
+          height  = "345"
+          allow   = "fullscreen"
+          src     = "{{question_info['question_video_url']}}"
+        >
+        </iframe>
+        <br/>
+      </center>
+      <hr>
+    {% endif %}
+
+    {% if question_info['question_image_url'] is not none %}
+      <center>
+        <img
+          src = "{{question_info['question_image_url']}}"
+          alt = "Question {{question_info['question_order']}}"
+        >
+      </center>
+      <hr>
+    {% endif %}
+
+    {% if question_info['question_audio_url'] is not none %}
+      <center>
+        <iframe
+          frameborder = "0"
+          width       = "400"
+          height      = "200"
+          src         = "{{question_info['question_audio_url']}}"
+        >
+        </iframe>
+      </center>
+      <hr>
+    {% endif %}
+
+    {% if quiz_info['quiz_completed'] %}
+      <h4>
+        Correct Answer
+      </h4>
+      <p>
+        {{question_info['question_correct_answer']}}
+      </p>
+
+      <hr/>
+
+    {% endif %}
+
+  {% endif %}
+
+  <!-- Participants Answers -->
+  {% if answer_info %}
+    <h4>
+      User Answers:
+    </h4>
+    {% for answer in answer_info %}
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'mark_answer'
+        )}}"
+      >
+        <p>
+          {{answer['username']}}: {{answer['answer_text']}}
+        </p>
+
+        {% if answer['answer_correct'] == 1 %}
+          <input
+            type  = "radio"
+            id    = "1"
+            name  = "marked_answer"
+            value = "1"
+            checked
+          />
+        {% else %}
+          <input
+            type  = "radio"
+            id    = "1"
+            name  = "marked_answer"
+            value = "1"
+          />
+        {% endif %}
+
+        <label
+          for = "1"
+        >
+          Correct
+        </label>
+
+        <br/>
+
+        {% if answer['answer_correct'] == 0 %}
+          <input
+            type  = "radio"
+            id    = "0"
+            name  = "marked_answer"
+            value = "0"
+            checked
+          />
+
+        {% else %}
+          <input
+            type  = "radio"
+            id    = "0"
+            name  = "marked_answer"
+            value = "0"
+          />
+        {% endif %}
+
+        <label
+          for = "0"
+        >
+          Wrong
+        </label>
+        
+        <br/>
+        
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Mark Answer
+        </button>
+
+        <input
+          type  = "hidden"
+          id    = "question_id"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          id    = "user_id"
+          name  = "user_id"
+          value = "{{answer['user_id']}}"
+        />
+        <input
+          type  = "hidden"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+        />
+      </form>
+
+    {% endfor %}
+
+    {% if answer_info|length == participant_info|length %}
+      <h5>
+        All participants have answered
+      </h5>
+    {% endif %}
+
+    <hr/>
+  
+  {% else %}
+    <h5>
+      No one has answered yet
+    </h5>
+    <hr>
+  {% endif %}
+
+  <!-- Next question -->
+  {% if not question_info['question_completed'] and question_info['question_active'] %}
+    <form
+      method = "POST"
+      action = "{{ url_for(
+        'start_question'
+      )}}"
+    >
+      <button
+        name  = "question_id"
+        type  = "submit"
+        class = "registerbtn"
+        value = "{{question_info['question_id']}}"
+      >
+        Next Question
+      </button>
+      <input
+        type  = 'hidden'
+        id    = 'round_id'
+        name  = 'round_id'
+        value = "{{round_info['round_id']}}"
+      />
+      <input
+        type  = 'hidden'
+        id    = 'question_id'
+        name  = 'question_id'
+        value = "{{question_info['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+      />
+    </form>
+    <hr>
+  {% endif %}
+
+  <!-- Footer -->
+  {% if active_rounds %}
+    <h4>
+      Previous Questions
+    </h4>
+    <table
+      style = "width:100%"
+    >
+      <tr>
+        {% for round in active_rounds %}  
+          <td>
+            <table>
+              <tr>
+                <th>
+                  <form
+                    method = "POST"
+                    action = "{{ url_for(
+                      'host_live_quiz'
+                    )}}"
+                  >
+                    <input
+                      type  = "hidden"
+                      id    = "quiz_id"
+                      name  = "quiz_id"
+                      value = "{{quiz_info['quiz_id']}}"
+                    />
+                    <button
+                      name  = "round_id"
+                      type  = "submit"
+                      class = "w3-button"
+                      value = "{{round['round_id']}}"
+                    >
+                      Round {{round['round_order']}}: {{round['round_name']}}
+                    </button>
+                  </form>
+                </th>
+              </tr>
+              {% for question in all_questions %}
+                {% if question['round_id'] == round['round_id'] and (question['question_completed'] == 1 or question['question_active'] == 1) %}  
+                  <tr>
+                    <td>
+                      <form
+                        method = "POST"
+                        action = "{{ url_for(
+                          'host_live_quiz'
+                        )}}"
+                      >
+                        <input
+                          type  = "hidden"
+                          id    = "quiz_id"
+                          name  = "quiz_id"
+                          value = "{{quiz_info['quiz_id']}}"
+                        />
+                        <button
+                          name  = "question_id"
+                          type  = "submit"
+                          class = "w3-button"
+                          value = "{{question['question_id']}}"
+                        >
+                          Question {{question['question_order']}}: {{question['question_tag']}}
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </table>
+          </td>
+        {% endfor %}
+      </tr>
+    </table>
+  {% endif %}
+
+  <!-- End page content -->
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Need starting a new round to appear properly</li>  
+      <li>Warning that you're about to end the quiz</li>
+      <li>Have it so that it says end round, not next question.</li>
+      <li>Have it so it says end quiz, not next question</li>
+      <li>Currently the view results only show up when on the quiz page, have it on every page once finished similar to "live_quiz"</li>
+      <li>Add an option to go back to main quiz page</li>
+  </ul>
+{%endblock%}

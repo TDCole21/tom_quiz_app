@@ -14,11 +14,11 @@
 
   <hr/>
 
-  {% if quiz_info|length > 0 %}
+  {% if upcoming_quiz_info|length > 0 %}
     <h2>
-      Host a Quiz:
+      Host a new Quiz:
     </h2>
-    {% for quiz in quiz_info %}
+    {% for upcoming_quiz in upcoming_quiz_info %}
       <div
         class = "w3-button"
       >
@@ -31,20 +31,20 @@
           <input
             type  = "hidden"
             name  = "quiz_id"
-            value = "{{quiz['quiz_id']}}"
+            value = "{{upcoming_quiz['quiz_id']}}"
           />
           <button
             type    = "submit"
             class   = "registerbtn"
           >
-            {{quiz["quiz_name"]}}
+            {{upcoming_quiz["quiz_name"]}}
           </button>
         </form>
       </div>
     {% endfor %}
   {% else %}
     <p>
-      There are currently no Quizzes.
+      There are currently no upcoming Quizzes.
     </p>
     <form
       method  = "POST"
@@ -67,6 +67,64 @@
       </button>
     </form>
   {%endif %}
+  {% if active_quiz_info|length > 0 %}
+    <h2>
+      Continue Hosting an active Quiz:
+    </h2>
+    {% for active_quiz in active_quiz_info %}
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'host_live_quiz'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{active_quiz['quiz_id']}}"
+          />
+          <button
+            type    = "submit"
+            class   = "registerbtn"
+          >
+            {{active_quiz["quiz_name"]}}
+          </button>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% if completed_quiz_info|length > 0 %}
+    <h2>
+      Completed Quizzes:
+    </h2>
+    {% for completed_quiz in completed_quiz_info %}
+      <div
+        class = "w3-button"
+      >
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'host_live_quiz'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{completed_quiz['quiz_id']}}"
+          />
+          <button
+            type    = "submit"
+            class   = "registerbtn"
+          >
+            {{completed_quiz["quiz_name"]}}
+          </button>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
 
   <hr>
   <h4>To do:</h4>
