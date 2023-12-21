@@ -25,7 +25,7 @@
 
 <hr>
 
-  <!-- Quiz Information -->  
+<!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
       Quiz: {{quiz_info['quiz_name']}} {% if quiz_info['quiz_completed'] %}<b style='color:red;'>Completed</b>{% elif quiz_info['quiz_active'] %}<b style='color:green;'>Active</b>{% endif %}
@@ -90,6 +90,28 @@
               value = "{{associated_round['round_id']}}"
             >
               Start Round
+            </button>
+          </form>
+        {% elif quiz_info['round_end'] and associated_round['round_active'] %}
+          <form
+            method  = "POST"
+            id      = "form"
+            action  = "{{ url_for(
+              'complete_round'
+            )}}"
+          >
+            <input
+              type  = "hidden"
+              name  = "quiz_id"
+              value = "{{quiz_info['quiz_id']}}"
+            />
+            <button
+              type  = "submit"
+              name  = "round_id"
+              class = "registerbtn"
+              value = "{{associated_round['round_id']}}"
+            >
+              Finish Round and Mark Answers
             </button>
           </form>
         {% endif %}
@@ -265,7 +287,7 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Start new round</li>
+      <li>Complete Quiz when all rounds are finished</li>
       <li>Mark answers</li>
       <li>Allow to view previous questions/rounds</li>
       <li>Progress bar of question</li>

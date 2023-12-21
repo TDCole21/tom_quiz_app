@@ -3129,7 +3129,6 @@ def host_live_quiz():
         # Sorts the dictionaries of rounds in order of their round_order
         associated_round_info = sorted(associated_round_info, key=lambda k: k['round_order'])
 
-
         quiz_info['number_of_associated_rounds'] = len(associated_round_info)
 
         associated_questions = []
@@ -3238,6 +3237,12 @@ def host_live_quiz():
             if question['question_completed'] != 1:
                 question['next_question'] = True
                 break
+
+        for question in round_questions:
+            if "next_question" in question or question['question_active']:
+                break  # Stop searching if found
+        else:  # Executed only if the loop completes without finding the key
+            quiz_info['round_end'] = True
 
     
         active_question = common_value(
@@ -3525,7 +3530,29 @@ def complete_question():
             'home'
         ))  
 
+@app.route('/host_live_quiz/complete_round', methods=['GET', 'POST'])
+def complete_round():
+    if admin_check() and request.method == 'POST':
+        # This update the value of active to TRUE in the database for the round  
+        update_db_entry(
+            "live",
+            "round_active = NULL, round_completed = 1",
+            "round_id = " + str(request.form.get('round_id'))
+        )
 
+        # Redirects the user back to the host live quiz
+        return redirect(url_for(
+            'host_live_quiz'
+        ),
+            code    = 307
+        )
+    
+    # This is incase someone tries to be naughty
+    else:
+        flash("Naughty, naughty")
+        return redirect(url_for(
+            'home'
+        ))  
 
     # if admin_check() and request.method == 'POST':
     #     # Sets the current question to no longer active
