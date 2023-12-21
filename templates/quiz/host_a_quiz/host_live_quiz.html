@@ -24,7 +24,7 @@
     {% endwith %}
 
 <hr>
-
+{{quiz_info}}
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
@@ -41,7 +41,24 @@
     Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
     <br>
     Total points in this Quiz: {{quiz_info['total_points']}}
-
+    {% if quiz_info['quiz_end'] %}
+      <form
+        method  = "POST"
+        id      = "form"
+        action  = "{{ url_for(
+          'complete_quiz'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          class = "registerbtn"
+          value = "{{quiz_info['quiz_id']}}"
+        >
+          Finish Quiz
+        </button>
+      </form>
+    {% endif %}
     <hr>
 
   <!-- Round Information -->  
@@ -115,7 +132,10 @@
             </button>
           </form>
         {% endif %}
-        <hr style="width:40%; margin: auto; margin-bottom:2em">
+        {% if loop.last %}
+        {% else %}
+          <hr style="width:40%; margin: auto; margin-bottom:2em">
+        {% endif %}
       {% endfor %}
     {% endif %}
 
@@ -162,7 +182,10 @@
           </button>
         </form>
       {% endif %}
-      <hr style="width:40%; margin: auto; margin-bottom:2em">
+      {% if loop.last %}
+      {% else %}
+        <hr style="width:40%; margin: auto; margin-bottom:2em">
+      {% endif %}
     {% endfor %}
   {% else %}
     There are no active Rounds
@@ -170,7 +193,7 @@
   <hr>
 
     <!-- Participant Information -->
-    {% if quiz_info['quiz_active'] != 1 %}
+    {% if quiz_info['quiz_active'] != 1 and quiz_info['quiz_completed'] is none %}
       <h3> Participant Info:</h3>
       <table
         class = "w3-table"
@@ -241,6 +264,26 @@
           </button>
         </form>
       {% endif %}
+      <hr>
+    {% endif %}
+
+    {% if quiz_info['quiz_completed'] is not none %}
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'results'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          View Results
+        </button>
+      </form>
       <hr>
     {% endif %}
 

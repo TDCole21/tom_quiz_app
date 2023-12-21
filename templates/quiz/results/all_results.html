@@ -18,7 +18,7 @@
     <h2>
         Choose a Quiz:
     </h2>
-        {% for i in quiz_info %}
+        {% for quiz in quiz_info %}
             <div
                 class = "w3-button"
             >
@@ -32,9 +32,9 @@
                         type    = "submit"
                         class   = "registerbtn"
                         name    = "quiz_id"
-                        value   = "{{i['quiz_id']}}"
+                        value   = "{{quiz['quiz_id']}}"
                     >
-                        {{i["quiz_name"]}}
+                        {{quiz["quiz_name"]}}
                     </button>
                 </form>
             </div>

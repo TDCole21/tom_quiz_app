@@ -1,0 +1,358 @@
+{%extends 'layouts/layout.html'%}
+
+{%block body%}
+  <!-- !PAGE CONTENT! -->
+  <!-- Header -->
+  <head>
+    <link
+      rel   = "stylesheet"
+      type  = "text/css"
+      href  = "{{ url_for(
+        'static',
+        filename='styles/quiz.css'
+      )}}"
+    />
+  </head>
+
+    <!-- Displays any messages to the use -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div
+          class = "w3-container w3-red"
+        >
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+  <center>
+    {% if round_info %}
+      <h2>
+        Round {{round_info['round_order']}}: {{round_info['round_name']}}
+      </h2>
+    {% endif %}
+
+    {% if question_info %}
+      <h3>
+        Question {{question_info['question_order']}}
+      </h3>
+      <h4>
+        {{question_info['question_tag']}}
+      </h4>
+    {% endif %}
+    {% if not quiz_info['quiz_completed']  %}
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'live_quiz'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+        />
+        <a
+          onclick = "document.getElementById('form').submit(); return false;"
+        >
+          <p style="color: #000000; cursor: pointer;">
+            Latest Question  
+          </p>
+        </a>
+      </form>
+    {% endif %}
+  </center>
+
+  <hr/>
+  Quiz info: <br>
+{{quiz_info}} <hr>
+  <!-- Quiz starting page -->
+  {% if not quiz_info['quiz_completed'] and not quiz_info['quiz_active']  %}
+    {{quiz_info['quiz_description']}}
+    {% if ready['participant_ready'] == 1 %}
+      <p>
+        Please wait for everyone else to be ready
+      </p>
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'quiz_unready'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "user_id"
+          value = "{{session['user_id']}}"
+        />
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          Unready
+        </button>
+      </form>
+    {% else %}
+      <p>
+        Are you ready?
+      </p>
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'quiz_ready'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          name  = "user_id"
+          value = "{{session['user_id']}}"
+        />
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          Ready
+        </button>
+      </form>
+    {% endif %}
+
+    <hr/>
+
+  {% elif quiz_info['quiz_completed'] %}
+    <h5>
+      The Quiz has finished
+    </h5>
+    <form
+    method = "POST"
+    id     = "form"
+    action = "{{ url_for(
+      'results'
+    )}}"
+  >
+    <button
+      type  = "submit"
+      name  = "quiz_id"
+      value = "{{quiz_info['quiz_id']}}"
+      class = "registerbtn"
+    >
+      View Results
+    </button>
+  </form>
+    <hr/>
+
+  {% endif %}
+
+  <!-- Round starting page -->
+  {% if round_info and not question_info %}
+    <p>
+      {{round_info['round_description']}}
+    </p>
+
+    <hr/>
+
+  {% endif %}
+
+
+  <!-- Question Information -->
+  {% if question_info['question_completed'] == 1 %}
+    <h4>
+      Question:
+    </h4>
+    <p>
+      {{question_info['question_text']}}
+    </p>
+
+    {% if question_info['question_video_url'] is not none %}
+        <center>
+          <iframe
+            width   = "80%"
+            height  = "345"
+            allow   = "fullscreen"
+            src     = "{{question_info['question_video_url']}}"
+          >
+          </iframe>
+          <br/>
+        </center>
+    {% endif %}
+
+    {% if question_info['Image_url'] is not none %}
+      <center>
+        <img
+          src   = "{{question_info['question_image_url']}}"
+          alt   = "Question {{question_info['question_order']}}"
+          width ="50%"
+        >
+      </center>
+    {% endif %}
+    
+
+    {% if question_info['question_audio_url'] is not none %}
+      <center>
+        <iframe
+          frameborder = "0"
+          width       = "400"
+          height      = "200"
+          src         = "{{question_info['question_audio_url']}}"
+        >
+        </iframe>
+      </center>
+    {% endif %}
+
+    <hr/>
+
+  {% endif %}
+
+  {% if question_info %}
+    <p>
+      Your Answer: {{answer_info}}
+    </p>
+    {% for answer in answer_info %}
+      {% if answer['user_id'] == session['user_id'] %}
+        {{answer['answer_text']}}
+        <hr/>
+      {% endif %}
+    {% endfor %}
+    {% if not quiz_info['quiz_completed'] %}
+      <form
+        method  = "POST"
+        action  = "{{ url_for(
+          'submit_answer'
+        )}}"
+      >
+        <input
+          type  = "hidden"
+          id    = "question_id"
+          name  = "question_id"
+          value = "{{question_info['question_id']}}"
+        />
+        <input
+          type  = "hidden"
+          id    = "quiz_id"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+        />
+        <input
+          type  = "hidden"
+          id    = "user_id"
+          name  = "user_id"
+          value = "{{session['user_id']}}"
+        />
+        <textarea
+          rows          = "2"
+          cols          = "20"
+          placeholder   = "New Answer"
+          name          = "new_answer"
+          id            = "new_answer"
+          required wrap = "soft"
+        ></textarea>
+        <style>
+          #new_answer {
+            width: 100%;
+          }
+        </style>
+        <br/>
+        <button
+          type  = "submit"
+          class = "registerbtn"
+        >
+          Submit Answer
+        </button>
+      </form>
+    {% else %}
+      <p>
+        Correct Answer
+      </p>
+      {{question_info['question_correct_answer']}}
+    {% endif %}
+    <hr/>
+  {% endif %}
+
+  <!-- Footer -->
+  {% if active_rounds %}
+    <h4>
+      Previous Questions
+    </h4>
+    <table
+      style = "width:100%"
+    >
+      <tr>
+        {% for round in active_rounds %}  
+          <td>
+            <table>
+              <tr>
+                <th>
+                  <form
+                    method  = "POST"
+                    action  = "{{ url_for(
+                      'live_quiz'
+                    )}}"
+                  >
+                    <input
+                      type  = "hidden"
+                      id    = "quiz_id"
+                      name  = "quiz_id"
+                      value = "{{quiz_info['quiz_id']}}"
+                    />
+                    <button
+                      name  = "round_id"
+                      type  = "submit"
+                      class = "w3-button"
+                      value = "{{round['round_id']}}"
+                    >
+                      Round {{round['round_order']}}: {{round['round_name']}}
+                    </button>
+                  </form>
+                </th>
+              </tr>
+              {% for question in all_questions %}
+                {% if question['round_id'] == round['round_id'] and (question['question_completed'] == 1 or question['question_active'] == 1) %}  
+                  <tr>
+                    <td>
+                      <form
+                        method  = "POST"
+                        action  = "{{ url_for(
+                          'live_quiz'
+                        )}}"
+                      >
+                        <input
+                          type  = "hidden"
+                          id    = "quiz_id"
+                          name  = "quiz_id"
+                          value = "{{quiz_info['quiz_id']}}"
+                        />
+                        <button
+                          name  = "question_id"
+                          type  = "submit"
+                          class = "w3-button"
+                          value = "{{question['question_id']}}"
+                        >
+                          Question {{question['question_order']}}: {{question['question_tag']}}</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </table>
+          </td>
+        {% endfor %}
+      </tr>
+    </table>
+  {% endif %}
+
+  <hr>
+  <h4>To do:</h4>
+  <ul>
+      <li>Maybe change latest question to a button, same for host quiz.</li>
+      <li>Have got up to testing ready/unready, need to test the rest.</li>
+      <li>Have it that the unready button doesn't work once the Quiz has started.</li>
+      <li>Add an option to go back to main quiz page</li>
+      <li>Edit to move the session info into the backend</li>
+  </ul>
+  <!-- End page content -->
+{%endblock%}
