@@ -66,7 +66,7 @@
     {% if associated_round_info %}
       {% for associated_round in associated_round_info %}
         <h3>
-          Round {{associated_round['round_order']}}: {{associated_round['round_name']}} {% if associated_round['round_completed'] %}<b style='color:red;'>Completed</b>{% elif associated_round['round_active'] %}<b style='color:green;'>Active</b>{% endif %}
+          Round {{associated_round['round_order']}}: {{associated_round['round_name']}} {% if associated_round['round_completed'] %}<b style='color:red;'>Completed</b>{% elif associated_round['round_active'] %}<b style='color:green;'>Active</b>{% elif associated_round['next_round'] %}<b style='color:blue;'>Upcoming</b>{% endif %}
         </h3>
         {% if associated_round['round_description'] %}
           {{associated_round['round_description']}}
@@ -87,29 +87,7 @@
         {% if associated_round['total_points'] and associated_round['round_completed'] %}
           Total number of Points in round: {{associated_round['total_points']}}
         {% endif %}
-        {% if associated_round['next_round'] %}
-          <form
-            method  = "POST"
-            id      = "form"
-            action  = "{{ url_for(
-              'start_round'
-            )}}"
-          >
-            <input
-              type  = "hidden"
-              name  = "quiz_id"
-              value = "{{quiz_info['quiz_id']}}"
-            />
-            <button
-              type  = "submit"
-              name  = "round_id"
-              class = "registerbtn"
-              value = "{{associated_round['round_id']}}"
-            >
-              Start Round
-            </button>
-          </form>
-        {% elif quiz_info['round_end'] and associated_round['round_active'] %}
+        {% if quiz_info['round_end'] and associated_round['round_active'] %}
           <form
             method  = "POST"
             id      = "form"
@@ -146,7 +124,7 @@
   {% if round_questions %}
     {% for question in round_questions %}
       <h3>
-        Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
+        Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['next_question'] %}<b style='color:blue;'>Upcoming</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
       {% if question['question_category'] %}
         Category Type: {{question['question_category']}}
@@ -158,29 +136,6 @@
       {% endif %}
       {% if question['question_points'] and question['question_completed'] %}
         Total number of Points in question: {{question['question_points']}}
-      {% endif %}
-      {% if question['next_question'] %}
-        <form
-          method  = "POST"
-          id      = "form"
-          action  = "{{ url_for(
-            'start_question'
-          )}}"
-        >
-          <input
-            type  = "hidden"
-            name  = "quiz_id"
-            value = "{{quiz_info['quiz_id']}}"
-          />
-          <button
-            type  = "submit"
-            name  = "question_id"
-            class = "registerbtn"
-            value = "{{question['question_id']}}"
-          >
-            Start question
-          </button>
-        </form>
       {% endif %}
       {% if loop.last %}
       {% else %}
@@ -290,40 +245,19 @@
   <!-- The Question -->
   {% if active_question %}
     <h2>
-      Question {{active_question['question_order']}}: {{active_question['question_tag']}}
+      Active Question
     </h2>
+    <h3>
+      Question {{active_question['question_order']}}: {{active_question['question_tag']}}
+    </h3>
     <h4>
       {{active_question['question_text']}}
     </h4>
-    <h5>
-      Correct Answer: {{active_question['question_correct_answer']}}
-    </h5>
       <p>
         Scoring Type: {{active_question['question_scoring_type']}}
         <br>
         Points: {{active_question['question_points']}}
-      <p>
-      <form
-        method  = "POST"
-        id      = "form"
-        action  = "{{ url_for(
-          'complete_question'
-        )}}"
-      >
-        <input
-          type  = "hidden"
-          name  = "quiz_id"
-          value = "{{quiz_info['quiz_id']}}"
-        />
-        <button
-          type  = "submit"
-          name  = "question_id"
-          class = "registerbtn"
-          value = "{{active_question['question_id']}}"
-        >
-          Finish Question
-        </button>
-      </form>
+      </p>
       <hr>
     {% endif %}
 

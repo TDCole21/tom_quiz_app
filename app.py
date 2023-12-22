@@ -3238,7 +3238,7 @@ def host_live_quiz():
                 question['next_question'] = True
                 break
 
-        for question in round_questions:
+        for question in reversed(round_questions):
             if "next_question" in question or question['question_active']:
                 break  # Stop searching if found
             elif quiz_info['quiz_active'] == True:  # Executed only if the loop completes without finding the key
@@ -3668,7 +3668,7 @@ def live_quiz():
                 question['next_question'] = True
                 break
 
-        for question in round_questions:
+        for question in reversed(round_questions):
             if "next_question" in question or question['question_active']:
                 break  # Stop searching if found
             elif quiz_info['quiz_active'] == True:  # Executed only if the loop completes without finding the key
@@ -3676,7 +3676,7 @@ def live_quiz():
 
     
         active_question = common_value(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_correct_answer, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
+                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
                 "questions",
                 "live",
                 "questions.question_id",
