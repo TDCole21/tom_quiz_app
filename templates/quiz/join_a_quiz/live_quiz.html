@@ -87,29 +87,6 @@
         {% if associated_round['total_points'] and associated_round['round_completed'] %}
           Total number of Points in round: {{associated_round['total_points']}}
         {% endif %}
-        {% if quiz_info['round_end'] and associated_round['round_active'] %}
-          <form
-            method  = "POST"
-            id      = "form"
-            action  = "{{ url_for(
-              'complete_round'
-            )}}"
-          >
-            <input
-              type  = "hidden"
-              name  = "quiz_id"
-              value = "{{quiz_info['quiz_id']}}"
-            />
-            <button
-              type  = "submit"
-              name  = "round_id"
-              class = "registerbtn"
-              value = "{{associated_round['round_id']}}"
-            >
-              Finish Round and Mark Answers
-            </button>
-          </form>
-        {% endif %}
         {% if loop.last %}
         {% else %}
           <hr style="width:40%; margin: auto; margin-bottom:2em">
