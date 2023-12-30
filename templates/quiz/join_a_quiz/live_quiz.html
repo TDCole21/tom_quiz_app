@@ -24,7 +24,6 @@
     {% endwith %}
 
 <hr>
-{{quiz_info}}
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
@@ -41,7 +40,7 @@
     Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
     <br>
     Total points in this Quiz: {{quiz_info['total_points']}}
-    {% if quiz_info['quiz_end'] %}
+    {% if quiz_info['quiz_end'] and quiz_info['quiz_end'] is none %}
       <form
         method  = "POST"
         id      = "form"
@@ -103,6 +102,60 @@
       <h3>
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['next_question'] %}<b style='color:blue;'>Upcoming</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
+      {% if question['question_completed'] or question['question_active'] %}
+        {{question['question_text']}}
+        <br>
+        Current Answer: {{question['answer_text']}}
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'submit_answer'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            id    = "question_id"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+          />
+          <input
+            type  = "hidden"
+            id    = "round_id"
+            name  = "round_id"
+            value = "{{question['round_id']}}"
+          />
+          <input
+            type  = "hidden"
+            id    = "quiz_id"
+            name  = "quiz_id"
+            value = "{{quiz_info['quiz_id']}}"
+          />
+          <textarea
+            rows          = "2"
+            cols          = "20"
+            placeholder   = "New Answer"
+            name          = "new_answer"
+            id            = "new_answer"
+            required wrap = "soft"
+          ></textarea>
+          <style>
+            #new_answer {
+              width: 100%;
+            }
+          </style>
+          <br/>
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            {% if question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
+          </button>
+        </form>
+        Scoring Type: {{question['question_scoring_type']}}
+        <br>
+        Points: {{question['question_points']}}
+        <br>
+      {% endif %}
       {% if question['question_category'] %}
         Category Type: {{question['question_category']}}
         <br>
@@ -130,7 +183,7 @@
       <table
         class = "w3-table"
       >
-        {% if participant_info %}
+        {% if all_participant_info %}
           <tr>
             <th>
               Name
@@ -139,10 +192,10 @@
               Ready?
             </th>
           </tr>
-          {% for participant in participant_info %}
+          {% for participant in all_participant_info %}
           <tr>
               <td>
-                {{participant['username']}}
+                {{participant['username']}}{% if participant['user_id'] == session['user_id'] %} (You){% endif %}
               </td>
             {% if participant['participant_ready'] == 1 %}
               <td>
@@ -157,42 +210,58 @@
           {% endfor %}
         {% else %}
           <p>
-            You have not entered any participants in this Quiz
+            There are no participants entered in this Quiz. How are you here?
           </p>
         {% endif %}
       </table>
-      {% if quiz_info['quiz_ready'] %}
+      {% if participant_info['participant_ready'] == 1 %}
+        <p>
+          Please wait for everyone else to be ready and for the Host to start the Quiz
+        </p>
         <form
           method = "POST"
           id     = "form"
           action = "{{ url_for(
-            'start_quiz'
+            'quiz_unready'
           )}}"
         >
+          <input
+            type  = "hidden"
+            name  = "user_id"
+            value = "{{session['user_id']}}"
+          />
           <button
             type  = "submit"
             name  = "quiz_id"
             value = "{{quiz_info['quiz_id']}}"
             class = "registerbtn"
           >
-            Start Quiz
+            Unready
           </button>
         </form>
       {% else %}
+        <p>
+          Are you ready?
+        </p>
         <form
           method = "POST"
           id     = "form"
           action = "{{ url_for(
-            'host_live_quiz'
+            'quiz_ready'
           )}}"
         >
+          <input
+            type  = "hidden"
+            name  = "user_id"
+            value = "{{session['user_id']}}"
+          />
           <button
             type  = "submit"
             name  = "quiz_id"
             value = "{{quiz_info['quiz_id']}}"
             class = "registerbtn"
           >
-            Check if everyone is ready
+            Ready
           </button>
         </form>
       {% endif %}
@@ -230,20 +299,76 @@
     <h4>
       {{active_question['question_text']}}
     </h4>
-      <p>
-        Scoring Type: {{active_question['question_scoring_type']}}
-        <br>
-        Points: {{active_question['question_points']}}
-      </p>
-      <hr>
-    {% endif %}
+    <p>
+      Current Answer: {{active_question['answer_text']}}
+    </p>
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'submit_answer'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        id    = "question_id"
+        name  = "question_id"
+        value = "{{active_question['question_id']}}"
+      />
+      <input
+        type  = "hidden"
+        id    = "round_id"
+        name  = "round_id"
+        value = "{{active_question['round_id']}}"
+      />
+      <input
+        type  = "hidden"
+        id    = "quiz_id"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+      />
+      <textarea
+        rows          = "2"
+        cols          = "20"
+        placeholder   = "New Answer"
+        name          = "new_answer"
+        id            = "new_answer"
+        required wrap = "soft"
+      ></textarea>
+      <style>
+        #new_answer {
+          width: 100%;
+        }
+      </style>
+      <br/>
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        {% if active_question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
+      </button>
+    </form>
+    <p>
+      Scoring Type: {{active_question['question_scoring_type']}}
+      <br>
+      Points: {{active_question['question_points']}}
+      <br>
+      Category Type: {{active_question['question_category']}}
+      <br>
+      Question Difficulty: {{active_question['question_difficulty']}}
+      <br>
+    </p>
+    <hr>
+  {% endif %}
 
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Complete Quiz when all rounds are finished</li>
-      <li>Mark answers</li>
-      <li>Allow to view previous questions/rounds</li>
-      <li>Progress bar of question</li>
+      <li>Submit text answer for active and completed questions in active round</li>
+      <li>Show current total score of quiz, score for completed rounds, current leaderboard</li>
+      <li>When quiz ends show all questions</li>
+      <li>Add Hints</li>
+      <li>Add items</li>
+      <li>Add Quiz and Round progress bar</li>
+      <li>Add refresh page/latest question button</li>
   </ul>
 {%endblock%}

@@ -24,7 +24,6 @@
     {% endwith %}
 
 <hr>
-{{quiz_info}}
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
@@ -41,7 +40,7 @@
     Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
     <br>
     Total points in this Quiz: {{quiz_info['total_points']}}
-    {% if quiz_info['quiz_end'] %}
+    {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
       <form
         method  = "POST"
         id      = "form"
@@ -182,6 +181,56 @@
           </button>
         </form>
       {% endif %}
+      <table
+        class = "w3-table"
+      >
+        {% if answers %}
+          <tr>
+            <th>
+              Name
+            </th>
+            <th>
+              Answer
+            </th>
+            <th>
+              Correct
+            </th>
+            <th>
+              Hints Used
+            </th>
+            <th>
+              Timestamp
+            </th>
+          </tr>
+          {% for answer in answers %}
+            {% if answer['question_id']==question['question_id'] %}
+              <tr>
+                  <td>
+                    {{answer['username']}}
+                  </td>
+                  <td>
+                    {{answer['answer_text']}}
+                  </td>
+                  <td>
+                    {{answer['answer_correct']}}
+                  </td>
+                  <td>
+                    {{answer['hints_used']}}
+                  </td>
+                  <td>
+                    {{answer['answer_timestamp']}}
+                  </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p>
+            You have not entered any participants in this Quiz
+          </p>
+        {% endif %}
+      </table>
+
+
       {% if loop.last %}
       {% else %}
         <hr style="width:40%; margin: auto; margin-bottom:2em">
@@ -327,12 +376,15 @@
       <hr>
     {% endif %}
 
+    {{answers}}
+
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Complete Quiz when all rounds are finished</li>
-      <li>Mark answers</li>
-      <li>Allow to view previous questions/rounds</li>
-      <li>Progress bar of question</li>
+      <li>Mark answers at the end of each round</li>
+      <li>Show answers for completed and active questions in the round</li>
+      <li>When quiz has finished show all questions</li>
+      <li>Add Quiz and Round progress bar</li>
+      <li>Add refresh page/latest question button</li>
   </ul>
 {%endblock%}

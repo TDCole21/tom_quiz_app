@@ -1493,8 +1493,8 @@ def create_new_question():
         # Creates a new Question in the database, using the no_of_questions for the Question Order
         insert_db_entry(
             "questions",
-            "question_tag",
-            "\"" + request.form.get('question_tag') + "\""
+            "question_tag, question_type_id, question_category_id, question_points, question_scoring_type_id, question_difficulty",
+            "\"" + request.form.get('question_tag') + "\", 1, 1,10, 1, 5 "
         )
 
 
@@ -3215,12 +3215,21 @@ def host_live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed",
+                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
                 "live.question_id WHERE live.round_active = 1"
             )
+        
+        answers = common_values(
+            "users.username, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct",
+            "answers",
+            "users",
+            "answers.user_id",
+            "users.user_id WHERE answers.quiz_id = " + str(quiz_info['quiz_id'])
+        )
+        answers = sorted(answers, key=lambda k: k['answer_timestamp'])
 
         # Sorts the dictionaries of rounds in order of their round_order
         round_questions = sorted(round_questions, key=lambda k: k['question_order'])
@@ -3241,12 +3250,12 @@ def host_live_quiz():
         for question in reversed(round_questions):
             if "next_question" in question or question['question_active']:
                 break  # Stop searching if found
-            elif quiz_info['quiz_active'] == True:  # Executed only if the loop completes without finding the key
+            elif quiz_info['quiz_active'] == True and question['question_completed']:  # Executed only if the loop completes without finding the key
                 quiz_info['round_end'] = True
 
     
         active_question = common_value(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_correct_answer, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
+                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3286,9 +3295,8 @@ def host_live_quiz():
         if not count_not("participants", "participant_ready", "1")[0] > 0:
             quiz_info['quiz_ready'] = True
 
-        if not count_not("live", "round_completed", "1 AND quiz_id = " + str(request.form.get('quiz_id')))[0] > 0:
-            if quiz_info['quiz_completed']:
-                quiz_info['quiz_end'] = True
+        if count("live", "round_completed", "1 AND quiz_id = " + str(request.form.get('quiz_id')))[0] == len(associated_round_info):
+            quiz_info['quiz_end'] = True
 
 
         # Feeds data into HTML Jinja2 template
@@ -3299,7 +3307,8 @@ def host_live_quiz():
             associated_round_info   = associated_round_info,
             round_questions         = round_questions,
             active_question         = active_question,
-            participant_info        = participant_info
+            participant_info        = participant_info,
+            answers                 = answers
         )
     
     else:
@@ -3645,11 +3654,11 @@ def live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed",
+                "questions.question_id, questions.question_tag, questions.question_scoring_type_id, questions.question_type_id, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, live.question_order, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_active = 1"
+                "live.question_id LEFT OUTER JOIN answers on answers.question_id = questions.question_id WHERE live.round_active = 1"
             )
 
         # Sorts the dictionaries of rounds in order of their round_order
@@ -3660,6 +3669,18 @@ def live_quiz():
                         "categories",
                         "category_id = \"" + str(question['question_category_id']) + "\""
                     )['category_name']
+            
+            question['question_type'] = get_entry_from_db(
+                "question_type_name",
+                "question_type",
+                "question_type_id = \"" + str(question['question_type_id']) + "\""
+            )['question_type_name']
+            
+            question['question_scoring_type'] = get_entry_from_db(
+                        "question_scoring_type_name",
+                        "question_scoring_type",
+                        "question_scoring_type_id = \"" + str(question['question_scoring_type_id']) + "\""
+                    )['question_scoring_type_name']
             
         for question in round_questions:
             if question['question_active'] == 1:
@@ -3675,27 +3696,35 @@ def live_quiz():
                 quiz_info['round_end'] = True
 
     
+        # active_question = common_value(
+        #         "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
+        #         "questions",
+        #         "live",
+        #         "questions.question_id",
+        #         "live.question_id WHERE live.question_active = 1"
+        # )
+        
         active_question = common_value(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
-                "questions",
-                "live",
-                "questions.question_id",
-                "live.question_id WHERE live.question_active = 1"
-            )
+            "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.round_id, live.question_order, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
+            "questions",
+            "live",
+            "questions.question_id",
+            "live.question_id LEFT OUTER JOIN answers on answers.question_id = questions.question_id WHERE live.question_active = 1"
+        )
 
         if active_question:
             # Converts question_category_id and question_scoring_id to a their respective names
             active_question['question_category'] = get_entry_from_db(
-                        "category_name",
-                        "categories",
-                        "category_id = \"" + str(active_question['question_category_id']) + "\""
-                    )['category_name']
+                "category_name",
+                "categories",
+                "category_id = \"" + str(active_question['question_category_id']) + "\""
+            )['category_name']
 
             active_question['question_type'] = get_entry_from_db(
-                        "question_type_name",
-                        "question_type",
-                        "question_type_id = \"" + str(active_question['question_type_id']) + "\""
-                    )['question_type_name']
+                "question_type_name",
+                "question_type",
+                "question_type_id = \"" + str(active_question['question_type_id']) + "\""
+            )['question_type_name']
             
             active_question['question_scoring_type'] = get_entry_from_db(
                         "question_scoring_type_name",
@@ -3705,12 +3734,20 @@ def live_quiz():
 
 
         # Returns information for which users are ready to start the quiz
-        participant_info = common_values(
-            "users.username, participants.participant_ready",
+        all_participant_info = common_values(
+            "users.username, users.user_id, participants.participant_ready",
             "users",
             "participants",
             "users.user_id",
             "participants.user_id WHERE quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+        )
+
+        participant_info = common_value(
+            "users.username, participants.participant_ready",
+            "users",
+            "participants",
+            "users.user_id",
+            "participants.user_id WHERE participants.quiz_id = " + str(request.form.get('quiz_id')) + " AND participants.user_id = " +  str(session['user_id'])#Is str needed?
         )
 
         if not count_not("participants", "participant_ready", "1")[0] > 0:
@@ -3729,7 +3766,8 @@ def live_quiz():
             associated_round_info   = associated_round_info,
             round_questions         = round_questions,
             active_question         = active_question,
-            participant_info        = participant_info
+            participant_info        = participant_info,
+            all_participant_info    = all_participant_info
         )
     
     else:
@@ -3791,13 +3829,13 @@ def submit_answer():
         if check_single_db(
             "user_id",
             "answers",
-            "user_id = " + str(request.form.get("user_id")) + " AND question_id = " + str(request.form.get("question_id"))
+            "user_id = \"" + str(session['user_id']) + "\" AND question_id = \"" + str(request.form.get("question_id")) + "\" AND round_id = \"" + str(request.form.get("round_id")) + "\" AND quiz_id = \"" + str(request.form.get("quiz_id")) + "\""
         ):
             # This updates the Answers table with the new answer
             update_db_entry(
                 "answers",
                 "answer_text = \"" + request.form.get("new_answer").replace("\"", "") + "\", answer_correct = NULL, answer_timestamp = \"" + timestamp() + "\"",
-                "user_id = " + str(request.form.get("user_id")) + " AND question_id = " + str(request.form.get("question_id"))
+                "user_id = " + str(session['user_id']) + " AND question_id = " + str(request.form.get("question_id")) + " AND round_id = " + str(request.form.get("round_id")) + " AND quiz_id = " + str(request.form.get("quiz_id"))
             )
 
         # If this is the first answer being submitted
@@ -3805,11 +3843,12 @@ def submit_answer():
             # Insert the new answer into the table
             insert_db_entry(
                 "answers",
-                "user_id, question_id, quiz_id, answer_text, answer_timestamp",
-                str(request.form.get("user_id")) + ", " + str(request.form.get("question_id"))+ ", " + str(request.form.get("quiz_id")) + ", \"" + request.form.get("new_answer").replace("\"", "") + "\", \"" + timestamp() + "\""
+                "user_id, question_id, round_id, quiz_id, answer_text, answer_timestamp",
+                "\"" + str(session['user_id']) + "\", \"" + str(request.form.get("question_id")) + "\", \"" + str(request.form.get("round_id")) + "\", \"" + str(request.form.get("quiz_id")) + "\", \"" + request.form.get("new_answer").replace("\"", "") + "\", \"" + timestamp() + "\""
             )
 
         # Redirects user to the Live quiz page
+        flash("Answer updated")
         return redirect(url_for(
             'live_quiz'
         ),
