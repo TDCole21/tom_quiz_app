@@ -3209,7 +3209,10 @@ def host_live_quiz():
 
         for round in associated_round_info:
             if round['round_active'] == 1:
+                current_round_id = round['round_id']
                 break
+            else:
+                current_round_id = 0
             if round['round_completed'] != 1 and quiz_info['quiz_active'] == 1:
                 round['next_round'] = True
                 break
@@ -3223,11 +3226,11 @@ def host_live_quiz():
             )
         
         answers = common_values(
-            "users.username, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct",
+            "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct",
             "answers",
             "users",
             "answers.user_id",
-            "users.user_id WHERE answers.quiz_id = " + str(quiz_info['quiz_id'])
+            "users.user_id WHERE answers.quiz_id = \"" + str(quiz_info['quiz_id']) + "\" AND answers.round_id = \"" + str(current_round_id) + "\""
         )
         answers = sorted(answers, key=lambda k: k['answer_timestamp'])
 
@@ -3437,6 +3440,40 @@ def complete_round():
             "round_id = " + str(request.form.get('round_id'))
         )
 
+        # This retrieves information about the answers in the round
+        field_names = request.form.keys()
+        dict={}
+        for field_name in field_names:
+            value = request.form.get(field_name)
+            dict[field_name] = value
+
+        # This will now update the answers table with the questions from the quiz
+        list3=[]
+        del dict['quiz_id']
+        del dict['round_id']
+        for key in dict:
+            list2=[]
+            list2.extend(key.split("-"))
+            list3.append({"answer_correct":dict[key],"user_id":list2[0], "question_id":list2[-1], "round_id":str(request.form.get('round_id')), "quiz_id":str(request.form.get('quiz_id'))})
+        
+        for answer in list3:
+            update_db_entry(
+                "answers",
+                "answer_correct = " + str(answer["answer_correct"]),
+                "user_id = \"" + str(answer['user_id']) + "\" AND question_id = \"" + str(answer['question_id']) + "\" AND round_id = \"" + str(answer['round_id']) + "\" AND quiz_id = \"" + str(answer['quiz_id']) + "\""
+            )
+
+        round_questions = common_values(
+                "questions.question_id",
+                "questions",
+                "live",
+                "questions.question_id",
+                "live.question_id WHERE live.round_id = " + str(request.form.get('round_id'))
+            )
+
+        for question in round_questions:
+            mark_answer(question["question_id"], str(request.form.get('round_id')), str(request.form.get('quiz_id')))
+
         # Redirects the user back to the host live quiz
         return redirect(url_for(
             'host_live_quiz'
@@ -3476,30 +3513,30 @@ def complete_quiz():
         ))  
 
 
-
+# I think this can be deleted
 # This function will update the database with whether the answer submitted by the user was correct or not
-@app.route('/host_live_quiz/mark_answer', methods=['GET', 'POST'])
-def mark_answer():
-    # Check to see if the user is an admin
-    if admin_check() and request.method == 'POST':
-        # Updates the DB with whether the answer was correct or not
-        update_db_entry(
-            "answers",
-            "answer_correct = " + request.form.get('marked_answer'),
-            "user_id = " + str(request.form.get('user_id')) + " AND question_id = " + str(request.form.get('question_id'))
-        )
+# @app.route('/host_live_quiz/mark_answer', methods=['GET', 'POST'])
+# def mark_answer():
+#     # Check to see if the user is an admin
+#     if admin_check() and request.method == 'POST':
+#         # Updates the DB with whether the answer was correct or not
+#         update_db_entry(
+#             "answers",
+#             "answer_correct = " + request.form.get('marked_answer'),
+#             "user_id = " + str(request.form.get('user_id')) + " AND question_id = " + str(request.form.get('question_id'))
+#         )
 
-        # Redirects the user back to the host live quiz
-        return redirect(url_for(
-            'host_live_quiz'
-        ),
-            code = 307
-        )
+#         # Redirects the user back to the host live quiz
+#         return redirect(url_for(
+#             'host_live_quiz'
+#         ),
+#             code = 307
+#         )
 
-    else:
-        return redirect(url_for(
-            'home'
-        ))  
+#     else:
+#         return redirect(url_for(
+#             'home'
+#         ))  
 
 
 # JOIN     ############################################################################
@@ -3654,7 +3691,7 @@ def live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_scoring_type_id, questions.question_type_id, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, live.question_order, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
+                "questions.question_id, questions.question_tag, questions.question_scoring_type_id, questions.question_type_id, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, live.question_order, live.round_id, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3835,7 +3872,7 @@ def submit_answer():
             update_db_entry(
                 "answers",
                 "answer_text = \"" + request.form.get("new_answer").replace("\"", "") + "\", answer_correct = NULL, answer_timestamp = \"" + timestamp() + "\"",
-                "user_id = " + str(session['user_id']) + " AND question_id = " + str(request.form.get("question_id")) + " AND round_id = " + str(request.form.get("round_id")) + " AND quiz_id = " + str(request.form.get("quiz_id"))
+                "user_id = \"" + str(session['user_id']) + "\" AND question_id = \"" + str(request.form.get("question_id")) + "\" AND round_id = \"" + str(request.form.get("round_id")) + "\" AND quiz_id = \"" + str(request.form.get("quiz_id")) + "\""
             )
 
         # If this is the first answer being submitted

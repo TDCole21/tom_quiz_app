@@ -165,6 +165,7 @@ def check_multiple_db(output, table1, table2, table1_column_name, table2_column_
         return True
     else:
         return False
+    
 
 # This function selects common values between two tables
 def common_values(output, table1, table2, table1_column_name, table2_column_name):
@@ -412,3 +413,40 @@ def total(list_of_dicts, key):
             pass
 
     return total_value
+
+
+def mark_answer(question_id, round_id, quiz_id):
+    question_info = get_entry_from_db(
+        "question_scoring_type_id, question_points",
+        "questions",
+        "question_id = " + str(question_id)
+    )
+
+    answer_info = get_entries_from_db(
+        "*",
+        "answers",
+        "answer_correct = 1 AND question_id = \""+ str(question_id) + "\" AND round_id = \"" + str(round_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+    )
+
+    # Order answers by time answered
+    answer_info = sorted(answer_info, key=lambda k: k['answer_timestamp'])
+    # Set incorrect answer points to 0
+    update_db_entry(
+        "answers",
+        "answer_points = 0",
+        "answer_correct = 0 AND question_id = \""+ str(question_id) + "\" AND round_id = \"" + str(round_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+    )
+
+    # Fastest Finger
+    if question_info['question_scoring_type_id'] == 1:
+        points = question_info['question_points']
+        for i in range(len(answer_info)):
+            if points > 0:
+                update_db_entry(
+                    "answers",
+                    "answer_points = " + str(points),
+                    "user_id = \"" + str(answer_info[i]['user_id']) + "\" AND question_id = \"" + str(answer_info[i]['question_id']) + "\" AND round_id = \"" + str(answer_info[i]['round_id']) + "\" AND quiz_id = \"" + str(answer_info[i]['quiz_id']) + "\""
+                )
+                points -= 1  # Decrement points for the next dictionary
+            else:
+                break  # Stop adding points if we reach 0
