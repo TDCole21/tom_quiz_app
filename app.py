@@ -1490,11 +1490,11 @@ def question_maker():
 def create_new_question():
 
     if admin_check() and request.method == "POST":
-        # Creates a new Question in the database, using the no_of_questions for the Question Order
+        # Creates a new Question in the database, with default values
         insert_db_entry(
             "questions",
             "question_tag, question_type_id, question_category_id, question_points, question_scoring_type_id, question_difficulty",
-            "\"" + request.form.get('question_tag') + "\", 1, 1,10, 1, 5 "
+            "\"" + request.form.get('question_tag') + "\", 1, 1, 10, 1, 5 "
         )
 
 

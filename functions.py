@@ -359,7 +359,7 @@ def compare_dictionary_lists(input_list, exclude_list, key):
 
 def average(list_of_dicts, key):
     if not list_of_dicts:
-        raise ValueError("The list of list_of_dicts is empty.")
+        return 0
 
     total_value = 0
     for dict in list_of_dicts:
@@ -401,9 +401,6 @@ def mode(data, key):
 
 
 def total(list_of_dicts, key):
-    if not list_of_dicts:
-        raise ValueError("The list of list_of_dicts is empty.")
-
     total_value = 0
     for dict in list_of_dicts:
         try:

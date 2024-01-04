@@ -419,11 +419,13 @@
           multiple style  = "width: 80%;"
         >
           {% for user in user_info %}
-            <option
-              value = "{{user['user_id']}}"
-            >
-              {{user['username']}}
-            </option>
+            {% if user['user_id'] != session['user_id'] %}
+              <option
+                value = "{{user['user_id']}}"
+              >
+                {{user['username']}}
+              </option>
+            {% endif %}
           {% endfor %}
         </select>
         <br/>
@@ -525,6 +527,8 @@
   <h4>To do:</h4>
   <ul>
       <li>Maybe have it that you can't associate two rounds in a quiz with the same name</li>
+      <li>Have it so that the participants list is changed in code not to include host of quiz, not in html</li>
+      <li>Add new entry into db for quiz hosts</li>
   </ul>
 
   {%endblock%}

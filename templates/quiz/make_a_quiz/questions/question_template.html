@@ -303,7 +303,7 @@
       name                = "question_update"
       id                  = "question_update"
       required maxlength  = "3"
-      min                 = "0"
+      min                 = "1"
       step                = "1"
     />
     <br/>
@@ -330,41 +330,6 @@
       </button>
   </form>
 
-  {% if question_info['question_points'] %}
-    <form
-      method  = "POST"
-      action  = "{{ url_for(
-        'update_question'
-      )}}"
-    >
-      <input
-        type  = "hidden"
-        name  = "question_update_field"
-        value = "question_points"
-      />
-      <input
-        type  = "hidden"
-        name  = "question_update"
-        value = "NULL"
-      />
-      <input
-        type  = "hidden"
-        name  = "question_id"
-        value = "{{question_info['question_id']}}"
-      />
-      <input
-        type  = "hidden"
-        name  = "source_point"
-        value = "question_template"
-      />
-      <button
-        type  = "submit"
-        class = "registerbtn"
-      >
-        Remove Points
-      </button>
-    </form>
-  {% endif %}
 
   <hr>
 
@@ -388,7 +353,7 @@
       name                = "question_update"
       id                  = "question_update"
       required maxlength  = "3"
-      min                 = "0"
+      min                 = "1"
       step                = "1"
     />
     <br/>
@@ -414,42 +379,6 @@
       {% if question_info['question_difficulty'] %}Update Difficulty{% else %}Add Difficulty{% endif %}
       </button>
   </form>
-
-  {% if question_info['question_difficulty'] %}
-    <form
-      method  = "POST"
-      action  = "{{ url_for(
-        'update_question'
-      )}}"
-    >
-      <input
-        type  = "hidden"
-        name  = "question_update_field"
-        value = "question_difficulty"
-      />
-      <input
-        type  = "hidden"
-        name  = "question_update"
-        value = "NULL"
-      />
-      <input
-        type  = "hidden"
-        name  = "question_id"
-        value = "{{question_info['question_id']}}"
-      />
-      <input
-        type  = "hidden"
-        name  = "source_point"
-        value = "question_template"
-      />
-      <button
-        type  = "submit"
-        class = "registerbtn"
-      >
-        Remove Difficulty
-      </button>
-    </form>
-  {% endif %}
 
   <hr>
 
