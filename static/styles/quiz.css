@@ -56,6 +56,18 @@ hr {
   opacity:            0.9;
 }
 
+/* Set a style for the submit button */
+.registerbtnsml {
+  background-color: #ff0000;
+  color:            #ffffff;
+  padding:            3px 0px;
+  margin:             0px 0;
+  border:             none;
+  cursor:             pointer;
+  width:              30%;
+  opacity:            0.9;
+}
+
 /* Add a blue text color to links */
 a {
   color: #1d91fd
@@ -73,7 +85,11 @@ a {
   font-size:  14pt;
 }
 
-
+.input-group {
+  display: flex; /* Arrange elements horizontally */
+  align-items: center; /* Vertically center elements */
+  margin-bottom: 10px; /* Add spacing between groups */
+}
 
 /* Set a grey background color and center the text of the "sign in" section */
 .signin {
@@ -107,4 +123,12 @@ a {
 img {
   max-width:  80%;
   height:     auto;
+}
+
+tr {
+  align-items: center;
+}
+
+td {
+  padding: 10px;
 }

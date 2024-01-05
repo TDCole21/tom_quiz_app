@@ -137,10 +137,14 @@ CREATE TABLE friends (
 CREATE TABLE user_media (
     user_media_id INT(3) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     user_id INT(3) NOT NULL,
+    question_id INT(3),
+    quiz_id INT(3),
     user_media_url TEXT,
     user_media_type TEXT,
     user_media_description TEXT,
-    FOREIGN KEY(user_id) REFERENCES users (user_id) ON DELETE CASCADE
+    FOREIGN KEY(user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    FOREIGN KEY(question_id) REFERENCES questions (question_id) ON DELETE CASCADE,
+    FOREIGN KEY(quiz_id) REFERENCES quizzes (quiz_id) ON DELETE CASCADE
 );
 
 CREATE TABLE question_media (

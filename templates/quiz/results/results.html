@@ -14,8 +14,6 @@
 
   <hr/>
 
-  {{participant_info}}
-
   <table
     class = "w3-table"
   >
@@ -36,7 +34,7 @@
           {{participant['participant_position']}}
         </td>
         <td>
-          {{participant['username']}}
+          {{participant['username']}}{% if participant['user_id'] == session['user_id'] %} (You){% endif %}
         </td>
         <td>
           {{participant['participant_score']}}
@@ -45,11 +43,11 @@
     {% endfor %}
   </table>
   
-  <hr/>
   <hr>
+
   <h4>To do:</h4>
   <ul>
-      <li>Need to add scoring for the quizzes</li>
+      <li>Nothing</li>
   </ul>
   
 {%endblock%}

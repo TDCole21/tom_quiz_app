@@ -630,10 +630,12 @@ def category_maker():
 @app.route('/add_category', methods=['GET', 'POST'])
 def add_category():
     if request.method == "POST":
+        category_name = fix_string(request.form.get('category_name'))
+        category_description = fix_string(request.form.get('category_description'))
         insert_db_entry(
             "categories",
             "category_name, category_description",
-            "\"" + request.form.get('category_name') + "\", \"" + request.form.get('category_description') + "\""
+            "\"%s\", \"%s\"" % (category_name, category_description)
         )
         flash("Category " + request.form.get('category_name') + " created")
         return redirect(url_for(
@@ -649,10 +651,12 @@ def add_category():
 @app.route('/update_category', methods=['GET', 'POST'])
 def update_category():
     if request.method == "POST":
+        category_name = fix_string(request.form.get('new_category_name'))
+        category_description = fix_string(request.form.get('new_category_description'))
         update_db_entry(
             "categories",
-            "category_name = \"" + request.form.get('new_category_name') + "\", category_description = \"" + request.form.get('new_category_description') + "\"",
-            "category_name = \"" + request.form.get('old_category_name') + "\""
+            "category_name = \"%s\", category_description = \"%s\" " % (category_name, category_description),
+            "category_id = \"" + request.form.get('category_id') + "\""
         )
         flash("Category " + request.form.get('old_category_name') + " updated to " + request.form.get('new_category_name'))
         return redirect(url_for(
@@ -1490,19 +1494,72 @@ def question_maker():
 def create_new_question():
 
     if admin_check() and request.method == "POST":
-        # Creates a new Question in the database, with default values
-        insert_db_entry(
-            "questions",
-            "question_tag, question_type_id, question_category_id, question_points, question_scoring_type_id, question_difficulty",
-            "\"" + request.form.get('question_tag') + "\", 1, 1, 10, 1, 5 "
-        )
+        if check_single_db(
+            "question_type_id",
+            "question_type",
+            "question_type_id IS NOT NULL"
+        ):
+            question_type_id = get_entry_from_db(
+                "question_type_id",
+                "question_type",
+                "question_type_id IS NOT NULL"
+            )['question_type_id']
+
+        else:
+            # Redirects user to the Question template for the newly created Question
+            flash("You need to create a Question Type first")
+            return redirect(url_for(
+                request.form.get("source_point")
+            ))  
+        
+        if check_single_db(
+            "question_type_id",
+            "question_type",
+            "question_type_id IS NOT NULL"
+        ):
+            question_category_id = get_entry_from_db(
+                "category_id",
+                "categories",
+                "category_id IS NOT NULL"
+            )['category_id']
+        else:
+            # Redirects user to the Question template for the newly created Question
+            flash("You need to create a Category first")
+            return redirect(url_for(
+                request.form.get("source_point")
+            ))  
+
+        if check_single_db(
+            "question_type_id",
+            "question_type",
+            "question_type_id IS NOT NULL"
+        ):
+            question_scoring_type_id = get_entry_from_db(
+                "question_scoring_type_id",
+                "question_scoring_type",
+                "question_scoring_type_id IS NOT NULL"
+            )['question_scoring_type_id']
+        else:
+            # Redirects user to the Question template for the newly created Question
+            flash("You need to create a Question Scoring Type first")
+            return redirect(url_for(
+                request.form.get("source_point")
+            ))  
+
+        if question_type_id and question_category_id and question_scoring_type_id:
+            # Creates a new Question in the database, with default values
+            insert_db_entry(
+                "questions",
+                "question_tag, question_type_id, question_category_id, question_points, question_scoring_type_id, question_difficulty",
+                "\"" + str(request.form.get('question_tag')) + "\", \"" + str(question_type_id) + "\", \"" + str(question_category_id) + "\", \"10\", \"" + str(question_scoring_type_id) + "\", \"5\""
+            )
 
 
-        # Redirects user to the Question template for the newly created Question
-        flash("Question created")
-        return redirect(url_for(
-            request.form.get("source_point")
-        ))
+            # Redirects user to the Question template for the newly created Question
+            flash("Question created")
+            return redirect(url_for(
+                request.form.get("source_point")
+            ))       
     
     else:
         return redirect(url_for(
@@ -1774,9 +1831,11 @@ def add_participants():
             # Insert the user into the participants table
             insert_db_entry(
                 "participants",
-                "user_id, quiz_id",
-                i + ", " + request.form.get('quiz_id')
+                "user_id, quiz_id, participant_ready",
+                i + ", " + request.form.get('quiz_id') + ",0"
             )
+
+            update_leaderboard(i, request.form.get('quiz_id'), 0)
 
         return redirect(url_for(
             request.form.get("source_point")+'_template'
@@ -1808,6 +1867,18 @@ def remove_participants():
             # Delete the user into the participants table
             delete_db_entry(
                 "participants",
+                "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
+            )
+
+            # Delete the user into the answers table
+            delete_db_entry(
+                "answers",
+                "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
+            )
+
+            # Delete the user into the user_media table
+            delete_db_entry(
+                "user_media",
                 "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
             )
 
@@ -3103,7 +3174,7 @@ def host_a_quiz():
     
 
 # This function will use the quiz_id, round_id and question_id to display the host view for the current question
-#This function will require work, now that a post form is the standard
+# This function will require work, now that a post form is the standard
 @app.route('/host_live_quiz', methods=['GET', 'POST'])
 def host_live_quiz():
     # Check to see if the user is an admin
@@ -3135,7 +3206,7 @@ def host_live_quiz():
         for round in associated_round_info:
             # Collects information on all the quizzes this round is associated with
             associated_question_info = common_values(
-                "questions.question_category_id, questions.question_difficulty, questions.question_points",
+                "questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_completed",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3175,10 +3246,14 @@ def host_live_quiz():
                     else:
                         round['mode_question_category'] = "Not set"
 
+                round['percentage_complete'] = int(sum(1 for item in associated_question_info if "question_completed" in item and item["question_completed"] == 1)/round['number_of_associated_questions']*100)
+
         # associated_questions = set(associated_questions)
         quiz_info['number_of_associated_questions'] = len(associated_questions)
 
         if associated_questions:
+            # Number of questions in the quiz
+            quiz_info['number_of_questions'] = len(associated_questions)
             # Average question difficulty
             quiz_info['average_question_difficulty'] = average(associated_questions, "question_difficulty")
             # Total question points
@@ -3207,6 +3282,14 @@ def host_live_quiz():
                 else:
                     quiz_info['mode_question_category'] = "Not set"
 
+            quiz_info['completed_questions'] = len(get_entries_from_db(
+                "question_id",
+                "live",
+                "question_completed = 1"
+            ))
+
+            quiz_info['percentage_completed'] = int(int(quiz_info['completed_questions'])/int(quiz_info['number_of_questions'])*100)
+
         for round in associated_round_info:
             if round['round_active'] == 1:
                 current_round_id = round['round_id']
@@ -3218,7 +3301,7 @@ def host_live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
+                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3244,6 +3327,13 @@ def host_live_quiz():
                     )['category_name']
             
         for question in round_questions:
+            question['question_scoring_type_name'] = get_entry_from_db(
+                        "question_scoring_type_name",
+                        "question_scoring_type",
+                        "question_scoring_type_id = \"" + str(question['question_scoring_type_id']) + "\""
+                    )['question_scoring_type_name']
+            
+        for question in round_questions:
             if question['question_active'] == 1:
                 break
             if question['question_completed'] != 1:
@@ -3256,44 +3346,25 @@ def host_live_quiz():
             elif quiz_info['quiz_active'] == True and question['question_completed']:  # Executed only if the loop completes without finding the key
                 quiz_info['round_end'] = True
 
-    
-        active_question = common_value(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed, live.round_id",
-                "questions",
-                "live",
-                "questions.question_id",
-                "live.question_id WHERE live.question_active = 1"
-            )
-
-        if active_question:
-            # Converts question_category_id and question_scoring_id to a their respective names
-            active_question['question_category'] = get_entry_from_db(
-                        "category_name",
-                        "categories",
-                        "category_id = \"" + str(active_question['question_category_id']) + "\""
-                    )['category_name']
-
-            active_question['question_type'] = get_entry_from_db(
-                        "question_type_name",
-                        "question_type",
-                        "question_type_id = \"" + str(active_question['question_type_id']) + "\""
-                    )['question_type_name']
-            
-            active_question['question_scoring_type'] = get_entry_from_db(
-                        "question_scoring_type_name",
-                        "question_scoring_type",
-                        "question_scoring_type_id = \"" + str(active_question['question_scoring_type_id']) + "\""
-                    )['question_scoring_type_name']
-
 
         # Returns information for which users are ready to start the quiz
         participant_info = common_values(
-            "users.username, participants.participant_ready",
+            "users.username, users.user_id, participants.participant_ready, participants.participant_score, participants.participant_position, participants.participant_item_id",
             "users",
             "participants",
             "users.user_id",
             "participants.user_id WHERE quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
         )
+
+        for participant in participant_info:
+            if participant['participant_item_id']:
+                participant['item_name'] = get_entry_from_db(
+                            "item_name",
+                            "items",
+                            "item_id = \"" + str(participant['participant_item_id']) + "\""
+                        )['item_name']
+
+        participant_info = sorted(participant_info, key=lambda k: k['participant_position'])
 
         if not count_not("participants", "participant_ready", "1")[0] > 0:
             quiz_info['quiz_ready'] = True
@@ -3309,7 +3380,6 @@ def host_live_quiz():
             quiz_info               = quiz_info,
             associated_round_info   = associated_round_info,
             round_questions         = round_questions,
-            active_question         = active_question,
             participant_info        = participant_info,
             answers                 = answers
         )
@@ -3320,7 +3390,23 @@ def host_live_quiz():
             'home'
         ))  
     
-
+@app.route('/host_live_quiz/score', methods=['GET', 'POST'])
+def score():
+    # This will lable a quiz as active
+    if admin_check() and request.method == "POST":
+        for update in range(len(request.form.getlist('points'))):
+            update_leaderboard(request.form.getlist('user_id')[update], request.form.getlist('quiz_id')[update], request.form.getlist('points')[update])
+        return redirect(url_for(
+            request.form.get('source_point')
+        ),
+            code = 307
+        )
+    
+    else:
+        flash("Pay me £20 and I will do this")
+        return redirect(url_for(
+            'home'
+        ))  
 
 @app.route('/host_live_quiz/start_quiz', methods=['GET', 'POST'])
 def start_quiz():
@@ -3934,7 +4020,7 @@ def all_results():
 def results():
         # Returns information for which users participated in the quiz
         participant_info = common_values(
-            "participants.participant_position, users.username, participants.participant_score",
+            "participants.participant_position, users.username, users.user_id, participants.participant_score",
             "users",
             "participants",
             "users.user_id",
@@ -3948,10 +4034,7 @@ def results():
                 "quiz_id = " + str(request.form.get('quiz_id'))
             )
 
-        def sort_by_score(dict_item):
-            return dict_item["participant_score"]
-
-        participant_info = sorted(participant_info, key=sort_by_score)
+        participant_info = sorted(participant_info, key=lambda k: -k['participant_score'])
 
         # Feeds data into HTML Jinja2 template
         return render_template(

@@ -56,7 +56,8 @@ def duplicate(value1,value2):
 # This function checks if a string contains an @ symbol.
 # I use the @ symbol as an unique characteristic of email addresses, so this can be used to determine if a string is an email address
 def email(test_string):
-    return re.search("@", test_string)
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    return re.search(email_pattern, test_string)
 
 # This function returns the current time and date
 def timestamp():
@@ -447,3 +448,56 @@ def mark_answer(question_id, round_id, quiz_id):
                 points -= 1  # Decrement points for the next dictionary
             else:
                 break  # Stop adding points if we reach 0
+    
+    # Right or Wrong
+    elif question_info['question_scoring_type_id'] == 2:
+        for answer in answer_info:
+            update_db_entry(
+                "answers",
+                "answer_points = " + str(question_info['question_points']),
+                "user_id = \"" + str(answer['user_id']) + "\" AND question_id = \"" + str(answer['question_id']) + "\" AND round_id = \"" + str(answer['round_id']) + "\" AND quiz_id = \"" + str(answer['quiz_id']) + "\""
+            )
+        
+def update_leaderboard(user_id, quiz_id, points):
+    # Find current user score in quiz
+    participant_score = get_entry_from_db(
+        "participant_score",
+        "participants",
+        "user_id = \"" + str(user_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+    )['participant_score']
+
+    # Adds/Subtracts new points to exisiting score
+    update_db_entry(
+        "participants",
+        "participant_score = " + str(int(participant_score)+int(points)),
+        "user_id = \"" + str(user_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+    )
+
+    # Gets all the scores from the quiz
+    participant_info = get_entries_from_db(
+        "participant_score, user_id",
+        "participants",
+        "quiz_id = " + str(quiz_id)
+    )
+
+    # Sorts the user id's based on score
+    participant_info = sorted(participant_info, key=lambda k: -k['participant_score'])
+
+    # Cycle through all participants and update position
+    current_position = 1
+    previous_score = None
+    for participant in participant_info:
+        if participant["participant_score"] != previous_score:
+            current_position = participant_info.index(participant) + 1  # Use data.index to get position in original list
+        # participant["participant_position"] = current_position
+        update_db_entry(
+            "participants",
+            "participant_position = " + str(current_position),
+            "user_id = \"" + str(participant["user_id"]) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+        )
+        previous_score = participant["participant_score"]
+
+def fix_string(text):
+    text = text.replace('"', '\\"')
+    return text.replace("'", "\\'")
+    

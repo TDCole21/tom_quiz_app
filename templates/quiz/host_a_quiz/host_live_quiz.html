@@ -23,14 +23,35 @@
       {% endif %}
     {% endwith %}
 
-<hr>
+  <hr>
+
+    <form
+      method  = "POST"
+      id      = "form"
+      action  = "{{ url_for(
+        'host_live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        class = "registerbtn"
+        value = "{{quiz_info['quiz_id']}}"
+      >
+        Refresh Page
+      </button>
+    </form>
+
+  <hr>
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
       Quiz: {{quiz_info['quiz_name']}} {% if quiz_info['quiz_completed'] %}<b style='color:red;'>Completed</b>{% elif quiz_info['quiz_active'] %}<b style='color:green;'>Active</b>{% endif %}
     </h3>
     {{quiz_info['quiz_description']}}
-    <br>
+    <div class="w3-section w3-light-grey">
+      <div class="w3-container w3-padding-small w3-red w3-center" style="width:{{quiz_info['percentage_completed']}}%">{{quiz_info['percentage_completed']}}%</div>
+    </div>
     Number of Rounds: {{quiz_info['number_of_associated_rounds']}}
     <br>
     Number of Questions: {{quiz_info['number_of_associated_questions']}}
@@ -69,8 +90,10 @@
         </h3>
         {% if associated_round['round_description'] %}
           {{associated_round['round_description']}}
-          <br>
         {% endif %}
+        <div class="w3-section w3-light-grey">
+          <div class="w3-container w3-padding-small w3-red w3-center" style="width:{{associated_round['percentage_complete']}}%">{{associated_round['percentage_complete']}}%</div>
+        </div>
         {% if associated_round['number_of_associated_questions'] %}
           Number of Questions: {{associated_round['number_of_associated_questions']}}
           <br>
@@ -147,8 +170,24 @@
       <h3>
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
+      {% if question['question_completed'] or question['question_active'] %}
+        <h4>
+          {{question['question_text']}}
+        </h4>
+        <h5>
+          Correct Answer: {{question['question_correct_answer']}}
+        </h5>
+      {% endif %}
       {% if question['question_category'] %}
         Category Type: {{question['question_category']}}
+        <br>
+      {% endif %}
+      {% if question['question_scoring_type_name'] %}
+        Scoring Type: {{question['question_scoring_type_name']}}
+        <br>
+      {% endif %}
+      {% if question['question_points'] %}
+        Points: {{question['question_points']}}
         <br>
       {% endif %}
       {% if question['question_difficulty'] %}
@@ -197,93 +236,92 @@
             type  = "submit"
             name  = "question_id"
             class = "registerbtn"
-            value = "{{active_question['question_id']}}"
+            value = "{{question['question_id']}}"
           >
-            Finish Question {{active_question['question_order']}}
+            Finish Question {{question['question_order']}}
           </button>
         </form>
       {% endif %}
-        <table
-          class = "w3-table"
-        >
-          {% if answers %}
-            <tr>
-              <th>
-                Name
-              </th>
-              <th>
-                Answer
-              </th>
-              <th>
-                Correct
-              </th>
-              <th>
-                Hints Used
-              </th>
-              <th>
-                Timestamp
-              </th>
-            </tr>
-            {% for answer in answers %}
-              {% if answer['question_id']==question['question_id'] %}
-                <tr>
-                    <td>
-                      {{answer['username']}}
-                    </td>
-                    <td>
-                      {{answer['answer_text']}}
-                    </td>
-                    <td>
-                      {% if quiz_info['round_end'] %}
-                        <input
-                          type  = "radio"
-                          form  = "complete_round"
-                          id    = "{{answer['user_id']}}-{{question['question_id']}}1"
-                          name  = "{{answer['user_id']}}-{{question['question_id']}}"
-                          value = "1"
-                          required
-                        />
-                        <label
-                          for = "{{answer['user_id']}}-{{question['question_id']}}1"
-                        >
-                          Correct
-                        </label> |
-                        <input
-                          type  = "radio"
-                          form  = "complete_round"
-                          id    = "{{answer['user_id']}}-{{question['question_id']}}0"
-                          name  = "{{answer['user_id']}}-{{question['question_id']}}"
-                          value = "0"
-                          required
-                        />
-                        <label
-                          for = "{{answer['user_id']}}-{{question['question_id']}}0"
-                        >
-                          Wrong
-                        </label>
-                      {% else %}
-                      {{answer['answer_correct']}}
-                      {% endif %}
-                    </td>
-                    <td>
-                      {{answer['hints_used']}}
-                    </td>
-                    <td>
-                      {{answer['answer_timestamp']}}
-                    </td>
-                </tr>
-              {% endif %}
-            {% endfor %}
-          {% else %}
-            <p>
-              No one has answered this Question
-            </p>
-          {% endif %}
-        </table>
-      </form>
-        {% if not loop.last %}
-          <hr style="width:40%; margin: auto; margin-bottom:2em">
+      <table
+        class = "w3-table"
+      >
+        {% if answers %}
+          <tr>
+            <th>
+              Name
+            </th>
+            <th>
+              Answer
+            </th>
+            <th>
+              Correct
+            </th>
+            <th>
+              Hints Used
+            </th>
+            <th>
+              Timestamp
+            </th>
+          </tr>
+          {% for answer in answers %}
+            {% if answer['question_id']==question['question_id'] %}
+              <tr>
+                  <td>
+                    {{answer['username']}}
+                  </td>
+                  <td>
+                    {{answer['answer_text']}}
+                  </td>
+                  <td>
+                    {% if quiz_info['round_end'] %}
+                      <input
+                        type  = "radio"
+                        form  = "complete_round"
+                        id    = "{{answer['user_id']}}-{{question['question_id']}}1"
+                        name  = "{{answer['user_id']}}-{{question['question_id']}}"
+                        value = "1"
+                        required
+                      />
+                      <label
+                        for = "{{answer['user_id']}}-{{question['question_id']}}1"
+                      >
+                        Correct
+                      </label> |
+                      <input
+                        type  = "radio"
+                        form  = "complete_round"
+                        id    = "{{answer['user_id']}}-{{question['question_id']}}0"
+                        name  = "{{answer['user_id']}}-{{question['question_id']}}"
+                        value = "0"
+                        required
+                      />
+                      <label
+                        for = "{{answer['user_id']}}-{{question['question_id']}}0"
+                      >
+                        Wrong
+                      </label>
+                    {% else %}
+                    {{answer['answer_correct']}}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{answer['hints_used']}}
+                  </td>
+                  <td>
+                    {{answer['answer_timestamp']}}
+                  </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p>
+            No one has answered this Question
+          </p>
         {% endif %}
+      </table>
+      {% if not loop.last %}
+        <hr style="width:40%; margin: auto; margin-bottom:2em">
+      {% endif %}
     {% endfor %}
   {% else %}
     There are no active Rounds
@@ -297,141 +335,6 @@
           'complete_round'
         )}}"
       >
-      <input
-        type  = "hidden"
-        name  = "quiz_id"
-        value = "{{quiz_info['quiz_id']}}"
-      />
-      <button
-        type  = "submit"
-        name  = "round_id"
-        class = "registerbtn"
-        value = "{{associated_round['round_id']}}"
-      >
-        Finish Round {{associated_round['round_order']}} and Mark Answers
-      </button>
-    {% endif %}
-  {% endfor %}
-  <hr>
-
-    <!-- Participant Information -->
-    {% if quiz_info['quiz_active'] != 1 and quiz_info['quiz_completed'] is none %}
-      <h3> Participant Info:</h3>
-      <table
-        class = "w3-table"
-      >
-        {% if participant_info %}
-          <tr>
-            <th>
-              Name
-            </th>
-            <th>
-              Ready?
-            </th>
-          </tr>
-          {% for participant in participant_info %}
-          <tr>
-              <td>
-                {{participant['username']}}
-              </td>
-            {% if participant['participant_ready'] == 1 %}
-              <td>
-                Yes
-              </td>
-            {% else %}
-              <td>
-                No
-              </td>
-            {% endif %}
-          </tr>
-          {% endfor %}
-        {% else %}
-          <p>
-            You have not entered any participants in this Quiz
-          </p>
-        {% endif %}
-      </table>
-      {% if quiz_info['quiz_ready'] %}
-        <form
-          method = "POST"
-          id     = "form"
-          action = "{{ url_for(
-            'start_quiz'
-          )}}"
-        >
-          <button
-            type  = "submit"
-            name  = "quiz_id"
-            value = "{{quiz_info['quiz_id']}}"
-            class = "registerbtn"
-          >
-            Start Quiz {{quiz_info['quiz_name']}}
-          </button>
-        </form>
-      {% else %}
-        <form
-          method = "POST"
-          id     = "form"
-          action = "{{ url_for(
-            'host_live_quiz'
-          )}}"
-        >
-          <button
-            type  = "submit"
-            name  = "quiz_id"
-            value = "{{quiz_info['quiz_id']}}"
-            class = "registerbtn"
-          >
-            Check if everyone is ready
-          </button>
-        </form>
-      {% endif %}
-      <hr>
-    {% endif %}
-
-    {% if quiz_info['quiz_completed'] is not none %}
-      <form
-        method = "POST"
-        id     = "form"
-        action = "{{ url_for(
-          'results'
-        )}}"
-      >
-        <button
-          type  = "submit"
-          name  = "quiz_id"
-          value = "{{quiz_info['quiz_id']}}"
-          class = "registerbtn"
-        >
-          View Results from {{quiz_info['quiz_name']}}
-        </button>
-      </form>
-      <hr>
-    {% endif %}
-
-  <!-- The Question -->
-  {% if active_question %}
-    <h2>
-      Question {{active_question['question_order']}}: {{active_question['question_tag']}}
-    </h2>
-    <h4>
-      {{active_question['question_text']}}
-    </h4>
-    <h5>
-      Correct Answer: {{active_question['question_correct_answer']}}
-    </h5>
-      <p>
-        Scoring Type: {{active_question['question_scoring_type']}}
-        <br>
-        Points: {{active_question['question_points']}}
-      <p>
-      <form
-        method  = "POST"
-        id      = "form"
-        action  = "{{ url_for(
-          'complete_question'
-        )}}"
-      >
         <input
           type  = "hidden"
           name  = "quiz_id"
@@ -439,28 +342,233 @@
         />
         <button
           type  = "submit"
-          name  = "question_id"
+          name  = "round_id"
           class = "registerbtn"
-          value = "{{active_question['question_id']}}"
+          value = "{{associated_round['round_id']}}"
         >
-          Finish Question {{active_question['question_order']}}
+          Finish Round {{associated_round['round_order']}} and Mark Answers
         </button>
       </form>
-      <hr>
     {% endif %}
+  {% endfor %}
+  <hr>
 
-    {{answers}}
+  <!-- Participant Information to start Quiz -->
+  {% if quiz_info['quiz_active'] != 1 and quiz_info['quiz_completed'] is none %}
+    <h3> Participant Info:</h3>
+    <table
+      class = "w3-table"
+    >
+      {% if participant_info %}
+        <tr>
+          <th>
+            Name
+          </th>
+          <th>
+            Ready?
+          </th>
+        </tr>
+        {% for participant in participant_info %}
+        <tr>
+            <td>
+              {{participant['username']}}
+            </td>
+          {% if participant['participant_ready'] == 1 %}
+            <td>
+              Yes
+            </td>
+          {% else %}
+            <td>
+              No
+            </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      {% else %}
+        <p>
+          You have not entered any participants in this Quiz
+        </p>
+      {% endif %}
+    </table>
+    {% if quiz_info['quiz_ready'] %}
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'start_quiz'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          Start Quiz {{quiz_info['quiz_name']}}
+        </button>
+      </form>
+    {% else %}
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'host_live_quiz'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          Check if everyone is ready
+        </button>
+      </form>
+    {% endif %}
+    <hr>
+  {% endif %}
+
+  {% if quiz_info['quiz_completed'] is not none %}
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'results'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+        class = "registerbtn"
+      >
+        View Results from {{quiz_info['quiz_name']}}
+      </button>
+    </form>
+    <hr>
+  {% endif %}
+
+  <!-- Leader Board -->
+  {% if quiz_info['quiz_active'] == 1 or quiz_info['quiz_completed'] == 1 %}
+  <h3> Leaderboard:</h3>
+  <form
+  method  = "POST"
+  action  = "{{ url_for(
+    'score'
+  )}}"
+>
+  <table
+    class = "w3-table"
+  >
+    {% if participant_info %}
+      <tr>
+        <th>
+          Position
+        </th>
+        <th>
+          Name
+        </th>
+        <th>
+          Score
+        </th>
+        <th>
+          Item
+        </th>
+        <th>
+          Adhoc Points
+        </th>
+      </tr>
+      {% for participant in participant_info %}
+      <tr>
+          <td>
+            {{participant['participant_position']}}
+          </td>
+          <td>
+            {{participant['username']}}
+          </td>
+          <td>
+            {{participant['participant_score']}}
+          </td>
+          <td>
+            {% if participant['item_name'] %}
+              {{participant['item_name']}}
+            {% else %}
+              None
+            {% endif %}
+          </td>
+          <td>
+            <input
+              type        = "number"
+              placeholder = "Points"
+              name        = "points"
+              id          = "points"
+              required
+              maxlength   = "3"
+              step        = "1"
+              value       = "0"
+            />
+            <br/>
+            <input
+              type  = "hidden"
+              name  = "quiz_id"
+              value = "{{quiz_info['quiz_id']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "user_id"
+              value = "{{participant['user_id']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "source_point"
+              value = "host_live_quiz"
+            />
+          </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <p>
+        You have not entered any participants in this Quiz
+      </p>
+    {% endif %}
+  </table>
+  <button
+  type  = "submit"
+  class = "registerbtn"
+>
+  Update Leaderboard
+</button>
+</form>
+  <hr>
+  {% endif %}
 
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
       <li>When quiz has finished show all questions and answers</li>
-      <li>Add Quiz and Round progress bar</li>
-      <li>Add refresh page/latest question button</li>
-      <li>Show list of participants and their scores</li>
-      <li>Add question info to list, maybe remove active question info</li>
       <li>Add lock in answers function</li>
       <li>End of round updates the participant score table</li>
-      <li>Add feature to give adhoc points to participants</li>
   </ul>
+
+  <hr>
+
+    <form
+      method  = "POST"
+      id      = "form"
+      action  = "{{ url_for(
+        'host_live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        class = "registerbtn"
+        value = "{{quiz_info['quiz_id']}}"
+      >
+        Refresh Page
+      </button>
+    </form>
+
+  <hr>
+
 {%endblock%}

@@ -55,6 +55,7 @@
   {% for category in categories %}
     <form
       method  = "POST"
+      accept-charset="UTF-8"
     >
       <input
         type                = "text"
@@ -62,7 +63,7 @@
         value               = "{{category['category_name']}}"
         name                = "new_category_name"
         id                  = "new_category_name"
-        pattern             = "[^&quot,']+"
+        pattern             = "[^\\]+"
       />
       <input
         type                = "text"
@@ -70,7 +71,7 @@
         value               = "{{category['category_description']}}"
         name                = "new_category_description"
         id                  = "new_category_description"
-        pattern             = "[^&quot,']+"
+        pattern             = "[^\\]+"
       />
       <input
         type  = "hidden"
