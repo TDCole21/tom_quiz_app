@@ -957,6 +957,8 @@ def add_hint():
             ),
                 code = 307
             )
+
+
     else:
         flash("Please use the forms on the website")
         # Redirects user to the quiz Maker/Editor page
@@ -979,6 +981,8 @@ def update_hint():
             ),
                 code = 307
             )
+          
+
     else:
         flash("Please use the forms on the website")
         # Redirects user to the quiz Maker/Editor page
@@ -1896,6 +1900,7 @@ def update_quiz_description():
             code = 307
         )
 
+
 # ROUNDS #
 
 # This will display an overview page for the Round. Displaying it's associated quiz and basic information on its questions.
@@ -2226,12 +2231,14 @@ def update_round_description():
             "round_id = %s" % (request.form.get('round_id'))
         )
 
+        flash("Round description updated")
         # The user is redirected to where they clicked the button
         return redirect(url_for(
             request.form.get("source_point")
         ),
             code = 307
         )
+
     
     else:
         return redirect(url_for('home'))  
@@ -2542,7 +2549,7 @@ def update_question():
             question_update = re.sub("view", "preview", question_update)
         if re.search("question_video", question_update_field):
             question_update = re.sub("watch\?v\=", "embed/", question_update)
-  
+
         # Puts quotation marks either side of the question update
         if question_update != "NULL":
             question_update = "\"%s\"" % (question_update)
@@ -2555,6 +2562,7 @@ def update_question():
         )
 
         # Redirects to the question template
+        flash("question updated")
         return redirect(url_for(
             request.form.get("source_point")
         ),
@@ -3633,6 +3641,7 @@ def submit_answer():
         ),
             code = 307
         )
+
     else:
         flash("That wasn't submitted correctly")
         return redirect(url_for(

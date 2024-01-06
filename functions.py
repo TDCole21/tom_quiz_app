@@ -498,7 +498,7 @@ def update_leaderboard(user_id, quiz_id, points):
         previous_score = participant["participant_score"]
 
 def fix_string(text):
+    text = text.replace('\\', '')
     text = text.replace('"', '\\"')
     text = text.replace("'", "\\'")
     return text
-    
