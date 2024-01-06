@@ -50,7 +50,7 @@
       name                = "username"
       id                  = "username"
       required maxlength  = "50"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
     />
     <input
       type                = "email"
@@ -58,7 +58,7 @@
       name                = "user_email"
       id                  = "user_email"
       required maxlength  = "50"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
     />
     <input
       type                = "password"
@@ -66,7 +66,7 @@
       name                = "user_password"
       id                  = "user_password"
       required maxlength  = "50"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
     />
     <input
       type                = "password"
@@ -74,13 +74,13 @@
       name                = "user_password_repeat"
       id                  = "user_password_repeat"
       required maxlength  = "50"
-      pattern             ="[^&quot,']+"
+      pattern             = "[^\\]+"
     />
     <hr/>
     <p>
       By creating an account you agree to our
       <a
-        href = "t&c"
+        href = "{{ url_for('terms_and_conditions') }}"
       >
         Terms & Conditions
       </a>

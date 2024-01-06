@@ -39,7 +39,7 @@ def login_page():
 def login_attempt():
     if request.method == 'POST':
         # Checking if user has tried to login using an email or username
-        if email(request.form.get('user_details')):
+        if email(fix_string(request.form.get('user_details'))):
             login_via = "user_email"
 
         else:
@@ -49,22 +49,22 @@ def login_attempt():
         if check_single_db(
             "user_id",
             "users",
-            login_via + " = \"" + request.form.get('user_details') + "\""
+            "%s = \"%s\"" % (login_via, fix_string(request.form.get('user_details')))
         ):
             # Checks if the input password, when hashed, matches the one on the database
             if check_password_hash(
                 get_entry_from_db(
                     "user_password",
                     "users",
-                    login_via + " = \"" + request.form.get('user_details') + "\""
+                    "%s = \"%s\"" % (login_via, fix_string(request.form.get('user_details')))
                 )['user_password'],
-                request.form.get('user_password')
+                fix_string(request.form.get('user_password'))
             ):
                 # Get user information
                 account = get_entry_from_db(
                     "user_id, username, user_email, user_admin",
                     "users",
-                    login_via + " = \"" + request.form.get('user_details') + "\""
+                    "%s = \"%s\"" % (login_via, fix_string(request.form.get('user_details')))
                 )
 
                 # Enters user information in the session
@@ -145,7 +145,7 @@ def profile_delete():
         # Deletes user from the database based on the username
         delete_db_entry(
             "users",
-            "username = \"" + session['username'] + "\""
+            "username = \"%s\"" % (session['username'])
         )
         # Logs the user out of the session
         logout_session()
@@ -170,7 +170,7 @@ def email_update():
         if check_single_db(
             "user_id",
             "users",
-            "user_email = \"" + request.form.get('new_user_email') + "\""
+            "user_email = \"%s\"" % (fix_string(request.form.get('new_user_email')))
         ):
             flash('That email is already in use.')
 
@@ -178,11 +178,11 @@ def email_update():
             # Updates the database entry with the new email address
             update_db_entry(
                 "users",
-                "user_email = \"" + request.form.get('new_user_email') + "\"",
-                "user_email = \"" + session['user_email'] + "\""
+                "user_email = \"%s\"" % (fix_string(request.form.get('new_user_email'))),
+                "user_email = \"%s\"" % (session['user_email'])
             )
             # Updates the session with the new email address
-            session['user_email'] = request.form.get('new_user_email')
+            session['user_email'] = fix_string(request.form.get('new_user_email'))
 
     # Redirects back to the profile page
     return redirect(url_for(
@@ -194,14 +194,14 @@ def email_update():
 def username_update():
     if request.method == "POST":
         # Checks is the username contains an @ symbol. I use the @ symbol to differentiate between user email and username
-        if email(request.form.get('new_username')):
+        if email(fix_string(request.form.get('new_username'))):
             flash('A username cannot contain an @ character.')
 
         # Checks if the new username already exists in the database
         elif check_single_db(
             "user_id",
             "users",
-            "username = \"" + request.form.get('new_username')+"\""
+            "username = \"%s\"" % (fix_string(request.form.get('new_username')))
         ):
             flash('That username is already in use.')
 
@@ -209,11 +209,11 @@ def username_update():
             # Updates the username entry in the database with the new username, using the session email as the identifier
             update_db_entry(
                 "users",
-                "username = \"" + request.form.get('new_username')+"\"",
-                "username = \"" + session['username'] + "\""
+                "username = \"%s\"" % (fix_string(request.form.get('new_username'))),
+                "username = \"%s\"" % (session['username'])
             )
             # Updates the session with the new username
-            session['username'] = request.form.get('new_username')
+            session['username'] = fix_string(request.form.get('new_username'))
 
     # Redirects user to profile page
     return redirect(url_for(
@@ -227,8 +227,8 @@ def password_update():
         # Updates the user's password in the database, using the session email as the identifier
         update_db_entry(
             "users",
-            "user_password = \"" + generate_password_hash(request.form.get('new_user_password'), method='pbkdf2') + "\"",
-            "user_email = \"" + session['user_email'] + "\""
+            "user_password = \"%s\"" % (generate_password_hash(fix_string(request.form.get('new_user_password')), method='pbkdf2')),
+            "user_email = \"%s\"" % (session['user_email'])
         )
 
     # Redirects user to the profile page
@@ -263,14 +263,14 @@ def register():
 def user_create():
     if request.method == "POST":
         # Checks if the username has an @ character. My backend differentiates emails and usernames based on this
-        if email(request.form.get('username')):
+        if email(fix_string(request.form.get('username'))):
             flash('Signup failed. A username cannot contain an @ character.')
 
         # Checks is the username or email already exists in the database
         elif check_single_db(
             "user_id",
             "users",
-            "username = \"" + request.form.get('username') + "\" OR user_email = \"" + request.form.get('user_email') + "\""
+            "username = \"%s\" OR user_email = \"%s\"" % (fix_string(request.form.get('username')), fix_string(request.form.get('user_email')))
         ):
             flash('That account is already in use.')
             flash('login')
@@ -278,21 +278,21 @@ def user_create():
         else:
             # checks if the password and repeat password are the same
             if duplicate(
-                request.form.get('user_password'),
-                request.form.get('user_password_repeat')
+                fix_string(request.form.get('user_password')),
+                fix_string(request.form.get('user_password_repeat'))
             ):
                 # Inserts the new values into the users table in the database. By default the user is not an admin (admin=0)
                 insert_db_entry(
                     "users",
                     "username, user_email, user_password, user_admin",
-                    "\"" + request.form.get('username') + "\", \"" + request.form.get('user_email') + "\", \"" + generate_password_hash(request.form.get('user_password'), method='pbkdf2') + "\", 0"
+                    "\"%s\", \"%s\", \"%s\", 0" % (fix_string(request.form.get('username')), fix_string(request.form.get('user_email')), generate_password_hash(fix_string(request.form.get('user_password')), method='pbkdf2'))
                 )
 
                 # This then grabs the information that was just entered into the database
                 account = get_entry_from_db(
                     "user_id, username, user_email, user_admin",
                     "users",
-                    "user_email = \"" + request.form.get('user_email') + "\""
+                    "user_email = \"%s\"" % (fix_string(request.form.get('user_email')))
                 )
                 
                 # Logs the user into the session
@@ -371,7 +371,7 @@ def quiz_maker():
                 "rounds",
                 "live",
                 "rounds.round_id",
-                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+                "live.round_id WHERE live.quiz_id = %s" % (quiz['quiz_id'])
             )
             for associated_round in associated_round_info:
                 associated_rounds.append(associated_round['round_name'])
@@ -387,7 +387,7 @@ def quiz_maker():
                     "questions",
                     "live",
                     "questions.question_id",
-                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                    "live.question_id WHERE live.round_id = %s" % (round['round_id'])
                 )
                 for associated_question in associated_question_info:
                     associated_questions.append(associated_question['question_tag'])
@@ -412,7 +412,7 @@ def quiz_maker():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         quiz['mode_category'] = " and ".join(mode_question_categories)
@@ -420,7 +420,7 @@ def quiz_maker():
                         quiz['mode_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         quiz['mode_category'] = "Not set"
@@ -447,10 +447,10 @@ def create_quiz():
         if check_single_db(
             "quiz_id",
             "quizzes",
-            "quiz_name = \"" + request.form.get('quiz_name') + "\""
+            "quiz_name = \"%s\"" % (fix_string(request.form.get('quiz_name')))
         ):
             # Redirects user to the quiz maker/editor page
-            flash('The quiz name, \"' + request.form.get('quiz_name') + '\", is already in use.')
+            flash('The quiz name, \"%s\", is already in use.' % (fix_string(request.form.get('quiz_name'))))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -460,18 +460,11 @@ def create_quiz():
             insert_db_entry(
                 "quizzes",
                 "quiz_name",
-                "\"" + request.form.get('quiz_name') + "\""
+                "\"%s\"" % (fix_string(request.form.get('quiz_name')))
             )
 
-            # # Gets information about the newly created quiz
-            # quiz_info = get_entry_from_db(
-            #     "quiz_id",
-            #     "quizzes",
-            #     "quiz_name = \"" + request.form.get('quiz_name') + "\""
-            # )
-
             # Redirects user to the quiz template page for the newly created quiz
-            flash('The Quiz, \"' + str(request.form.get('quiz_name')) + '\", was successfully created.')
+            flash('The Quiz, \"%s\", was successfully created.' % (fix_string(request.form.get('quiz_name'))))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -490,7 +483,7 @@ def delete_quiz():
         if not check_single_db(
             "quiz_id",
             "quizzes",
-            "quiz_id = " + request.form.get('quiz_id')
+            "quiz_id = %s" % (request.form.get('quiz_id'))
         ):
             flash("This quiz does not exist")
             return redirect(url_for(
@@ -501,11 +494,11 @@ def delete_quiz():
             # Removes the quiz from the database based off the quiz_id
             delete_db_entry(
                 "quizzes",
-                "quiz_id = " + request.form.get('quiz_id')
+                "quiz_id = %s" % (request.form.get('quiz_id'))
             )
 
             # Redirects the user to the quiz Maker/Editor page
-            flash ("The Quiz, \"" + request.form.get('quiz_name') + "\", has been deleted")
+            flash ("The Quiz, \"%s\", has been deleted" % (fix_string(request.form.get('quiz_name'))))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -547,9 +540,9 @@ def add_item():
         insert_db_entry(
             "items",
             "item_name, item_description",
-            "\"" + request.form.get('item_name') + "\", \"" + request.form.get('item_description') + "\""
+            "\"%s\", \"%s\"" % (fix_string(request.form.get('item_name'), fix_string(request.form.get('item_description'))))
         )
-        flash("Item " + request.form.get('item_name') + " created")
+        flash("Item %s created" % (fix_string(request.form.get('item_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -565,10 +558,10 @@ def update_item():
     if request.method == "POST":
         update_db_entry(
             "items",
-            "item_name = \"" + request.form.get('new_item_name') + "\", item_description = \"" + request.form.get('new_item_description') + "\"",
-            "item_name = \"" + request.form.get('old_item_name') + "\""
+            "item_name = \"%s\", item_description = \"%s\"" % (fix_string(request.form.get('new_item_name')), fix_string(request.form.get('new_item_description'))),
+            "item_name = \"%s\"" % (fix_string(request.form.get('old_item_name')))
         )
-        flash("Item " + request.form.get('old_item_name') + " updated to " + request.form.get('new_item_name'))
+        flash("Item %s updated to %s" % (fix_string(request.form.get('old_item_name')), fix_string(request.form.get('new_item_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -585,13 +578,13 @@ def delete_item():
         update_db_entry(
             "participants",
             "participant_item_id = NULL",
-            "participant_item_id = \"" + request.form.get('participant_item_id') + "\""
+            "participant_item_id = \"%s\"" % (request.form.get('item_id'))
         )
         delete_db_entry(
             "items",
-            "item_name = \"" + request.form.get('item_name') + "\""
+            "item_id = \"%s\"" % (request.form.get('item_id'))
         )
-        flash("Item " + request.form.get('item_name') + " deleted")
+        flash("Item %s deleted" % (fix_string(request.form.get('item_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -630,14 +623,12 @@ def category_maker():
 @app.route('/add_category', methods=['GET', 'POST'])
 def add_category():
     if request.method == "POST":
-        category_name = fix_string(request.form.get('category_name'))
-        category_description = fix_string(request.form.get('category_description'))
         insert_db_entry(
             "categories",
             "category_name, category_description",
-            "\"%s\", \"%s\"" % (category_name, category_description)
+            "\"%s\", \"%s\"" % (fix_string(request.form.get('category_name')), fix_string(request.form.get('category_description')))
         )
-        flash("Category " + request.form.get('category_name') + " created")
+        flash("Category %s created" % (fix_string(request.form.get('category_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -651,14 +642,12 @@ def add_category():
 @app.route('/update_category', methods=['GET', 'POST'])
 def update_category():
     if request.method == "POST":
-        category_name = fix_string(request.form.get('new_category_name'))
-        category_description = fix_string(request.form.get('new_category_description'))
         update_db_entry(
             "categories",
-            "category_name = \"%s\", category_description = \"%s\" " % (category_name, category_description),
-            "category_id = \"" + request.form.get('category_id') + "\""
+            "category_name = \"%s\", category_description = \"%s\" " % (fix_string(request.form.get('new_category_name')), fix_string(request.form.get('new_category_description'))),
+            "category_id = \"%s\"" % (request.form.get('category_id'))
         )
-        flash("Category " + request.form.get('old_category_name') + " updated to " + request.form.get('new_category_name'))
+        flash("Category %s updated to %s" % (request.form.get('old_category_name'), fix_string(request.form.get('new_category_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -675,13 +664,13 @@ def delete_category():
         update_db_entry(
             "questions",
             "question_category_id = NULL",
-            "question_category_id = \"" + request.form.get('category_id') + "\""
+            "question_category_id = \"%s\"" % (request.form.get('category_id'))
         )
         delete_db_entry(
             "categories",
-            "category_name = \"" + request.form.get('category_name') + "\""
+            "category_id = \"%s\"" % (request.form.get('category_id'))
         )
-        flash("Category " + request.form.get('category_name') + " deleted")
+        flash("Category %s deleted" % (request.form.get('category_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -723,9 +712,9 @@ def add_question_type():
         insert_db_entry(
             "question_type",
             "question_type_name, question_type_description",
-            "\"" + request.form.get('question_type_name') + "\", \"" + request.form.get('question_type_description') + "\""
+            "\"%s\", \"%s\"" % (fix_string(request.form.get('question_type_name')), fix_string(request.form.get('question_type_description')))
         )
-        flash("Question type " + request.form.get('question_type_name') + " created")
+        flash("Question type %s created" % (fix_string(request.form.get('question_type_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -741,10 +730,10 @@ def update_question_type():
     if request.method == "POST":
         update_db_entry(
             "question_type",
-            "question_type_name = \"" + request.form.get('new_question_type_name') + "\", question_type_description = \"" + request.form.get('new_question_type_description') + "\"",
-            "question_type_name = \"" + request.form.get('old_question_type_name') + "\""
+            "question_type_name = \"%s\", question_type_description = \"%s\"" % (fix_string(request.form.get('new_question_type_name')), fix_string(request.form.get('new_question_type_description'))),
+            "question_type_id = \"%s\"" % (request.form.get('question_type_id'))
         )
-        flash("Question type " + request.form.get('old_question_type_name') + " updated to " + request.form.get('new_question_type_name'))
+        flash("Question type %s updated to %s" % (fix_string(request.form.get('old_question_type_name')), fix_string(request.form.get('new_question_type_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -761,13 +750,13 @@ def delete_question_type():
         update_db_entry(
             "questions",
             "question_type_id = NULL",
-            "question_type_id = \"" + request.form.get('question_type_id') + "\""
+            "question_type_id = \"%s\"" % (request.form.get('question_type_id'))
         )
         delete_db_entry(
             "question_type",
-            "question_type_name = \"" + request.form.get('question_type_name') + "\""
+            "question_type_id = \"%s\"" % (request.form.get('question_type_id'))
         )
-        flash("Question type " + request.form.get('question_type_name') + " deleted")
+        flash("Question type %s deleted" % (request.form.get('question_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -809,9 +798,9 @@ def add_question_scoring_type():
         insert_db_entry(
             "question_scoring_type",
             "question_scoring_type_name, question_scoring_type_description",
-            "\"" + request.form.get('question_scoring_type_name') + "\", \"" + request.form.get('question_scoring_type_description') + "\""
+            "\"%s\", \"%s\"" % (fix_string(request.form.get('question_scoring_type_name')), fix_string(request.form.get('question_scoring_type_description')))
         )
-        flash("Question scoring type " + request.form.get('question_scoring_type_name') + " created")
+        flash("Question scoring type %s created" % (fix_string(request.form.get('question_scoring_type_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -827,10 +816,10 @@ def update_question_scoring_type():
     if request.method == "POST":
         update_db_entry(
             "question_scoring_type",
-            "question_scoring_type_name = \"" + request.form.get('new_question_scoring_type_name') + "\", question_scoring_type_description = \"" + request.form.get('new_question_scoring_type_description') + "\"",
-            "question_scoring_type_name = \"" + request.form.get('old_question_scoring_type_name') + "\""
+            "question_scoring_type_name = \"%s\", question_scoring_type_description = \"%s\"" % (fix_string(request.form.get('new_question_scoring_type_name')), fix_string(request.form.get('new_question_scoring_type_description'))),
+            "question_scoring_type_id = \"%s\"" % (request.form.get('question_scoring_type_id'))
         )
-        flash("Question scoring type " + request.form.get('old_question_scoring_type_name') + " updated to " + request.form.get('new_question_scoring_type_name'))
+        flash("Question scoring type %s updated to %s" % (fix_string(request.form.get('old_question_scoring_type_name')), fix_string(request.form.get('new_question_scoring_type_name'))))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -847,13 +836,13 @@ def delete_question_scoring_type():
         update_db_entry(
             "questions",
             "question_scoring_type_id = NULL",
-            "question_scoring_type_id = \"" + request.form.get('question_scoring_type_id') + "\""
+            "question_scoring_type_id = \"%s\"" % (request.form.get('question_scoring_type_id'))
         )
         delete_db_entry(
             "question_scoring_type",
-            "question_scoring_type_name = \"" + request.form.get('question_scoring_type_name') + "\""
+            "question_scoring_type_id = \"%s\"" % (request.form.get('question_scoring_type_id'))
         )
-        flash("Question scoring type " + request.form.get('question_scoring_type_name') + " deleted")
+        flash("Question scoring type %s deleted" % (request.form.get('question_scoring_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -864,6 +853,8 @@ def delete_question_scoring_type():
             'home'
         ))
     
+
+# ADD ROUNDS TO QUIZ
 @app.route('/associate_round', methods=['GET', 'POST'])
 def associate_round():
     if request.method == "POST":
@@ -871,7 +862,7 @@ def associate_round():
         number_of_associated_rounds = get_entries_from_db(
             "round_id",
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id IS NOT NULL"
+            "quiz_id = \"%s\" AND round_id IS NOT NULL" % (request.form.get('quiz_id'))
         )
 
         unique_associated_rounds = set()
@@ -883,7 +874,7 @@ def associate_round():
         insert_db_entry(
             "live",
             "quiz_id, round_id, round_order",
-            request.form.get('quiz_id') + ", " + request.form.get('round_id') + ", " + str(number_of_associated_rounds)
+            "%s, %s, %s" % (request.form.get('quiz_id'), request.form.get('round_id'), number_of_associated_rounds)
         )
 
         flash("Round added to Quiz")
@@ -904,14 +895,14 @@ def unassociate_round():
     if request.method == "POST":
         delete_db_entry(
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id = \"" + request.form.get('round_id') + "\""
+            "quiz_id = \"%s\" AND round_id = \"%s\"" % (request.form.get('quiz_id'), request.form.get('round_id'))
         )
 
         # Need to find how many rounds are in the quiz
         number_of_associated_rounds = get_entries_from_db(
             "round_id",
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_id IS NOT NULL"
+            "quiz_id = \"%s\" AND round_id IS NOT NULL" % (request.form.get('quiz_id'))
         )
 
         unique_associated_rounds = set()
@@ -924,11 +915,11 @@ def unassociate_round():
         for i in range(int(request.form.get('round_order')), number_of_associated_rounds):
             update_db_entry(
                 "live",
-                "round_order = " + str(i),
-                "quiz_id = \"" + request.form.get('quiz_id') + "\" AND round_order = \"" + str(i+1) + "\""
+                "round_order = %s" % (i),
+                "quiz_id = \"%s\" AND round_order = \"%s\"" % (request.form.get('quiz_id'), i+1)
             )
 
-        flash("Round " + request.form.get('round_name') + " removed from Quiz")
+        flash("Round %s removed from Quiz" % (request.form.get('round_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ),
@@ -949,15 +940,15 @@ def add_hint():
         number_of_associated_hints = get_entries_from_db(
             "hint_id",
             "hints",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
-        number_of_associated_hints=len(number_of_associated_hints)+1
+        number_of_associated_hints = len(number_of_associated_hints)+1
 
         insert_db_entry(
             "hints",
             "question_id, hint_text, hint_number",
-            "\"" + request.form.get('question_id') + "\", \"" + request.form.get('hint_text') + "\", \"" + str(number_of_associated_hints) + "\""
+            "\"%s\", \"%s\", \"%s\"" % (request.form.get('question_id'), fix_string(request.form.get('hint_text')), number_of_associated_hints)
         )
 
         flash("Hint added to Question")
@@ -978,8 +969,8 @@ def update_hint():
     if request.method == "POST":
         update_db_entry(
             "hints",
-            "hint_text = \"" + request.form.get('hint_text') + "\"",
-            "hint_id = \"" + request.form.get('hint_id') + "\""
+            "hint_text = \"%s\"" % (fix_string(request.form.get('hint_text'))),
+            "hint_id = \"%s\"" % (request.form.get('hint_id'))
         )
 
         flash("Hint updated")
@@ -1002,14 +993,14 @@ def delete_hint():
     if request.method == "POST":
         delete_db_entry(
             "hints",
-            "hint_id = \"" + request.form.get('hint_id') + "\""
+            "hint_id = \"%s\"" % (request.form.get('hint_id'))
         )
 
         # Need to find how many rounds are in the quiz
         number_of_associated_hints = get_entries_from_db(
             "hint_id",
             "hints",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
         number_of_associated_hints = len(number_of_associated_hints) +1
@@ -1018,8 +1009,8 @@ def delete_hint():
         for i in range(int(request.form.get('hint_number')), number_of_associated_hints):
             update_db_entry(
                 "hints",
-                "hint_number = " + str(i),
-                "question_id = \"" + request.form.get('question_id') + "\" AND hint_number = \"" + str(i+1) + "\""
+                "hint_number = %s" % (i),
+                "question_id = \"%s\" AND hint_number = \"%s\"" % (request.form.get('question_id'), i+1)
             )
 
         flash("Hint deleted")
@@ -1058,7 +1049,7 @@ def round_maker():
                 "quizzes",
                 "live",
                 "quizzes.quiz_id",
-                "live.quiz_id WHERE live.round_id = " + str(round['round_id'])
+                "live.quiz_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_quiz in associated_quiz_info:
                 associated_quizzes.append(associated_quiz['quiz_name'])
@@ -1073,7 +1064,7 @@ def round_maker():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question['question_tag'])
@@ -1097,7 +1088,7 @@ def round_maker():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         round['mode_category'] = " and ".join(mode_question_categories)
@@ -1105,7 +1096,7 @@ def round_maker():
                         round['mode_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         round['mode_category'] = "Not set"
@@ -1124,85 +1115,6 @@ def round_maker():
             'home'
         )) 
 
-# # This will create a new Round that is related to a specific quiz
-# @app.route('/create_round', methods=['GET', 'POST'])
-# def create_associated_round():
-#     # Check to see if the user is an admin
-#     if admin_check() and request.method == "POST":
-
-#         # Checks to see if the quiz exists  
-#         if not check_single_db(
-#             "quiz_id",
-#             "quizzes",
-#             "quiz_id = " + request.form.get('quiz_id')
-#         ):
-#             flash("This quiz does not exist")
-#             # Redirects user to the quiz Maker/Editor page
-#             return redirect(url_for(
-#                 'quiz_maker'
-#             ))
-
-#         # Checks if there isn't already a round with the same name in the current quiz
-#         # Why not allow two rounds in a quiz with the same name??
-#         elif check_multiple_db(
-#             "rounds.round_id",
-#             "rounds",
-#             "live",
-#             "rounds.round_id",
-#             "live.round_id INNER JOIN quizzes ON live.quiz_id = quizzes.quiz_id"
-#         ):
-#             flash("The Round name: " + request.form.get('round_name') + ", already exists in this quiz")
-#             return redirect(url_for(
-#                 request.form.get("source_point")+'_template'
-#             ),
-#                 code = 307
-#             )
-
-#         else:
-#             # Calculates the number of Round for a given quiz_id
-#             no_of_rounds = len(get_entries_from_db(
-#                 "round_id",
-#                 "live",
-#                 "quiz_id = " + request.form.get('quiz_id')
-#             ))
-
-#             # Inserts the Round into the rounds table, using the no_of_rounds +1 as its unique identifier
-#             insert_db_entry(
-#                 "rounds",
-#                 "round_name, round_order",
-#                 "\"" + request.form.get('round_name') + "\", " + str(no_of_rounds + 1)
-#             )
-
-#             round_id = get_latest()[0]
-
-#             # Retrieves the new Round information from the rounds table, using the no_of_rounds +1 as its unique identifier
-#             round_info = get_entry_from_db(
-#                 "round_id, round_order, round_name",
-#                 "rounds",
-#                 "round_id = " + str(round_id)
-#             )
-
-#             # Inserts the Round into the live table
-#             insert_db_entry(
-#                 "live",
-#                 "quiz_id, round_id",
-#                 request.form.get('quiz_id') + ", " + str(round_info["round_id"])
-#             )
-            
-#             # Redirects users to the Round template html page, specific to the Round just created
-#             flash("Round " + str(round_info['round_order']) + ": " + str(round_info['round_name']) + ", created")            
-#             return redirect(url_for(
-#                 request.form.get("source_point")+'_template'
-#             ),
-#                 code = 307
-#             )
-
-#     else:
-#         flash("You either aren't authorised to create a round, or you tried to do it via unofficial means")
-#         return redirect(url_for(
-#             'home'
-#         ))
-
 # This will create a new Round
 @app.route('/create_new_round', methods=['GET', 'POST'])
 def create_new_round():
@@ -1212,29 +1124,11 @@ def create_new_round():
             insert_db_entry(
                 "rounds",
                 "round_name",
-                "\"" + request.form.get('round_name') + "\""
-            )
-
-            # Retrieves the new Round information from the rounds table, using the no_of_rounds +1 as its unique identifier
-            # round_info = get_entry_from_db(
-            #     "round_id, round_name",
-            #     "rounds",
-            #     "round_id is NOT NULL"
-            # )
-
-            # round_info = common_values(
-            #     "rounds.round_id, rounds.round_name, live.quiz_id, live.question_id, live.question_order, live.round_order",
-            #     "rounds",
-            #     "live",
-            #     "round_id",
-            #     "round_id"
-            # )
-
-            
-
+                "\"%s\"" % (fix_string(request.form.get('round_name')))
+            )         
             
             # Redirects users to the Round template html page, specific to the Round just created
-            flash("Round " + str(request.form.get('round_name')) + ", created")            
+            flash("Round %s, created" % (fix_string(request.form.get('round_name'))))            
             return redirect(url_for(
                 "round_maker"
             ))
@@ -1246,53 +1140,6 @@ def create_new_round():
         ))
 
 
-# # This function will delete a round from the database, based on the Round id.
-# @app.route('/delete_round', methods=['GET', 'POST'])
-# def delete_round():
-#     # Check to see if the user is an admin
-#     if admin_check() and request.method == "POST":
-#         # Retrieves the Round information from the rounds table based on the round_id
-#         round_info = get_entry_from_db(
-#             "quiz_id, round_order, round_name",
-#             "rounds",
-#             "round_id = " + request.form.get('round_id')
-#         )
-
-#         # Deletes the Round from the rounds table in the database based off the round_id
-#         delete_db_entry(
-#             "rounds",
-#             "round_id = " + request.form.get('round_id')
-#         )
-
-#         # Calculates the number of rounds for a given quiz_id
-#         no_of_rounds = len(get_entries_from_db(
-#             "round_id",
-#             "rounds",
-#             "quiz_id = "+ str(round_info['quiz_id'])
-#         ))
-
-#         # For all other rounds with round_orders greater than the one that was deleted, their round_order is reduced by one
-#         for i in range(round_info['round_order'], no_of_rounds + 1):
-#             update_db_entry(
-#                 "rounds",
-#                 "round_order = " + str(i),
-#                 "round_order = " + str(i+1)
-#             )
-
-#         # Redirects users to the quiz template based on the quiz_id
-#         flash("Round " + str(round_info['round_order']) + ": " + str(round_info['round_name']) + ", deleted")
-#         return redirect(url_for(
-#             request.form.get("source_point")
-#         ),
-#             code = 307
-#         )
-    
-#     else:
-#         flash("Something didn't go as planned")
-#         return redirect(url_for(
-#             'home'
-#         ))
-
 # This function will delete a round from the database, based on the Round id.
 @app.route('/delete_round', methods=['GET', 'POST'])
 def delete_round():
@@ -1302,13 +1149,13 @@ def delete_round():
         associated_quizzes = get_entries_from_db(
             "quiz_id",
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"%s\"" % (request.form.get('round_id'))
         )
 
         round_name = get_entry_from_db(
             "round_name",
             "rounds",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"%s\"" % (request.form.get('round_id'))
         )
 
         unique_associated_quizzes_id = set()
@@ -1320,7 +1167,7 @@ def delete_round():
             all_unique_associated_quizzes = get_entry_from_db(
                 "quiz_id, round_order",
                 "live",
-                "quiz_id = \"" + str(unique_associated_quiz) + "\" AND round_id = \"" + request.form.get('round_id') + "\""
+                "quiz_id = \"%s\" AND round_id = \"%s\"" % (unique_associated_quiz, request.form.get('round_id'))
             )
             unique_associated_quizzes.append(all_unique_associated_quizzes)
 
@@ -1328,7 +1175,7 @@ def delete_round():
         # Deletes the Round from the rounds table in the database based off the round_id
         delete_db_entry(
             "rounds",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"%s\"" % (request.form.get('round_id'))
         )
 
         # This if statement doesn't work
@@ -1338,7 +1185,7 @@ def delete_round():
                 number_of_associated_rounds = get_entries_from_db(
                     "round_id",
                     "live",
-                    "quiz_id = \"" + str(quiz['quiz_id']) + "\""
+                    "quiz_id = \"%s\"" % (quiz['quiz_id'])
                 )
 
                 unique_associated_rounds = set()
@@ -1351,13 +1198,13 @@ def delete_round():
                 for i in range(int(quiz['round_order']), number_of_associated_rounds):
                     update_db_entry(
                         "live",
-                        "round_order = " + str(i),
-                        "quiz_id = \"" + str(quiz['quiz_id']) + "\" AND round_order = \"" + str(i+1) + "\""
+                        "round_order = %s" % (i),
+                        "quiz_id = \"%s\" AND round_order = \"%s\"" % (quiz['quiz_id'], i+1)
                     )
 
 
         # Redirects users to the quiz template based on the quiz_id
-        flash("Round " + str(round_name['round_name']) + ", deleted")
+        flash("Round %s, deleted" % (round_name['round_name']))
         return redirect(url_for(
             request.form.get("source_point")
         ),
@@ -1389,7 +1236,7 @@ def question_maker():
                 question_category = get_entry_from_db(
                     "category_name",
                     "categories",
-                    "category_id = " + str(question['question_category_id'])
+                    "category_id = %s" % (question['question_category_id'])
                 )
 
                 question['question_category']=question_category['category_name']
@@ -1401,7 +1248,7 @@ def question_maker():
                 "rounds",
                 "live",
                 "rounds.round_id",
-                "live.round_id WHERE live.question_id = " + str(question['question_id'])
+                "live.round_id WHERE live.question_id = %s" % (question['question_id'])
             )
             for associated_round in associated_round_info:
                 associated_rounds.append(associated_round['round_name'])
@@ -1417,7 +1264,7 @@ def question_maker():
                     "quizzes",
                     "live",
                     "quizzes.quiz_id",
-                    "live.quiz_id WHERE live.round_id = " + str(round['round_id'])
+                    "live.quiz_id WHERE live.round_id = %s" % (round['round_id'])
                 )
                 for associated_quiz in associated_quiz_info:
                     associated_quizzes.append(associated_quiz['quiz_name'])
@@ -1425,10 +1272,6 @@ def question_maker():
             associated_quizzes = set(associated_quizzes)
             question['associated_quizzes'] = " and ".join(associated_quizzes)
             question['number_of_associated_quizzes'] = len(associated_quizzes)
-
-
-
-
 
 
         # Feeds data into HTML Jinja2 template
@@ -1443,51 +1286,6 @@ def question_maker():
             'home'
         )) 
 
-# This will create a Question associated with a specific Round
-# @app.route('/create_new_question', methods=['GET', 'POST'])
-# def create_new_question():
-
-#     if admin_check() and request.method == "POST":
-#         # Calculates the number of questions for a given round_id
-#         no_of_questions = len(get_entries_from_db(
-#             "question_id",
-#             "questions",
-#             "round_id = " + request.form.get('round_id')
-#         ))
-
-#         # Creates a new Question in the database, using the no_of_questions for the Question Order
-#         insert_db_entry(
-#             "questions",
-#             "round_id, question_order, question_tag",
-#             request.form.get('round_id') + ", " + str(1 + no_of_questions) + ", \"Question " + str(1 + no_of_questions) + "\""
-#         )
-
-#         # Retrieves the Question information from the database for the Question just created
-#         question_info = get_entry_from_db(
-#             "question_id, question_order",
-#             "questions",
-#             "round_id = " + request.form.get('round_id') + " AND question_order = " + str(1 + no_of_questions)
-#         )
-
-#         # Retrieves Round info for the flash message
-#         round_info = get_entry_from_db(
-#             "round_order, round_name",
-#             "rounds",
-#             "round_id = " + request.form.get('round_id')
-#         )
-
-#         # Redirects user to the Question template for the newly created Question
-#         flash("Question " + str(question_info['question_order']) + " created in Round " + str(round_info['round_order']) + ": " + str(round_info['round_name']))
-#         return redirect(url_for(
-#             request.form.get("source_point")+'_template'
-#         ),
-#             code = 307
-#         )
-    
-#     else:
-#         return redirect(url_for(
-#             'home'
-#         ))
 
 # Creates a question not associated to any quiz or round
 @app.route('/create_new_question', methods=['GET', 'POST'])
@@ -1513,9 +1311,9 @@ def create_new_question():
             ))  
         
         if check_single_db(
-            "question_type_id",
-            "question_type",
-            "question_type_id IS NOT NULL"
+            "category_id",
+            "categories",
+            "category_id IS NOT NULL"
         ):
             question_category_id = get_entry_from_db(
                 "category_id",
@@ -1530,9 +1328,9 @@ def create_new_question():
             ))  
 
         if check_single_db(
-            "question_type_id",
-            "question_type",
-            "question_type_id IS NOT NULL"
+            "question_scoring_type_id",
+            "question_scoring_type",
+            "question_scoring_type_id IS NOT NULL"
         ):
             question_scoring_type_id = get_entry_from_db(
                 "question_scoring_type_id",
@@ -1551,9 +1349,8 @@ def create_new_question():
             insert_db_entry(
                 "questions",
                 "question_tag, question_type_id, question_category_id, question_points, question_scoring_type_id, question_difficulty",
-                "\"" + str(request.form.get('question_tag')) + "\", \"" + str(question_type_id) + "\", \"" + str(question_category_id) + "\", \"10\", \"" + str(question_scoring_type_id) + "\", \"5\""
+                "\"%s\", \"%s\", \"%s\", \"10\", \"%s\", \"5\"" % (fix_string(request.form.get('question_tag')), question_type_id, question_category_id, question_scoring_type_id)
             )
-
 
             # Redirects user to the Question template for the newly created Question
             flash("Question created")
@@ -1567,73 +1364,14 @@ def create_new_question():
         ))
 
 
-# This will delete a specific question, and depending on the page where it was actioned, will return the user to the appropriate page
-# Editing! This is needs editing to allow for questions to be onipotent
-# @app.route('/delete_question', methods=['GET', 'POST'])
-# def delete_question():
-
-#     if admin_check() and request.method == "POST":
-#         # Retreives Question information based on the question_id, before the question is deleted.
-#         question_info = get_entry_from_db(
-#             "round_id, question_order",
-#             "questions",
-#             "question_id = " + request.form.get('question_id')
-#         )
-    
-#         round_info = get_entry_from_db(
-#             "round_order",
-#             "rounds",
-#             "round_id = " + str(question_info['round_id'])
-#         )
-
-#         # Calculates the number of questions for a given Round
-#         no_of_questions = len(get_entries_from_db(
-#             "question_id",
-#             "questions",
-#             "round_id = " + str(question_info['round_id'])
-#         ))
-
-#         # Removes the Question from the questions table in the database
-#         delete_db_entry(
-#             "questions",
-#             "question_id = " + request.form.get('question_id')
-#         )
-
-
-#         # Not entering this if statement
-#         if no_of_questions >1:
-#             no_of_questions = no_of_questions-1
-
-#             # Updates all other Question orders for that Round
-#             for i in range(question_info['question_order'], no_of_questions + 1):
-#                 update_db_entry(
-#                     "questions",
-#                     "question_order = " + str(i),
-#                     "question_order = " + str(i+1)
-#                 )
-
-#         flash("Question " + str(question_info['question_order']) + " from Round " +  str(round_info['round_order']) + ", deleted")
-#         return redirect(url_for(
-#             request.form.get("source_point")+'_template'
-#         ),
-#             code = 307
-#         )
-
-
-#     else:
-#         return redirect(url_for(
-#             'home'
-#         ))
-
 @app.route('/delete_question', methods=['GET', 'POST'])
 def delete_question():
-
     if admin_check() and request.method == "POST":
         # This finds out all the live table entries involving the round
         associated_rounds = get_entries_from_db(
             "round_id",
             "live",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
         unique_associated_rounds_id = set()
@@ -1645,14 +1383,14 @@ def delete_question():
             all_unique_associated_rounds = get_entry_from_db(
                 "round_id, question_order",
                 "live",
-                "round_id = \"" + str(unique_associated_round) + "\" AND question_id = \"" + request.form.get('question_id') + "\""
+                "round_id = \"%s\" AND question_id = \"%s\"" % (unique_associated_round, request.form.get('question_id'))
             )
             unique_associated_rounds.append(all_unique_associated_rounds)
 
         # Removes the Question from the questions table in the database
         delete_db_entry(
             "questions",
-            "question_id = " + request.form.get('question_id')
+            "question_id = %s" % (request.form.get('question_id'))
         )
 
         if unique_associated_rounds is not None:
@@ -1661,7 +1399,7 @@ def delete_question():
                 number_of_associated_questions = get_entries_from_db(
                     "question_id",
                     "live",
-                    "round_id = \"" + str(round['round_id']) + "\""
+                    "round_id = \"%s\"" %  (round['round_id'])
                 )
 
                 unique_associated_questions = set()
@@ -1674,8 +1412,8 @@ def delete_question():
                 for i in range(int(round['question_order']), number_of_associated_questions):
                     update_db_entry(
                         "live",
-                        "question_order = " + str(i),
-                        "round_id = \"" + str(round['round_id']) + "\" AND question_order = \"" + str(i+1) + "\""
+                        "question_order = %s" % (i),
+                        "round_id = \"%s\" AND question_order = \"%s\"" % (round['round_id'], i+1)
                     )
 
 
@@ -1698,7 +1436,7 @@ def associate_question():
         associated_questions = get_entries_from_db(
             "question_id",
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\" AND question_id IS NOT NULL"
+            "round_id = \"%s\" AND question_id IS NOT NULL" % (request.form.get('round_id'))
         )
 
         unique_associated_questions = set()
@@ -1710,7 +1448,7 @@ def associate_question():
         insert_db_entry(
             "live",
             "round_id, question_id, question_order",
-            request.form.get('round_id') + ", " + request.form.get('question_id') + ", " +str(number_of_associated_questions)
+            "%s, %s, %s" % (request.form.get('round_id'), request.form.get('question_id'), number_of_associated_questions)
         )
 
         flash("Question added to Round")
@@ -1731,14 +1469,14 @@ def unassociate_question():
     if request.method == "POST":
         delete_db_entry(
             "live",
-            "question_id = \"" + request.form.get('question_id') + "\" AND round_id = \"" + request.form.get('round_id') + "\""
+            "question_id = \"%s\" AND round_id = \"%s\"" % (request.form.get('question_id'), request.form.get('round_id'))
         )
 
         # Need to find how many questions are in the round
         number_of_associated_questions = get_entries_from_db(
             "question_id",
             "live",
-            "round_id = \"" + request.form.get('round_id') + "\" AND question_id IS NOT NULL"
+            "round_id = \"%s\" AND question_id IS NOT NULL" % (request.form.get('round_id'))
         )
 
         unique_associated_questions = set()
@@ -1751,8 +1489,8 @@ def unassociate_question():
         for i in range(int(request.form.get('question_order')), number_of_associated_questions):
             update_db_entry(
                 "live",
-                "question_order = " + str(i),
-                "round_id = \"" + request.form.get('round_id') + "\" AND question_order = \"" + str(i+1) + "\""
+                "question_order = %s" % (i),
+                "round_id = \"%s\" AND question_order = \"%s\"" % (request.form.get('round_id'), i+1)
             )
 
         flash("Question removed from Round")
@@ -1769,9 +1507,8 @@ def unassociate_question():
         ))
   
 
-
 # Question Media #
-# Hints
+# These need creating
 @app.route('/add_question_media', methods=['GET', 'POST'])
 def add_question_media():
     if request.method == "POST":
@@ -1832,13 +1569,13 @@ def add_participants():
             insert_db_entry(
                 "participants",
                 "user_id, quiz_id, participant_ready",
-                i + ", " + request.form.get('quiz_id') + ",0"
+                "%s, %s, 0" % (i, request.form.get('quiz_id'))
             )
 
             update_leaderboard(i, request.form.get('quiz_id'), 0)
 
         return redirect(url_for(
-            request.form.get("source_point")+'_template'
+            request.form.get("source_point")
         ),
             code = 307
         )
@@ -1861,30 +1598,30 @@ def remove_participants():
             user_info= get_entry_from_db(
                 "user_id",
                 "users",
-                "username = \"" + i + "\""
+                "username = \"%s\"" % (i)
             )
 
             # Delete the user into the participants table
             delete_db_entry(
                 "participants",
-                "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
+                "user_id = %s AND quiz_id = %s" % (user_info['user_id'], request.form.get('quiz_id'))
             )
 
             # Delete the user into the answers table
             delete_db_entry(
                 "answers",
-                "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
+                "user_id = %s AND quiz_id = %s" % (user_info['user_id'], request.form.get('quiz_id'))
             )
 
             # Delete the user into the user_media table
             delete_db_entry(
                 "user_media",
-                "user_id = " + str(user_info['user_id']) + " AND quiz_id = " + request.form.get('quiz_id')
+                "user_id = %s AND quiz_id = %s" % (user_info['user_id'], request.form.get('quiz_id'))
             )
 
         # Redirect user to the quiz template page for the current quiz
         return redirect(url_for(
-            request.form.get("source_point")+'_template'
+            request.form.get("source_point")
         ),
             code = 307
         )
@@ -1906,7 +1643,7 @@ def quiz_template():
         if not check_single_db(
             "quiz_id",
             "quizzes",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         ):
             # Redirects users to the quiz maker/editor overview page if the quiz doesn't exist
             flash("This quiz does not exist")
@@ -1918,7 +1655,7 @@ def quiz_template():
         quiz_info = get_entry_from_db(
             "quiz_id, quiz_name, quiz_description",
             "quizzes",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
         # Collects information on all the rounds associated with the quiz
@@ -1927,7 +1664,7 @@ def quiz_template():
             "rounds",
             "live",
             "rounds.round_id",
-            "live.round_id WHERE live.quiz_id = " + request.form.get('quiz_id')
+            "live.round_id WHERE live.quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
@@ -1945,7 +1682,7 @@ def quiz_template():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question)
@@ -1970,7 +1707,7 @@ def quiz_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -1978,7 +1715,7 @@ def quiz_template():
                         round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         round['mode_question_category'] = "Not set"
@@ -2002,7 +1739,7 @@ def quiz_template():
                         question_category_name = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category) + "\""
+                            "category_id = \"%s\"" % (question_category)
                         )['category_name']
                         mode_question_categories.append(question_category_name)
                     quiz_info['mode_question_category'] = " and ".join(mode_question_categories)
@@ -2010,7 +1747,7 @@ def quiz_template():
                     quiz_info['mode_question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question_category_id[0]) + "\""
+                        "category_id = \"%s\"" % (question_category_id[0])
                     )['category_name']
                 else:
                     quiz_info['mode_question_category'] = "Not set"
@@ -2022,7 +1759,7 @@ def quiz_template():
             "rounds",
             "round_id",
             "live",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
 
@@ -2035,7 +1772,7 @@ def quiz_template():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question)
@@ -2060,7 +1797,7 @@ def quiz_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -2068,7 +1805,7 @@ def quiz_template():
                         round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         round['mode_question_category'] = "Not set"
@@ -2080,7 +1817,7 @@ def quiz_template():
             "users",
             "user_id",
             "participants",
-            "quiz_id = \"" + request.form.get('quiz_id') +"\""
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
         # Returns all users from the participant table, whilst grabbing their associated username from the users table
@@ -2089,7 +1826,7 @@ def quiz_template():
             "users",
             "user_id",
             "participants",
-            "quiz_id = \"" + request.form.get('quiz_id') + "\""
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
         # Feeds data into HTML Jinja2 template
@@ -2118,7 +1855,7 @@ def update_quiz_name():
         if check_single_db(
             "quiz_id",
             "quizzes",
-            "quiz_name = \"" + request.form.get('new_quiz_name') + "\""
+            "quiz_name = \"%s\"" % (fix_string(request.form.get('new_quiz_name')))
         ):
             # If the quiz name is already in use, then the quiz name is not updated
             flash('That quiz name is already in use.')
@@ -2127,14 +1864,14 @@ def update_quiz_name():
             # If unqiue, then the quiz Name is updated
             update_db_entry(
                 "quizzes",
-                "quiz_name = \"" + request.form.get('new_quiz_name') + "\"",
-                "quiz_id = " + request.form.get('quiz_id')
+                "quiz_name = \"%s\"" % (fix_string(request.form.get('new_quiz_name'))),
+                "quiz_id = %s" % (request.form.get('quiz_id'))
             )
-            flash('Quiz name updated to ' + request.form.get('new_quiz_name'))
+            flash('Quiz name updated to %s' % fix_string(request.form.get('new_quiz_name')))
 
         # Redirects user to quiz template 
         return redirect(url_for(
-            request.form.get("source_point")+'_template'
+            request.form.get("source_point")
         ),
             code = 307
         )
@@ -2147,14 +1884,14 @@ def update_quiz_description():
         # If unqiue, then the quiz Name is updated
         update_db_entry(
             "quizzes",
-            "quiz_description = \"" + request.form.get('new_quiz_description').replace("\"", "") + "\"",
-            "quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+            "quiz_description = \"%s\"" % (fix_string(request.form.get('new_quiz_description'))),
+            "quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Redirects user to quiz template 
         flash('Quiz description updated')
         return redirect(url_for(
-            request.form.get("source_point")+'_template'
+            request.form.get("source_point")
         ),
             code = 307
         )
@@ -2170,7 +1907,7 @@ def round_template():
         if not check_single_db(
             "round_id",
             "rounds",
-            "round_id = " + str(request.form.get('round_id'))
+            "round_id = %s" % (request.form.get('round_id'))
         ):
             # If the Round does not exists, then the user is redirected to the quiz Maker/Editor overview page
             flash("This Round does not exist")
@@ -2183,7 +1920,7 @@ def round_template():
         round_info = get_entry_from_db(
             "round_id, round_name, round_description",
             "rounds",
-            "round_id = \"" + request.form.get('round_id') + "\""
+            "round_id = \"%s\"" % (request.form.get('round_id'))
         )
 
         # Collects information on all the quizzes this round is associated with
@@ -2192,7 +1929,7 @@ def round_template():
             "quizzes",
             "live",
             "quizzes.quiz_id",
-            "live.quiz_id WHERE live.round_id = " + request.form.get('round_id')
+            "live.quiz_id WHERE live.round_id = %s" % (request.form.get('round_id'))
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
@@ -2206,7 +1943,7 @@ def round_template():
                 "rounds",
                 "live",
                 "rounds.round_id",
-                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+                "live.round_id WHERE live.quiz_id = %s" % (quiz['quiz_id'])
             )
             for associated_round in associated_round_info:
                 associated_rounds.append(associated_round['round_name'])
@@ -2222,7 +1959,7 @@ def round_template():
                     "questions",
                     "live",
                     "questions.question_id",
-                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                    "live.question_id WHERE live.round_id = %s" % (round['round_id'])
                 )
                 for associated_question in associated_question_info:
                     associated_questions.append(associated_question['question_tag'])
@@ -2247,7 +1984,7 @@ def round_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         quiz['mode_category'] = " and ".join(mode_question_categories)
@@ -2255,7 +1992,7 @@ def round_template():
                         quiz['mode_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         quiz['mode_category'] = "Not set"
@@ -2284,7 +2021,7 @@ def round_template():
                 "rounds",
                 "live",
                 "rounds.round_id",
-                "live.round_id WHERE live.quiz_id = " + str(quiz['quiz_id'])
+                "live.round_id WHERE live.quiz_id = %s" % (quiz['quiz_id'])
             )
             for associated_round in associated_round_info:
                 associated_rounds.append(associated_round['round_name'])
@@ -2300,7 +2037,7 @@ def round_template():
                     "questions",
                     "live",
                     "questions.question_id",
-                    "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                    "live.question_id WHERE live.round_id = %s" % (round['round_id'])
                 )
                 for associated_question in associated_question_info:
                     associated_questions.append(associated_question['question_tag'])
@@ -2325,7 +2062,7 @@ def round_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         quiz['mode_category'] = " and ".join(mode_question_categories)
@@ -2333,7 +2070,7 @@ def round_template():
                         quiz['mode_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         quiz['mode_category'] = "Not set"
@@ -2345,7 +2082,7 @@ def round_template():
             "questions",
             "live",
             "questions.question_id",
-            "live.question_id WHERE live.round_id = " + request.form.get('round_id')
+            "live.question_id WHERE live.round_id = %s" % (request.form.get('round_id'))
         )
 
         if associated_question_info:
@@ -2354,7 +2091,7 @@ def round_template():
                 associated_question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(associated_question['question_category_id']) + "\""
+                        "category_id = \"%s\"" % (associated_question['question_category_id'])
                     )['category_name']
                 
                 associated_round_info = common_values(
@@ -2362,7 +2099,7 @@ def round_template():
                     "rounds",
                     "live",
                     "rounds.round_id",
-                    "live.round_id WHERE live.question_id = " + str(associated_question['question_id'])
+                    "live.round_id WHERE live.question_id = %s" % (associated_question['question_id'])
                 )
                 
                 for associated_round in associated_round_info:
@@ -2389,7 +2126,7 @@ def round_template():
                         question_category_name = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category) + "\""
+                            "category_id = \"%s\"" % (question_category)
                         )['category_name']
                         mode_question_categories.append(question_category_name)
                     round_info['mode_question_category'] = " and ".join(mode_question_categories)
@@ -2397,7 +2134,7 @@ def round_template():
                     round_info['mode_question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question_category_id[0]) + "\""
+                        "category_id = \"%s\"" % (question_category_id[0])
                     )['category_name']
                 else:
                     round_info['mode_question_category'] = "Not set"
@@ -2423,7 +2160,7 @@ def round_template():
                 unassociated_question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(unassociated_question['question_category_id']) + "\""
+                        "category_id = \"%s\"" % (unassociated_question['question_category_id'])
                     )['category_name']
                 
                 associated_round_info = common_values(
@@ -2431,7 +2168,7 @@ def round_template():
                     "rounds",
                     "live",
                     "rounds.round_id",
-                    "live.round_id WHERE live.question_id = " + str(unassociated_question['question_id'])
+                    "live.round_id WHERE live.question_id = %s" % (unassociated_question['question_id'])
                 )
                 
                 for associated_round in associated_round_info:
@@ -2452,79 +2189,6 @@ def round_template():
             unassociated_question_info  = unassociated_question_info
         )
 
-        # Uses an Inner Join to get all information required of the round
-        # round_info = get_values(
-        #     "one",
-        #     "SELECT "
-        #         "rounds.round_id, rounds.round_name, rounds.round_order, rounds.round_description,"
-        #         "quizzes.quiz_id, quizzes.quiz_name "
-        #     "FROM ("
-        #         "rounds INNER JOIN quizzes ON rounds.quiz_id = quizzes.quiz_id) "
-        #     "WHERE "
-        #         "rounds.round_id = " + request.form.get('round_id') + ";"    
-        # )
-
-        # # Using the round_id, it retrieves information about the all the questions associtate with the Round
-        # question_info = get_entries_from_db(
-        #     "question_id, question_order, question_tag",
-        #     "questions",
-        #     "round_id = " + request.form.get('round_id')
-        # )
-        # # Sorts the dictionaries of questions in order of their question_order
-        # question_info = sorted(question_info, key=lambda k: k['question_order']) 
-
-        # # Calculates the number of rounds in the quiz
-        # number_of_rounds = len(get_entries_from_db(
-        #     "round_order",
-        #     "rounds",
-        #     "quiz_id = " + str(round_info['quiz_id']))
-        # )
-
-        # # Checks if the current Question is the first in the round
-        # if int(round_info['round_order']) != 1:
-        #     # Gets the question_id for the previous Question
-        #     previous_round_info = get_entry_from_db(
-        #         "round_id",
-        #         "rounds",
-        #         "round_order = " + str(int(round_info['round_order'])-1)
-        #     )
-        
-        # # If it's the first Question
-        # else:
-        #     # Creates a blank dictionary
-        #     previous_round_info = dict()
-
-        # # Checks if the current Question is the last in the round
-        # if int(round_info['round_order']) != number_of_rounds:
-        #     # Gets the question_id for the next Question
-        #     next_round_info = get_entry_from_db(
-        #         "round_id",
-        #         "rounds",
-        #         "round_order = " + str(int(round_info['round_order'])+1)
-        #     )
-        # # If it's the last Question of the round
-        # else:
-        #     # Creates a blank dictionary
-        #     next_round_info = dict()
-
-    #    # Feeds data into HTML Jinja2 template
-    #     return render_template(
-    #         "quiz/make_a_quiz/rounds/round_template.html",
-    #         name                = "Round Template",
-    #         round_info          = round_info
-    #         # question_info       = question_info,
-    #         # number_of_rounds    = number_of_rounds,
-    #         # next_round_info     = next_round_info,
-    #         # previous_round_info = previous_round_info
-    #     )
-    
-    # else:
-    #     flash(request.form.get('round_id'))
-    #     return redirect(url_for(
-    #         'home'
-    #     ))  
-
-
 
 # This function will update the current Round's name, but only if the new name doesn't already exist for a Round in the associated quiz
 @app.route('/update_round_name', methods=['GET', 'POST']) 
@@ -2534,8 +2198,8 @@ def update_round_name():
         # If there's not already a Round with that name in the quiz, the round_name is updated
         update_db_entry(
             "rounds",
-            "round_name = \"" + request.form.get('new_round_name') + "\"",
-            "round_id = " + request.form.get('round_id')
+            "round_name = \"%s\"" % (fix_string(request.form.get('new_round_name'))),
+            "round_id = %s" % (request.form.get('round_id'))
         )
 
         # Redirects user to Round template 
@@ -2558,12 +2222,11 @@ def update_round_description():
         # If there's not already a Round with that name in the quiz, the round_name is updated
         update_db_entry(
             "rounds",
-            "round_description = \"" + request.form.get('new_round_description').replace("\"", "") + "\"",
-            "round_id = " + str(request.form.get('round_id')) #Is str needed?
+            "round_description = \"%s\"" % (fix_string(request.form.get('new_round_description'))),
+            "round_id = %s" % (request.form.get('round_id'))
         )
 
-        # The user is redirected to the Round template
-        # Not needed in post if statement
+        # The user is redirected to where they clicked the button
         return redirect(url_for(
             request.form.get("source_point")
         ),
@@ -2585,7 +2248,7 @@ def question_template():
         if not check_single_db(
             "question_id",
             "questions",
-            "question_id = " + str(request.form.get('question_id'))
+            "question_id = %s" % (request.form.get('question_id'))
         ):
             # If the Round does not exists, then the user is redirected to the quiz Maker/Editor overview page
             flash("This Question does not exist")
@@ -2598,7 +2261,7 @@ def question_template():
         question_info = get_entry_from_db(
             "question_id, question_text, question_tag, question_correct_answer, question_points, question_difficulty, question_type_id, question_scoring_type_id, question_category_id",
             "questions",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
         # Question Type information
@@ -2606,7 +2269,7 @@ def question_template():
             question_type = get_entry_from_db(
                 "*",
                 "question_type",
-                "question_type_id = \"" + str(question_info['question_type_id']) + "\""
+                "question_type_id = \"%s\"" % (question_info['question_type_id'])
             )
 
             question_info.update(question_type)
@@ -2618,7 +2281,7 @@ def question_template():
                 "question_type",
                 "question_type_id",
                 "questions",
-                "question_id = \"" + request.form.get('question_id') + "\""
+                "question_id = \"%s\"" % (request.form.get('question_id'))
             )
 
         else:
@@ -2633,7 +2296,7 @@ def question_template():
             question_scoring_type = get_entry_from_db(
                 "*",
                 "question_scoring_type",
-                "question_scoring_type_id = \"" + str(question_info['question_scoring_type_id']) + "\""
+                "question_scoring_type_id = \"%s\"" % (question_info['question_scoring_type_id'])
             )
 
             question_info.update(question_scoring_type)
@@ -2645,7 +2308,7 @@ def question_template():
                 "question_scoring_type",
                 "question_scoring_type_id",
                 "questions",
-                "question_id = \"" + request.form.get('question_id') + "\""
+                "question_id = \"%s\"" % (request.form.get('question_id'))
             )
 
         else:
@@ -2660,7 +2323,7 @@ def question_template():
             question_category = get_entry_from_db(
                 "*",
                 "categories",
-                "category_id = \"" + str(question_info['question_category_id']) + "\""
+                "category_id = \"%s\"" % (question_info['question_category_id'])
             )
 
             question_info.update(question_category)
@@ -2673,7 +2336,7 @@ def question_template():
                 "category_id",
                 "question_category_id",
                 "questions",
-                "question_id = \"" + request.form.get('question_id') + "\""
+                "question_id = \"%s\"" % (request.form.get('question_id'))
             )
 
         else:
@@ -2687,7 +2350,7 @@ def question_template():
         hints = get_entries_from_db(
             "*",
             "hints",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
         hints = sorted(hints, key=lambda k: k['hint_number']) 
@@ -2700,7 +2363,7 @@ def question_template():
             "rounds",
             "live",
             "rounds.round_id",
-            "live.round_id WHERE live.question_id = " + request.form.get('question_id')
+            "live.round_id WHERE live.question_id = %s" % (request.form.get('question_id'))
         )
 
         # Loop through all the associated rounds to find their associated quizzes
@@ -2711,7 +2374,7 @@ def question_template():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(associated_round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (associated_round['round_id'])
             )
 
             if associated_question_info:
@@ -2739,7 +2402,7 @@ def question_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         associated_round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -2747,7 +2410,7 @@ def question_template():
                         associated_round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         associated_round['mode_question_category'] = "Not set"
@@ -2755,13 +2418,13 @@ def question_template():
 
 
             quiz_names = []
-        # Question Category information
+            # Question Category information
             quiz_info = common_values(
                 "quizzes.quiz_name",
                 "quizzes",
                 "live",
                 "quizzes.quiz_id",
-                "live.quiz_id WHERE live.round_id = \"" + str(associated_round['round_id']) + "\""
+                "live.quiz_id WHERE live.round_id = \"%s\"" % (associated_round['round_id'])
             )
 
             for quiz in quiz_info:
@@ -2779,7 +2442,7 @@ def question_template():
             "rounds",
             "round_id",
             "live",
-            "question_id = \"" + request.form.get('question_id') + "\""
+            "question_id = \"%s\"" % (request.form.get('question_id'))
         )
 
         # Loop through all the associated rounds to find their associated quizzes
@@ -2790,7 +2453,7 @@ def question_template():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(unassociated_round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (unassociated_round['round_id'])
             )
 
             if associated_question_info:
@@ -2818,7 +2481,7 @@ def question_template():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         unassociated_round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -2826,7 +2489,7 @@ def question_template():
                         unassociated_round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         unassociated_round['mode_question_category'] = "Not set"
@@ -2838,7 +2501,7 @@ def question_template():
                 "quizzes",
                 "live",
                 "quizzes.quiz_id",
-                "live.quiz_id WHERE live.round_id = \"" + str(unassociated_round['round_id']) + "\""
+                "live.quiz_id WHERE live.round_id = \"%s\"" % (unassociated_round['round_id'])
             )
 
             for quiz in quiz_info:
@@ -2871,9 +2534,8 @@ def question_template():
 def update_question():
     if admin_check() and request.method == "POST":
         # Gets information from the HTML form  
-        question_update         = request.form.get('question_update')
+        question_update         = fix_string(request.form.get('question_update'))
         question_update_field   = request.form.get('question_update_field')
-        question_update         = question_update.replace("\"","")
 
         # Format the submitted data to work depending on what was updated
         if re.search("question_audio", question_update_field):
@@ -2883,13 +2545,13 @@ def update_question():
   
         # Puts quotation marks either side of the question update
         if question_update != "NULL":
-            question_update = "\"" + question_update + "\""
+            question_update = "\"%s\"" % (question_update)
 
         # Updates the question in the database    
         update_db_entry(
             "questions",
-            question_update_field + " = " + question_update,
-            "question_id = " + request.form.get('question_id')
+            "%s = %s" % (question_update_field, question_update),
+            "question_id = %s" % (request.form.get('question_id'))
         )
 
         # Redirects to the question template
@@ -2919,23 +2581,23 @@ def change_order():
             # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = 0",
-                "quiz_id = \"" + request.form.get("quiz_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+                "%s_order = 0" % (request.form.get("order_type")),
+                "quiz_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("quiz_id"), request.form.get("round_id"), request.form.get("order_type"), request.form.get("old_order"))
             )
 
             # This will shift all other orders up 1 from the "new order" to the "old order-1"
             for i in order:
                 update_db_entry(
                     "live",
-                    request.form.get("order_type")+"_order = " + str(i+1),
-                    "quiz_id = \"" + request.form.get("quiz_id") + "\" AND " + request.form.get("order_type") + "_order = " + str(i)
+                    "%s_order = %s" % (request.form.get("order_type"), i+1),
+                    "quiz_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("quiz_id"), request.form.get("order_type"), i)
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
-                "quiz_id = \"" + request.form.get("quiz_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+                "%s_order = %s" % (request.form.get("order_type"), request.form.get("new_order")),
+                "quiz_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"0\"" % (request.form.get("quiz_id"), request.form.get("round_id"), request.form.get("order_type"))
             )
     
 
@@ -2946,23 +2608,23 @@ def change_order():
             # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = 0",
-                "quiz_id = \"" + request.form.get("quiz_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+                "%s_order = 0" % (request.form.get("order_type")),
+                "quiz_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("quiz_id"), request.form.get("round_id"), request.form.get("order_type"), request.form.get("old_order"))
             )
 
             # This will shift all other orders down 1 from the "new order +1" to the "old order"
             for i in range(len(order)):
                 update_db_entry(
                     "live",
-                    request.form.get("order_type")+"_order = " + str(order[i-1]),
-                    "quiz_id = \"" + request.form.get("quiz_id") + "\" AND " + request.form.get("order_type")+"_order = " + str(order[i])
+                    "%s_order = %s" % (request.form.get("order_type"), order[i-1]),
+                    "quiz_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("quiz_id"), request.form.get("order_type"), order[i])
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
-                "quiz_id = \"" + request.form.get("quiz_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+                "%s_order = %s" % (request.form.get("order_type"), request.form.get("new_order")),
+                "quiz_id = \"%s\" AND round_id = \"%s\" AND %s_order = 0" % (request.form.get("quiz_id"), request.form.get("round_id"), request.form.get("order_type"))
             )
 
         # These three if/else statments will return the user back to the appropriate pages
@@ -2992,23 +2654,23 @@ def change_question_order():
             # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = 0",
-                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+                "%s_order = 0" % (request.form.get("order_type")),
+                "question_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("question_id"), request.form.get("round_id"), request.form.get("order_type"), request.form.get("old_order"))
             )
 
             # This will shift all other orders up 1 from the "new order" to the "old order-1"
             for i in order:
                 update_db_entry(
                     "live",
-                    request.form.get("order_type")+"_order = " + str(i+1),
-                    "round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type") + "_order = " + str(i)
+                    "%s_order = %s" % (request.form.get("order_type"), i+1),
+                    "round_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("round_id"), request.form.get("order_type"), i)
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
-                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+                "%s_order = %s" % (request.form.get("order_type"), request.form.get("new_order")),
+                "question_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"0\"" % (request.form.get("question_id"), request.form.get("round_id"), request.form.get("order_type"))
             )
     
 
@@ -3019,23 +2681,23 @@ def change_question_order():
             # This is putting the current order to a placeholder value. No order should be 0, so is a safe placeholder value
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = 0",
-                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + request.form.get("old_order")
+                "%s_order = 0" % (request.form.get("order_type")),
+                "question_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"%s\"" % (request.form.get("question_id"), request.form.get("round_id"), request.form.get("order_type"), request.form.get("old_order"))
             )
 
             # This will shift all other orders down 1 from the "new order +1" to the "old order"
             for i in range(len(order)):
                 update_db_entry(
                     "live",
-                    request.form.get("order_type")+"_order = " + str(order[i-1]),
-                    "round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = " + str(order[i])
+                    "%s_order = %s" % (request.form.get("order_type"), order[i-1]),
+                    "round_id = \"%s\" AND %s_order = %s" % (request.form.get("round_id"), request.form.get("order_type"), order[i])
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "live",
-                request.form.get("order_type")+"_order = " + request.form.get("new_order"),
-                "question_id = \"" + request.form.get("question_id") + "\" AND round_id = \"" + request.form.get("round_id") + "\" AND " + request.form.get("order_type")+"_order = 0"
+                "%s_order = %s" % (request.form.get("order_type"), request.form.get("new_order")),
+                "question_id = \"%s\" AND round_id = \"%s\" AND %s_order = \"0\"" % (request.form.get("question_id"), request.form.get("round_id"), request.form.get("order_type"))
             )
 
         # These three if/else statments will return the user back to the appropriate pages
@@ -3066,22 +2728,22 @@ def change_hint_order():
             update_db_entry(
                 "hints",
                 "hint_number = 0",
-                "hint_id = \"" + request.form.get("hint_id") + "\""
+                "hint_id = \"%s\"" % (request.form.get("hint_id"))
             )
 
             # This will shift all other orders up 1 from the "new order" to the "old order-1"
             for i in order:
                 update_db_entry(
                     "hints",
-                    "hint_number = " + str(i+1),
-                    "question_id = \"" + request.form.get("question_id") + "\" AND " + "hint_number = " + str(i)
+                    "hint_number = %s" % (i+1),
+                    "question_id = \"%s\" AND hint_number = \"%s\"" % (request.form.get("question_id"), i)
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "hints",
-                "hint_number = " + request.form.get("new_order"),
-                "hint_id = \"" + request.form.get("hint_id") + "\""
+                "hint_number = %s" % (request.form.get("new_order")),
+                "hint_id = \"%s\"" % (request.form.get("hint_id"))
             )
     
 
@@ -3093,22 +2755,22 @@ def change_hint_order():
             update_db_entry(
                 "hints",
                 "hint_number = 0",
-                "hint_id = \"" + request.form.get("hint_id") + "\""
+                "hint_id = \"%s\"" % (request.form.get("hint_id"))
             )
 
             # This will shift all other orders down 1 from the "new order +1" to the "old order"
             for i in range(len(order)):
                 update_db_entry(
                     "hints",
-                    "hint_number = " + str(order[i-1]),
-                    "question_id = \"" + request.form.get("question_id") + "\" AND " + "hint_number = " + str(order[i])
+                    "hint_number = %s" % (order[i-1]),
+                    "question_id = \"%s\" AND hint_number = \"%s\"" % (request.form.get("question_id"), order[i])
                 )
 
             # This then changes the order from the placeholder order, to the new one
             update_db_entry(
                 "hints",
-                "hint_number = " + request.form.get("new_order"),
-                "hint_id = \"" + request.form.get("hint_id") + "\""
+                "hint_number = %s" % (request.form.get("new_order")),
+                "hint_id = \"%s\"" % (request.form.get("hint_id"))
             )
 
         # These three if/else statments will return the user back to the appropriate pages
@@ -3136,10 +2798,18 @@ def host_a_quiz():
         # This will return a dictionary of all quizzes with their quiz_id and quiz_name    
         upcoming_quiz_info = join_tables(
             "DISTINCT quizzes.quiz_id, quizzes.quiz_name, quizzes.quiz_description", 
-            "quizzes",
             "live",
+            "quizzes",
             "quizzes.quiz_id",
             "live.quiz_id WHERE live.quiz_completed is NULL AND live.quiz_active is NULL"
+        )
+
+        unassociated_quiz_info = compare_two_tables(
+            "DISTINCT quizzes.quiz_id, quizzes.quiz_name, quizzes.quiz_description",
+            "quizzes",
+            "quiz_id",
+            "live",
+            "live.quiz_completed is NULL AND live.quiz_active is NULL"
         )
 
         active_quiz_info = join_tables(
@@ -3164,7 +2834,8 @@ def host_a_quiz():
             name        = "Host a quiz",
             upcoming_quiz_info    = upcoming_quiz_info,
             completed_quiz_info   = completed_quiz_info,
-            active_quiz_info      = active_quiz_info
+            active_quiz_info      = active_quiz_info,
+            unassociated_quiz_info = unassociated_quiz_info
         )
 
     else:
@@ -3185,7 +2856,7 @@ def host_live_quiz():
             "quizzes",
             "live",
             "quizzes.quiz_id",
-            "live.quiz_id WHERE quizzes.quiz_id = " + str(request.form.get('quiz_id'))
+            "live.quiz_id WHERE quizzes.quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Collects information on all the rounds associated with the quiz
@@ -3194,7 +2865,7 @@ def host_live_quiz():
             "rounds",
             "live",
             "rounds.round_id",
-            "live.round_id WHERE live.quiz_id = " + request.form.get('quiz_id')
+            "live.round_id WHERE live.quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
@@ -3210,7 +2881,7 @@ def host_live_quiz():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question)
@@ -3233,7 +2904,7 @@ def host_live_quiz():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -3241,7 +2912,7 @@ def host_live_quiz():
                         round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         round['mode_question_category'] = "Not set"
@@ -3269,7 +2940,7 @@ def host_live_quiz():
                         question_category_name = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category) + "\""
+                            "category_id = \"%s\"" % (question_category)
                         )['category_name']
                         mode_question_categories.append(question_category_name)
                     quiz_info['mode_question_category'] = " and ".join(mode_question_categories)
@@ -3277,7 +2948,7 @@ def host_live_quiz():
                     quiz_info['mode_question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question_category_id[0]) + "\""
+                        "category_id = \"%s\"" % (question_category_id[0])
                     )['category_name']
                 else:
                     quiz_info['mode_question_category'] = "Not set"
@@ -3313,7 +2984,7 @@ def host_live_quiz():
             "answers",
             "users",
             "answers.user_id",
-            "users.user_id WHERE answers.quiz_id = \"" + str(quiz_info['quiz_id']) + "\" AND answers.round_id = \"" + str(current_round_id) + "\""
+            "users.user_id WHERE answers.quiz_id = \"%s\" AND answers.round_id = \"%s\"" % (quiz_info['quiz_id'], current_round_id)
         )
         answers = sorted(answers, key=lambda k: k['answer_timestamp'])
 
@@ -3323,14 +2994,14 @@ def host_live_quiz():
             question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question['question_category_id']) + "\""
+                        "category_id = \"%s\"" % (question['question_category_id'])
                     )['category_name']
             
         for question in round_questions:
             question['question_scoring_type_name'] = get_entry_from_db(
                         "question_scoring_type_name",
                         "question_scoring_type",
-                        "question_scoring_type_id = \"" + str(question['question_scoring_type_id']) + "\""
+                        "question_scoring_type_id = \"%s\"" % (question['question_scoring_type_id'])
                     )['question_scoring_type_name']
             
         for question in round_questions:
@@ -3353,7 +3024,7 @@ def host_live_quiz():
             "users",
             "participants",
             "users.user_id",
-            "participants.user_id WHERE quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+            "participants.user_id WHERE quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         for participant in participant_info:
@@ -3361,15 +3032,23 @@ def host_live_quiz():
                 participant['item_name'] = get_entry_from_db(
                             "item_name",
                             "items",
-                            "item_id = \"" + str(participant['participant_item_id']) + "\""
+                            "item_id = \"%s\"" % (participant['participant_item_id'])
                         )['item_name']
 
         participant_info = sorted(participant_info, key=lambda k: k['participant_position'])
 
-        if not count_not("participants", "participant_ready", "1")[0] > 0:
+        if not count_not(
+            "participants",
+            "participant_ready",
+            "1"
+        )[0] > 0:
             quiz_info['quiz_ready'] = True
 
-        if count("live", "round_completed", "1 AND quiz_id = " + str(request.form.get('quiz_id')))[0] == len(associated_round_info):
+        if count(
+            "live",
+            "round_completed",
+            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
+        )[0] == len(associated_round_info):
             quiz_info['quiz_end'] = True
 
 
@@ -3426,7 +3105,7 @@ def start_quiz():
             update_db_entry(
                 "live",
                 "quiz_active = 1",
-                "quiz_id = " + str(request.form.get('quiz_id'))
+                "quiz_id = %s" % (request.form.get('quiz_id'))
             )
 
             # Redirects the user back to the host live quiz
@@ -3450,7 +3129,7 @@ def start_round():
         update_db_entry(
             "live",
             "round_active = 1",
-            "round_id = " + str(request.form.get('round_id'))
+            "round_id = %s" % (request.form.get('round_id'))
         )
 
         # Redirects the user back to the host live quiz
@@ -3475,7 +3154,7 @@ def start_question():
         update_db_entry(
             "live",
             "question_active = 1",
-            "question_id = " + str(request.form.get('question_id'))
+            "question_id = %s" % (request.form.get('question_id'))
         )
 
         # Redirects the user back to the host live quiz
@@ -3499,7 +3178,7 @@ def complete_question():
         update_db_entry(
             "live",
             "question_active = NULL, question_completed = 1",
-            "question_id = " + str(request.form.get('question_id'))
+            "question_id = %s" % (request.form.get('question_id'))
         )
 
         # Redirects the user back to the host live quiz
@@ -3523,7 +3202,7 @@ def complete_round():
         update_db_entry(
             "live",
             "round_active = NULL, round_completed = 1",
-            "round_id = " + str(request.form.get('round_id'))
+            "round_id = %s" % (request.form.get('round_id'))
         )
 
         # This retrieves information about the answers in the round
@@ -3545,8 +3224,8 @@ def complete_round():
         for answer in list3:
             update_db_entry(
                 "answers",
-                "answer_correct = " + str(answer["answer_correct"]),
-                "user_id = \"" + str(answer['user_id']) + "\" AND question_id = \"" + str(answer['question_id']) + "\" AND round_id = \"" + str(answer['round_id']) + "\" AND quiz_id = \"" + str(answer['quiz_id']) + "\""
+                "answer_correct = %s" % (answer["answer_correct"]),
+                "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (answer['user_id'], answer['question_id'], answer['round_id'], answer['quiz_id'])
             )
 
         round_questions = common_values(
@@ -3554,11 +3233,15 @@ def complete_round():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(request.form.get('round_id'))
+                "live.question_id WHERE live.round_id = %s" % (request.form.get('round_id'))
             )
 
         for question in round_questions:
-            mark_answer(question["question_id"], str(request.form.get('round_id')), str(request.form.get('quiz_id')))
+            mark_answer(
+                question["question_id"],
+                str(request.form.get('round_id')),
+                str(request.form.get('quiz_id'))
+            )
 
         # Redirects the user back to the host live quiz
         return redirect(url_for(
@@ -3580,8 +3263,8 @@ def complete_quiz():
         # This update the value of active to TRUE in the database for the round  
         update_db_entry(
             "live",
-            "quiz_active = NULL, quiz_completed = \"" + timestamp() + "\"",
-            "quiz_id = " + str(request.form.get('quiz_id'))
+            "quiz_active = NULL, quiz_completed = \"%s\"" % (timestamp()),
+            "quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Redirects the user back to the host live quiz
@@ -3599,32 +3282,6 @@ def complete_quiz():
         ))  
 
 
-# I think this can be deleted
-# This function will update the database with whether the answer submitted by the user was correct or not
-# @app.route('/host_live_quiz/mark_answer', methods=['GET', 'POST'])
-# def mark_answer():
-#     # Check to see if the user is an admin
-#     if admin_check() and request.method == 'POST':
-#         # Updates the DB with whether the answer was correct or not
-#         update_db_entry(
-#             "answers",
-#             "answer_correct = " + request.form.get('marked_answer'),
-#             "user_id = " + str(request.form.get('user_id')) + " AND question_id = " + str(request.form.get('question_id'))
-#         )
-
-#         # Redirects the user back to the host live quiz
-#         return redirect(url_for(
-#             'host_live_quiz'
-#         ),
-#             code = 307
-#         )
-
-#     else:
-#         return redirect(url_for(
-#             'home'
-#         ))  
-
-
 # JOIN     ############################################################################
 
 # This function will display a web page with information about all the quizzes
@@ -3636,7 +3293,7 @@ def join_a_quiz():
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active = 1 AND participants.user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active = 1 AND participants.user_id = %s" % (session['user_id'])
     )
 
     upcoming_quiz_info = common_values(
@@ -3644,7 +3301,7 @@ def join_a_quiz():
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active IS NULL AND live.quiz_completed IS NULL AND participants.user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_active IS NULL AND live.quiz_completed IS NULL AND participants.user_id = %s" % (session['user_id'])
     )
 
     previous_quiz_info = common_values(
@@ -3652,7 +3309,7 @@ def join_a_quiz():
         "quizzes",
         "participants",
         "quizzes.quiz_id",
-        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_completed IS NOT NULL AND participants.user_id = " + str(session['user_id'])
+        "participants.quiz_id INNER JOIN live on live.quiz_id = quizzes.quiz_id WHERE live.quiz_completed IS NOT NULL AND participants.user_id = %s" % (session['user_id'])
     )
 
     # Feeds data into HTML Jinja2 template
@@ -3676,7 +3333,7 @@ def live_quiz():
             "quizzes",
             "live",
             "quizzes.quiz_id",
-            "live.quiz_id WHERE quizzes.quiz_id = " + str(request.form.get('quiz_id'))
+            "live.quiz_id WHERE quizzes.quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Collects information on all the rounds associated with the quiz
@@ -3685,7 +3342,7 @@ def live_quiz():
             "rounds",
             "live",
             "rounds.round_id",
-            "live.round_id WHERE live.quiz_id = " + request.form.get('quiz_id')
+            "live.round_id WHERE live.quiz_id = %s" % (request.form.get('quiz_id'))
         )
 
         # Sorts the dictionaries of rounds in order of their round_order
@@ -3701,7 +3358,7 @@ def live_quiz():
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id WHERE live.round_id = " + str(round['round_id'])
+                "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
                 associated_questions.append(associated_question)
@@ -3724,7 +3381,7 @@ def live_quiz():
                             question_category_name = get_entry_from_db(
                                 "category_name",
                                 "categories",
-                                "category_id = \"" + str(question_category) + "\""
+                                "category_id = \"%s\"" % (question_category)
                             )['category_name']
                             mode_question_categories.append(question_category_name)
                         round['mode_question_category'] = " and ".join(mode_question_categories)
@@ -3732,7 +3389,7 @@ def live_quiz():
                         round['mode_question_category'] = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category_id[0]) + "\""
+                            "category_id = \"%s\"" % (question_category_id[0])
                         )['category_name']
                     else:
                         round['mode_question_category'] = "Not set"
@@ -3756,7 +3413,7 @@ def live_quiz():
                         question_category_name = get_entry_from_db(
                             "category_name",
                             "categories",
-                            "category_id = \"" + str(question_category) + "\""
+                            "category_id = \"%s\"" % (question_category)
                         )['category_name']
                         mode_question_categories.append(question_category_name)
                     quiz_info['mode_question_category'] = " and ".join(mode_question_categories)
@@ -3764,7 +3421,7 @@ def live_quiz():
                     quiz_info['mode_question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question_category_id[0]) + "\""
+                        "category_id = \"%s\"" % (question_category_id[0])
                     )['category_name']
                 else:
                     quiz_info['mode_question_category'] = "Not set"
@@ -3790,19 +3447,19 @@ def live_quiz():
             question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
-                        "category_id = \"" + str(question['question_category_id']) + "\""
+                        "category_id = \"%s\"" % (question['question_category_id'])
                     )['category_name']
             
             question['question_type'] = get_entry_from_db(
                 "question_type_name",
                 "question_type",
-                "question_type_id = \"" + str(question['question_type_id']) + "\""
+                "question_type_id = \"%s\"" % (question['question_type_id'])
             )['question_type_name']
             
             question['question_scoring_type'] = get_entry_from_db(
                         "question_scoring_type_name",
                         "question_scoring_type",
-                        "question_scoring_type_id = \"" + str(question['question_scoring_type_id']) + "\""
+                        "question_scoring_type_id = \"%s\"" % (question['question_scoring_type_id'])
                     )['question_scoring_type_name']
             
         for question in round_questions:
@@ -3817,15 +3474,6 @@ def live_quiz():
                 break  # Stop searching if found
             elif quiz_info['quiz_active'] == True:  # Executed only if the loop completes without finding the key
                 quiz_info['round_end'] = True
-
-    
-        # active_question = common_value(
-        #         "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.question_order, live.question_active, live.question_completed",
-        #         "questions",
-        #         "live",
-        #         "questions.question_id",
-        #         "live.question_id WHERE live.question_active = 1"
-        # )
         
         active_question = common_value(
             "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, questions.question_type_id, questions.question_scoring_type_id, live.round_id, live.question_order, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
@@ -3840,19 +3488,19 @@ def live_quiz():
             active_question['question_category'] = get_entry_from_db(
                 "category_name",
                 "categories",
-                "category_id = \"" + str(active_question['question_category_id']) + "\""
+                "category_id = \"%s\"" % (active_question['question_category_id'])
             )['category_name']
 
             active_question['question_type'] = get_entry_from_db(
                 "question_type_name",
                 "question_type",
-                "question_type_id = \"" + str(active_question['question_type_id']) + "\""
+                "question_type_id = \"%s\"" % (active_question['question_type_id'])
             )['question_type_name']
             
             active_question['question_scoring_type'] = get_entry_from_db(
                         "question_scoring_type_name",
                         "question_scoring_type",
-                        "question_scoring_type_id = \"" + str(active_question['question_scoring_type_id']) + "\""
+                        "question_scoring_type_id = \"%s\"" % (active_question['question_scoring_type_id'])
                     )['question_scoring_type_name']
 
 
@@ -3862,7 +3510,7 @@ def live_quiz():
             "users",
             "participants",
             "users.user_id",
-            "participants.user_id WHERE quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+            "participants.user_id WHERE quiz_id = %s" % (request.form.get('quiz_id')) 
         )
 
         participant_info = common_value(
@@ -3870,13 +3518,21 @@ def live_quiz():
             "users",
             "participants",
             "users.user_id",
-            "participants.user_id WHERE participants.quiz_id = " + str(request.form.get('quiz_id')) + " AND participants.user_id = " +  str(session['user_id'])#Is str needed?
+            "participants.user_id WHERE participants.quiz_id = %s AND participants.user_id = %s" % (request.form.get('quiz_id'), session['user_id'])
         )
 
-        if not count_not("participants", "participant_ready", "1")[0] > 0:
+        if not count_not(
+            "participants",
+            "participant_ready",
+            "1"
+        )[0] > 0:
             quiz_info['quiz_ready'] = True
 
-        if not count_not("live", "round_completed", "1 AND quiz_id = " + str(request.form.get('quiz_id')))[0] > 0:
+        if not count_not(
+            "live",
+            "round_completed",
+            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
+        )[0] > 0:
             if quiz_info['quiz_completed']:
                 quiz_info['quiz_end'] = True
 
@@ -3907,7 +3563,7 @@ def quiz_ready():
         update_db_entry(
             "participants",
             "participant_ready = 1",
-            "user_id = " + str(request.form.get('user_id')) + " AND quiz_id = " + request.form.get('quiz_id')
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (request.form.get('user_id'), request.form.get('quiz_id'))
         )
 
         # Redirects the user back to the Live quiz page
@@ -3932,7 +3588,7 @@ def quiz_unready():
             update_db_entry(
                 "participants", 
                 "participant_ready = 0", 
-                "user_id = " + str(request.form.get('user_id')) + " AND quiz_id = " + request.form.get('quiz_id')
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (request.form.get('user_id'), request.form.get('quiz_id'))
             )
             flash("Pre Quiz nerves are normal")
 
@@ -3952,13 +3608,13 @@ def submit_answer():
         if check_single_db(
             "user_id",
             "answers",
-            "user_id = \"" + str(session['user_id']) + "\" AND question_id = \"" + str(request.form.get("question_id")) + "\" AND round_id = \"" + str(request.form.get("round_id")) + "\" AND quiz_id = \"" + str(request.form.get("quiz_id")) + "\""
+            "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], request.form.get("question_id"), request.form.get("round_id"), request.form.get("quiz_id"))
         ):
             # This updates the Answers table with the new answer
             update_db_entry(
                 "answers",
-                "answer_text = \"" + request.form.get("new_answer").replace("\"", "") + "\", answer_correct = NULL, answer_timestamp = \"" + timestamp() + "\"",
-                "user_id = \"" + str(session['user_id']) + "\" AND question_id = \"" + str(request.form.get("question_id")) + "\" AND round_id = \"" + str(request.form.get("round_id")) + "\" AND quiz_id = \"" + str(request.form.get("quiz_id")) + "\""
+                "answer_text = \"%s\", answer_correct = NULL, answer_timestamp = \"%s\"" % (fix_string(request.form.get("new_answer")), timestamp()),
+                "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], request.form.get("question_id"), request.form.get("round_id"), request.form.get("quiz_id"))
             )
 
         # If this is the first answer being submitted
@@ -3967,7 +3623,7 @@ def submit_answer():
             insert_db_entry(
                 "answers",
                 "user_id, question_id, round_id, quiz_id, answer_text, answer_timestamp",
-                "\"" + str(session['user_id']) + "\", \"" + str(request.form.get("question_id")) + "\", \"" + str(request.form.get("round_id")) + "\", \"" + str(request.form.get("quiz_id")) + "\", \"" + request.form.get("new_answer").replace("\"", "") + "\", \"" + timestamp() + "\""
+                "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"" % (session['user_id'], request.form.get("question_id"), request.form.get("round_id"), request.form.get("quiz_id"), fix_string(request.form.get("new_answer")), timestamp())
             )
 
         # Redirects user to the Live quiz page
@@ -3996,7 +3652,7 @@ def all_results():
                 "quizzes",
                 "live",
                 "quizzes.quiz_id",
-                "live.quiz_id INNER JOIN participants ON quizzes.quiz_id = participants.quiz_id WHERE live.quiz_completed is not NULL AND live.quiz_active is NULL AND participants.user_id = " + str(session['user_id'])
+                "live.quiz_id INNER JOIN participants ON quizzes.quiz_id = participants.quiz_id WHERE live.quiz_completed is not NULL AND live.quiz_active is NULL AND participants.user_id = %s" % (session['user_id'])
             )
         else:
             quiz_info = join_tables(
@@ -4024,14 +3680,14 @@ def results():
             "users",
             "participants",
             "users.user_id",
-            "participants.user_id WHERE quiz_id = " + str(request.form.get('quiz_id')) #Is str needed?
+            "participants.user_id WHERE quiz_id = %s" % (request.form.get('quiz_id')) 
         )
 
         # Gets the name of the quiz
         quiz_info = get_entry_from_db(
                 "quiz_name",
                 "quizzes",
-                "quiz_id = " + str(request.form.get('quiz_id'))
+                "quiz_id = %s" % (request.form.get('quiz_id'))
             )
 
         participant_info = sorted(participant_info, key=lambda k: -k['participant_score'])
@@ -4039,7 +3695,7 @@ def results():
         # Feeds data into HTML Jinja2 template
         return render_template(
             "quiz/results/results.html",
-            name                = quiz_info['quiz_name'] + " Results",
+            name                = "%s Results" % (quiz_info['quiz_name']),
             participant_info    = participant_info
         )
 
@@ -4052,7 +3708,7 @@ def results():
 def terms_and_conditions():
     # Feeds data into HTML Jinja2 template
     return render_template(
-        "misc/t&c.html",
+        "misc/t_c.html",
         name = "T&Cs"
     )
 

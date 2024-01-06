@@ -62,7 +62,7 @@
         value               = "{{question_type['question_type_name']}}"
         name                = "new_question_type_name"
         id                  = "new_question_type_name"
-        pattern             = "[^&quot,']+"
+        pattern             =  "[^\\]+"
       />
       <input
         type                = "text"
@@ -70,7 +70,7 @@
         value               = "{{question_type['question_type_description']}}"
         name                = "new_question_type_description"
         id                  = "new_question_type_description"
-        pattern             = "[^&quot,']+"
+        pattern             =  "[^\\]+"
       />
       <input
         type  = "hidden"
@@ -127,7 +127,7 @@
       placeholder         = "Question Type Name"
       name                = "question_type_name"
       id                  = "question_type_name"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
       required
     />
     <input
@@ -135,7 +135,7 @@
       placeholder         = "Question Type Description"
       name                = "question_type_description"
       id                  = "question_type_description"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
     />
     <input
       type  = "hidden"

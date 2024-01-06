@@ -62,7 +62,7 @@
         value               = "{{question_scoring_type['question_scoring_type_name']}}"
         name                = "new_question_scoring_type_name"
         id                  = "new_question_scoring_type_name"
-        pattern             = "[^&quot,']+"
+        pattern             =  "[^\\]+"
       />
       <input
         type                = "text"
@@ -70,7 +70,7 @@
         value               = "{{question_scoring_type['question_scoring_type_description']}}"
         name                = "new_question_scoring_type_description"
         id                  = "new_question_scoring_type_description"
-        pattern             = "[^&quot,']+"
+        pattern             =  "[^\\]+"
       />
       <input
         type  = "hidden"
@@ -127,7 +127,7 @@
       placeholder         = "Question Scoring Type Name"
       name                = "question_scoring_type_name"
       id                  = "question_scoring_type_name"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
       required
     />
     <input
@@ -135,7 +135,7 @@
       placeholder         = "Question Scoring Type Description"
       name                = "question_scoring_type_description"
       id                  = "question_scoring_type_description"
-      pattern             = "[^&quot,']+"
+      pattern             =  "[^\\]+"
     />
     <input
       type  = "hidden"

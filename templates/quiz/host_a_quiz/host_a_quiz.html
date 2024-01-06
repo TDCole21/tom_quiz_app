@@ -44,8 +44,41 @@
     {% endfor %}
   {% else %}
     <p>
-      There are currently no upcoming Quizzes.
+      There are currently no upcoming Quizzes with associated Rounds or Questions.
     </p>
+    {% if unassociated_quiz_info %}
+      <h3>
+        Edit a Quiz:
+      </h3>
+      {% for unassociated_quiz in unassociated_quiz_info %}
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'quiz_template'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            name  = "quiz_id"
+            value = "{{unassociated_quiz['quiz_id']}}"
+          />
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            Edit Quiz: {{unassociated_quiz['quiz_name']}}
+          </button>
+        </form>
+        {% if loop.last %}
+        {% else %}
+          <hr style="width:40%; margin: auto; margin-bottom:2em">
+        {% endif %}
+      {% endfor %}
+      <hr>
+    {% endif %}
+    <h3>
+      Create a New Quiz:
+    </h3>
     <form
       method  = "POST"
       action  = "{{ url_for(
@@ -57,7 +90,7 @@
         placeholder         = "Quiz name"
         name                = "quiz_name"
         required maxlength  = "50"
-        pattern             = "[^&quot,']+"
+        pattern             = "[^\\]+"
       />
       <button
         type  = "submit"
@@ -66,9 +99,9 @@
         Create Quiz
       </button>
     </form>
+    <hr>
   {%endif %}
 
-    <hr>
 
   {% if active_quiz_info|length > 0 %}
     <h2>
@@ -127,9 +160,10 @@
         </form>
       </div>
     {% endfor %}
+    <hr>
   {% endif %}
 
-  <hr>
+  
   <h4>To do:</h4>
   <ul>
       <li>List information about the Quiz</li>

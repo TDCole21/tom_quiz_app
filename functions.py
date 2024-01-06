@@ -499,5 +499,6 @@ def update_leaderboard(user_id, quiz_id, points):
 
 def fix_string(text):
     text = text.replace('"', '\\"')
-    return text.replace("'", "\\'")
+    text = text.replace("'", "\\'")
+    return text
     
