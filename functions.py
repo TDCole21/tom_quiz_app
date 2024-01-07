@@ -222,6 +222,14 @@ def compare_two_tables(output, table1, common_column, table2, conditions):
     cur.close()   
     return data
 
+def compare_two_tables2(table1, table2, common_column):
+    cur = mysql.connection.cursor(cursorclass=DictCursor)
+    cur.execute("SELECT * FROM %s WHERE NOT EXISTS (SELECT 1 FROM %s WHERE %s.%s = %s.%s)" % (table1, table2, table1, common_column, table2, common_column))
+    mysql.connection.commit()    
+    data = cur.fetchall() #built in function to return a tuple, list or dictionary
+    cur.close()   
+    return data
+
 # This function selects entries from table1 that aren't in table 2
 def compare_two_tables_new_quizzes(round_id): 
     cur = mysql.connection.cursor(cursorclass=DictCursor)
@@ -365,7 +373,7 @@ def average(list_of_dicts, key):
     total_value = 0
     for dict in list_of_dicts:
         if key not in dict:
-            raise ValueError("The list of list_of_dicts does not contain the key " + key + ".")
+            raise ValueError("The list of list_of_dicts does not contain the key %s." % (key))
 
         dict_value = dict.get(key, 0)
         if dict_value is not None:
@@ -423,7 +431,7 @@ def mark_answer(question_id, round_id, quiz_id):
     answer_info = get_entries_from_db(
         "*",
         "answers",
-        "answer_correct = 1 AND question_id = \""+ str(question_id) + "\" AND round_id = \"" + str(round_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+        "answer_correct = 1 AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (question_id, round_id, quiz_id)
     )
 
     # Order answers by time answered
@@ -432,7 +440,7 @@ def mark_answer(question_id, round_id, quiz_id):
     update_db_entry(
         "answers",
         "answer_points = 0",
-        "answer_correct = 0 AND question_id = \""+ str(question_id) + "\" AND round_id = \"" + str(round_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+        "answer_correct = 0 AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (question_id, round_id, quiz_id)
     )
 
     # Fastest Finger
@@ -442,8 +450,8 @@ def mark_answer(question_id, round_id, quiz_id):
             if points > 0:
                 update_db_entry(
                     "answers",
-                    "answer_points = " + str(points),
-                    "user_id = \"" + str(answer_info[i]['user_id']) + "\" AND question_id = \"" + str(answer_info[i]['question_id']) + "\" AND round_id = \"" + str(answer_info[i]['round_id']) + "\" AND quiz_id = \"" + str(answer_info[i]['quiz_id']) + "\""
+                    "answer_points = %s" % (points),
+                    "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (answer_info[i]['user_id'], answer_info[i]['question_id'], answer_info[i]['round_id'], answer_info[i]['quiz_id'])
                 )
                 points -= 1  # Decrement points for the next dictionary
             else:
@@ -454,8 +462,8 @@ def mark_answer(question_id, round_id, quiz_id):
         for answer in answer_info:
             update_db_entry(
                 "answers",
-                "answer_points = " + str(question_info['question_points']),
-                "user_id = \"" + str(answer['user_id']) + "\" AND question_id = \"" + str(answer['question_id']) + "\" AND round_id = \"" + str(answer['round_id']) + "\" AND quiz_id = \"" + str(answer['quiz_id']) + "\""
+                "answer_points = %s" % (question_info['question_points']),
+                "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (answer['user_id'], answer['question_id'], answer['round_id'], answer['quiz_id'])
             )
         
 def update_leaderboard(user_id, quiz_id, points):
@@ -463,21 +471,21 @@ def update_leaderboard(user_id, quiz_id, points):
     participant_score = get_entry_from_db(
         "participant_score",
         "participants",
-        "user_id = \"" + str(user_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+        "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
     )['participant_score']
 
     # Adds/Subtracts new points to exisiting score
     update_db_entry(
         "participants",
-        "participant_score = " + str(int(participant_score)+int(points)),
-        "user_id = \"" + str(user_id) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+        "participant_score = %s" % (int(participant_score)+int(points)),
+        "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
     )
 
     # Gets all the scores from the quiz
     participant_info = get_entries_from_db(
         "participant_score, user_id",
         "participants",
-        "quiz_id = " + str(quiz_id)
+        "quiz_id = %s" % (quiz_id)
     )
 
     # Sorts the user id's based on score
@@ -492,8 +500,8 @@ def update_leaderboard(user_id, quiz_id, points):
         # participant["participant_position"] = current_position
         update_db_entry(
             "participants",
-            "participant_position = " + str(current_position),
-            "user_id = \"" + str(participant["user_id"]) + "\" AND quiz_id = \"" + str(quiz_id) + "\""
+            "participant_position = %s" % (current_position),
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (participant["user_id"], quiz_id)
         )
         previous_score = participant["participant_score"]
 

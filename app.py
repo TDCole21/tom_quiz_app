@@ -450,7 +450,7 @@ def create_quiz():
             "quiz_name = \"%s\"" % (fix_string(request.form.get('quiz_name')))
         ):
             # Redirects user to the quiz maker/editor page
-            flash('The quiz name, \"%s\", is already in use.' % (fix_string(request.form.get('quiz_name'))))
+            flash('The quiz name, \"%s\", is already in use.' % (request.form.get('quiz_name')))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -464,7 +464,7 @@ def create_quiz():
             )
 
             # Redirects user to the quiz template page for the newly created quiz
-            flash('The Quiz, \"%s\", was successfully created.' % (fix_string(request.form.get('quiz_name'))))
+            flash('The Quiz, \"%s\", was successfully created.' % (request.form.get('quiz_name')))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -498,7 +498,7 @@ def delete_quiz():
             )
 
             # Redirects the user to the quiz Maker/Editor page
-            flash ("The Quiz, \"%s\", has been deleted" % (fix_string(request.form.get('quiz_name'))))
+            flash ("The Quiz, \"%s\", has been deleted" % (request.form.get('quiz_name')))
             return redirect(url_for(
                 'quiz_maker'
             ))
@@ -542,7 +542,7 @@ def add_item():
             "item_name, item_description",
             "\"%s\", \"%s\"" % (fix_string(request.form.get('item_name'), fix_string(request.form.get('item_description'))))
         )
-        flash("Item %s created" % (fix_string(request.form.get('item_name'))))
+        flash("Item %s created" % (request.form.get('item_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -561,7 +561,7 @@ def update_item():
             "item_name = \"%s\", item_description = \"%s\"" % (fix_string(request.form.get('new_item_name')), fix_string(request.form.get('new_item_description'))),
             "item_name = \"%s\"" % (fix_string(request.form.get('old_item_name')))
         )
-        flash("Item %s updated to %s" % (fix_string(request.form.get('old_item_name')), fix_string(request.form.get('new_item_name'))))
+        flash("Item %s updated to %s" % (request.form.get('old_item_name'), request.form.get('new_item_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -584,7 +584,7 @@ def delete_item():
             "items",
             "item_id = \"%s\"" % (request.form.get('item_id'))
         )
-        flash("Item %s deleted" % (fix_string(request.form.get('item_name'))))
+        flash("Item %s deleted" % (request.form.get('item_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -628,7 +628,7 @@ def add_category():
             "category_name, category_description",
             "\"%s\", \"%s\"" % (fix_string(request.form.get('category_name')), fix_string(request.form.get('category_description')))
         )
-        flash("Category %s created" % (fix_string(request.form.get('category_name'))))
+        flash("Category %s created" % (request.form.get('category_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -647,7 +647,7 @@ def update_category():
             "category_name = \"%s\", category_description = \"%s\" " % (fix_string(request.form.get('new_category_name')), fix_string(request.form.get('new_category_description'))),
             "category_id = \"%s\"" % (request.form.get('category_id'))
         )
-        flash("Category %s updated to %s" % (request.form.get('old_category_name'), fix_string(request.form.get('new_category_name'))))
+        flash("Category %s updated to %s" % (request.form.get('old_category_name'), request.form.get('new_category_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -714,7 +714,7 @@ def add_question_type():
             "question_type_name, question_type_description",
             "\"%s\", \"%s\"" % (fix_string(request.form.get('question_type_name')), fix_string(request.form.get('question_type_description')))
         )
-        flash("Question type %s created" % (fix_string(request.form.get('question_type_name'))))
+        flash("Question type %s created" % (request.form.get('question_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -733,7 +733,7 @@ def update_question_type():
             "question_type_name = \"%s\", question_type_description = \"%s\"" % (fix_string(request.form.get('new_question_type_name')), fix_string(request.form.get('new_question_type_description'))),
             "question_type_id = \"%s\"" % (request.form.get('question_type_id'))
         )
-        flash("Question type %s updated to %s" % (fix_string(request.form.get('old_question_type_name')), fix_string(request.form.get('new_question_type_name'))))
+        flash("Question type %s updated to %s" % (request.form.get('old_question_type_name'), request.form.get('new_question_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -800,7 +800,7 @@ def add_question_scoring_type():
             "question_scoring_type_name, question_scoring_type_description",
             "\"%s\", \"%s\"" % (fix_string(request.form.get('question_scoring_type_name')), fix_string(request.form.get('question_scoring_type_description')))
         )
-        flash("Question scoring type %s created" % (fix_string(request.form.get('question_scoring_type_name'))))
+        flash("Question scoring type %s created" % (request.form.get('question_scoring_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -819,7 +819,7 @@ def update_question_scoring_type():
             "question_scoring_type_name = \"%s\", question_scoring_type_description = \"%s\"" % (fix_string(request.form.get('new_question_scoring_type_name')), fix_string(request.form.get('new_question_scoring_type_description'))),
             "question_scoring_type_id = \"%s\"" % (request.form.get('question_scoring_type_id'))
         )
-        flash("Question scoring type %s updated to %s" % (fix_string(request.form.get('old_question_scoring_type_name')), fix_string(request.form.get('new_question_scoring_type_name'))))
+        flash("Question scoring type %s updated to %s" % (request.form.get('old_question_scoring_type_name'), request.form.get('new_question_scoring_type_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -1132,7 +1132,7 @@ def create_new_round():
             )         
             
             # Redirects users to the Round template html page, specific to the Round just created
-            flash("Round %s, created" % (fix_string(request.form.get('round_name'))))            
+            flash("Round %s, created" % (request.form.get('round_name')))            
             return redirect(url_for(
                 "round_maker"
             ))
@@ -1436,7 +1436,7 @@ def delete_question():
 @app.route('/associate_question', methods=['GET', 'POST'])
 def associate_question():
     if request.method == "POST":
-        # Need to find how many rounds are in the quiz
+        # Need to find how many questions are in the round
         associated_questions = get_entries_from_db(
             "question_id",
             "live",
@@ -1871,7 +1871,7 @@ def update_quiz_name():
                 "quiz_name = \"%s\"" % (fix_string(request.form.get('new_quiz_name'))),
                 "quiz_id = %s" % (request.form.get('quiz_id'))
             )
-            flash('Quiz name updated to %s' % fix_string(request.form.get('new_quiz_name')))
+            flash('Quiz name updated to %s' % (request.form.get('new_quiz_name')))
 
         # Redirects user to quiz template 
         return redirect(url_for(
@@ -2806,18 +2806,16 @@ def host_a_quiz():
         # This will return a dictionary of all quizzes with their quiz_id and quiz_name    
         upcoming_quiz_info = join_tables(
             "DISTINCT quizzes.quiz_id, quizzes.quiz_name, quizzes.quiz_description", 
-            "live",
             "quizzes",
+            "live",
             "quizzes.quiz_id",
-            "live.quiz_id WHERE live.quiz_completed is NULL AND live.quiz_active is NULL"
+            "live.quiz_id WHERE live.quiz_completed is NULL AND live.quiz_active is NULL AND live.quiz_id IS NOT NULL"
         )
 
-        unassociated_quiz_info = compare_two_tables(
-            "DISTINCT quizzes.quiz_id, quizzes.quiz_name, quizzes.quiz_description",
+        unassociated_quiz_info = compare_two_tables2(
             "quizzes",
-            "quiz_id",
             "live",
-            "live.quiz_completed is NULL AND live.quiz_active is NULL"
+            "quiz_id"
         )
 
         active_quiz_info = join_tables(
