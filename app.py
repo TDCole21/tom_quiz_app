@@ -3249,6 +3249,19 @@ def complete_round():
                 str(request.form.get('quiz_id'))
             )
 
+        # Returns information for which users are ready to start the quiz
+        participant_info = common_values(
+            "participants.user_id, answers.answer_points",
+            "answers",
+            "participants",
+            "answers.user_id",
+            "participants.user_id WHERE answers.round_id = \"%s\" AND participants.quiz_id = \"%s\"" % (request.form.get('round_id'), request.form.get('quiz_id'))
+        )
+
+        for participant in participant_info:
+            update_leaderboard(participant['user_id'], request.form.get('quiz_id'), participant['answer_points'])
+        
+
         # Redirects the user back to the host live quiz
         return redirect(url_for(
             'host_live_quiz'
@@ -3440,16 +3453,28 @@ def live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_scoring_type_id, questions.question_type_id, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, live.question_order, live.round_id, live.question_active, live.question_completed, answers.answer_text, answers.hints_used",
+                "questions.question_id, questions.question_tag, questions.question_scoring_type_id, questions.question_type_id, questions.question_category_id, questions.question_difficulty, questions.question_points, questions.question_text, live.question_order, live.round_id, live.question_active, live.question_completed",
                 "questions",
                 "live",
                 "questions.question_id",
-                "live.question_id LEFT OUTER JOIN answers on answers.question_id = questions.question_id WHERE live.round_active = 1"
+                "live.question_id WHERE live.round_active = 1"
             )
+        
 
         # Sorts the dictionaries of rounds in order of their round_order
         round_questions = sorted(round_questions, key=lambda k: k['question_order'])
         for question in round_questions:
+            if check_single_db(
+                "answer_text",
+                "answers",
+                "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], question['question_id'], question['round_id'], request.form.get('quiz_id'))
+            ):
+                question['answer_text'] = get_entry_from_db(
+                            "answer_text",
+                            "answers",
+                            "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], question['question_id'], question['round_id'], request.form.get('quiz_id'))
+                        )['answer_text']
+
             question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",

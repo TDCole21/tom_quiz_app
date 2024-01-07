@@ -390,7 +390,7 @@
         </p>
       {% endif %}
     </table>
-    {% if quiz_info['quiz_ready'] %}
+    {% if quiz_info['quiz_ready'] and participant_info %}
       <form
         method = "POST"
         id     = "form"
@@ -405,6 +405,23 @@
           class = "registerbtn"
         >
           Start Quiz {{quiz_info['quiz_name']}}
+        </button>
+      </form>
+    {% elif not participant_info %}
+      <form
+        method = "POST"
+        id     = "form"
+        action = "{{ url_for(
+          'quiz_template'
+        )}}"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          value = "{{quiz_info['quiz_id']}}"
+          class = "registerbtn"
+        >
+          Edit Quiz {{quiz_info['quiz_name']}}
         </button>
       </form>
     {% else %}
@@ -547,7 +564,6 @@
   <ul>
       <li>When quiz has finished show all questions and answers</li>
       <li>Add lock in answers function</li>
-      <li>End of round updates the participant score table</li>
   </ul>
 
   <hr>

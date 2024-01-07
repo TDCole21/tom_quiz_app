@@ -13,9 +13,10 @@
         />
     </head>
 
-    <h2>
-        Choose a Quiz:
-    </h2>
+    {% if quiz_info %}
+        <h2>
+            Choose a Quiz:
+        </h2>
         {% for quiz in quiz_info %}
             <div
                 class = "w3-button"
@@ -38,6 +39,11 @@
             </div>
             <br/>
         {% endfor %}
+    {% else %}
+        <p>
+            There haven't been any Quizzes you were part of
+        </p>
+    {% endif %}
 
     <hr>
     <h4>To do:</h4>
