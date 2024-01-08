@@ -131,18 +131,23 @@
               Start Round {{associated_round['round_order']}}
             </button>
           </form>
-        {% elif quiz_info['round_end'] and associated_round['round_active'] %}
+        {% elif quiz_info['round_end'] and associated_round['round_active'] and not associated_round['lock_answers'] %}
           <form
             method  = "POST"
             id      = "form"
             action  = "{{ url_for(
-              'host_live_quiz'
+              'lock_answers'
             )}}"
           >
             <input
               type  = "hidden"
               name  = "quiz_id"
               value = "{{quiz_info['quiz_id']}}"
+            />
+            <input
+              type  = "hidden"
+              name  = "source_point"
+              value = "host_live_quiz"
             />
             <button
               type  = "submit"
@@ -164,10 +169,13 @@
 <hr>
 
 <!-- Question Information -->  
-  <h2> Question Info:</h2>
+  <h2>{% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}All {% endif %}Question Info:</h2>
   {% if round_questions %}
     {% for question in round_questions %}
       <h3>
+        {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+            Round {{question['round_order']}} <br>
+        {% endif %}
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
       {% if question['question_completed'] or question['question_active'] %}
@@ -256,6 +264,11 @@
             <th>
               Correct
             </th>
+            {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+              <th>
+                Points Earned
+              </th>
+            {% endif %}
             <th>
               Hints Used
             </th>
@@ -300,10 +313,19 @@
                       >
                         Wrong
                       </label>
+                    {% elif answer['answer_correct'] == 1 %}
+                      Yes
+                    {% elif answer['answer_correct'] == 0 %}
+                      No
                     {% else %}
-                    {{answer['answer_correct']}}
+                      {{answer['answer_correct']}}
                     {% endif %}
                   </td>
+                  {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+                    <td>
+                      {{answer['answer_points']}}
+                    </td>
+                  {% endif %}
                   <td>
                     {{answer['hints_used']}}
                   </td>
@@ -562,8 +584,7 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>When quiz has finished show all questions and answers</li>
-      <li>Add lock in answers function</li>
+      <li>None</li>
   </ul>
 
   <hr>

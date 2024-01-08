@@ -92,6 +92,7 @@ CREATE TABLE live (
     question_order INT(3),
     question_active BOOLEAN,
     question_completed BOOLEAN,
+    lock_answers BOOLEAN,
     FOREIGN KEY(quiz_id) REFERENCES quizzes (quiz_id) ON DELETE CASCADE,
     FOREIGN KEY(round_id) REFERENCES rounds (round_id) ON DELETE CASCADE,
     FOREIGN KEY(question_id) REFERENCES questions (question_id) ON DELETE CASCADE

@@ -2883,16 +2883,26 @@ def host_live_quiz():
         for round in associated_round_info:
             # Collects information on all the quizzes this round is associated with
             associated_question_info = common_values(
-                "questions.question_category_id, questions.question_difficulty, questions.question_points, live.question_completed",
+                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
                 "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
+                associated_question['round_order'] = get_entry_from_db(
+                    "round_order",
+                    "live",
+                    "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
+                )['round_order']
                 associated_questions.append(associated_question)
             
             round['number_of_associated_questions'] = len(associated_question_info)
+            round['lock_answers'] = get_entry_from_db(
+                    "lock_answers",
+                    "live",
+                    "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
+                )['lock_answers']
             
             if associated_question_info:
                 # Average question difficulty
@@ -3057,6 +3067,17 @@ def host_live_quiz():
         )[0] == len(associated_round_info):
             quiz_info['quiz_end'] = True
 
+        if 'quiz_end' in quiz_info and 'quiz_completed' not in quiz_info:
+            round_questions = associated_questions
+            answers = common_values(
+                "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct, answers.answer_points",
+                "answers",
+                "users",
+                "answers.user_id",
+                "users.user_id WHERE answers.quiz_id = \"%s\"" % (quiz_info['quiz_id'])
+            )
+            answers = sorted(answers, key=lambda k: k['answer_timestamp'])
+
 
         # Feeds data into HTML Jinja2 template
         return render_template(
@@ -3081,6 +3102,27 @@ def score():
     if admin_check() and request.method == "POST":
         for update in range(len(request.form.getlist('points'))):
             update_leaderboard(request.form.getlist('user_id')[update], request.form.getlist('quiz_id')[update], request.form.getlist('points')[update])
+        return redirect(url_for(
+            request.form.get('source_point')
+        ),
+            code = 307
+        )
+    
+    else:
+        flash("Pay me £20 and I will do this")
+        return redirect(url_for(
+            'home'
+        ))
+
+@app.route('/host_live_quiz/lock_answers', methods=['GET', 'POST'])
+def lock_answers():
+    # This will lable a quiz as active
+    if admin_check() and request.method == "POST":
+        update_db_entry(
+            "live",
+            "lock_answers = 1",
+            "round_id = \"%s\" AND quiz_id = \"%s\"" % (request.form.get('round_id'), request.form.get('quiz_id'))
+        )
         return redirect(url_for(
             request.form.get('source_point')
         ),
