@@ -23,17 +23,42 @@
       {% endif %}
     {% endwith %}
 
-<hr>
+    <hr>
+
+    <form
+      method  = "POST"
+      id      = "form"
+      action  = "{{ url_for(
+        'live_quiz'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        class = "registerbtn"
+        value = "{{quiz_info['quiz_id']}}"
+      >
+        Refresh Page
+      </button>
+    </form>
+  
+
+    <hr>
+
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
       Quiz: {{quiz_info['quiz_name']}} {% if quiz_info['quiz_completed'] %}<b style='color:red;'>Completed</b>{% elif quiz_info['quiz_active'] %}<b style='color:green;'>Active</b>{% endif %}
     </h3>
     {{quiz_info['quiz_description']}}
-    <br>
+    <div class="w3-section w3-light-grey">
+      <div class="w3-container w3-padding-small w3-red w3-center" style="width:{{quiz_info['percentage_completed']}}%">{{quiz_info['percentage_completed']}}%</div>
+    </div>
     Number of Rounds: {{quiz_info['number_of_associated_rounds']}}
     <br>
     Number of Questions: {{quiz_info['number_of_associated_questions']}}
+    <br>
+    Questions Completed: {{quiz_info['completed_questions']}}
     <br>
     Most common Question category: {{quiz_info['mode_question_category']}}
     <br>
@@ -71,8 +96,13 @@
           {{associated_round['round_description']}}
           <br>
         {% endif %}
+        <div class="w3-section w3-light-grey">
+          <div class="w3-container w3-padding-small w3-red w3-center" style="width:{{associated_round['percentage_complete']}}%">{{associated_round['percentage_complete']}}%</div>
+        </div>
         {% if associated_round['number_of_associated_questions'] %}
           Number of Questions: {{associated_round['number_of_associated_questions']}}
+          <br>
+          Questions Completed:  {{associated_round['completed_questions']}}
           <br>
         {% endif %}
         {% if associated_round['mode_question_category'] %}
@@ -368,7 +398,28 @@
       <li>Add Hints</li>
       <li>Add items</li>
       <li>Add Quiz and Round progress bar</li>
-      <li>Add refresh page/latest question button</li>
       <li>Make sure you can't submit an answer after the marking is done (lock in questions function from host page)</li>
   </ul>
+
+  <hr>
+
+  <form
+    method  = "POST"
+    id      = "form"
+    action  = "{{ url_for(
+      'live_quiz'
+    )}}"
+  >
+    <button
+      type  = "submit"
+      name  = "quiz_id"
+      class = "registerbtn"
+      value = "{{quiz_info['quiz_id']}}"
+    >
+      Refresh Page
+    </button>
+  </form>
+
+  <hr>
+
 {%endblock%}

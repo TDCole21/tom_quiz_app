@@ -43,6 +43,7 @@
     </form>
 
   <hr>
+
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
@@ -55,6 +56,8 @@
     Number of Rounds: {{quiz_info['number_of_associated_rounds']}}
     <br>
     Number of Questions: {{quiz_info['number_of_associated_questions']}}
+    <br>
+    Questions Completed: {{quiz_info['completed_questions']}}
     <br>
     Most common Question category: {{quiz_info['mode_question_category']}}
     <br>
@@ -96,6 +99,8 @@
         </div>
         {% if associated_round['number_of_associated_questions'] %}
           Number of Questions: {{associated_round['number_of_associated_questions']}}
+          <br>
+          Questions Completed:  {{associated_round['completed_questions']}}
           <br>
         {% endif %}
         {% if associated_round['mode_question_category'] %}

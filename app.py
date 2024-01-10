@@ -2932,7 +2932,8 @@ def host_live_quiz():
                         )['category_name']
                     else:
                         round['mode_question_category'] = "Not set"
-
+                        
+                round['completed_questions'] = int(sum(1 for item in associated_question_info if "question_completed" in item and item["question_completed"] == 1))
                 round['percentage_complete'] = int(sum(1 for item in associated_question_info if "question_completed" in item and item["question_completed"] == 1)/round['number_of_associated_questions']*100)
 
         # associated_questions = set(associated_questions)
@@ -3455,10 +3456,15 @@ def live_quiz():
                     else:
                         round['mode_question_category'] = "Not set"
 
+                round['completed_questions'] = int(sum(1 for item in associated_question_info if "question_completed" in item and item["question_completed"] == 1))
+                round['percentage_complete'] = int(sum(1 for item in associated_question_info if "question_completed" in item and item["question_completed"] == 1)/round['number_of_associated_questions']*100)
+
         # associated_questions = set(associated_questions)
         quiz_info['number_of_associated_questions'] = len(associated_questions)
 
         if associated_questions:
+            # Number of questions in the quiz
+            quiz_info['number_of_questions'] = len(associated_questions)
             # Average question difficulty
             quiz_info['average_question_difficulty'] = average(associated_questions, "question_difficulty")
             # Total question points
@@ -3486,6 +3492,14 @@ def live_quiz():
                     )['category_name']
                 else:
                     quiz_info['mode_question_category'] = "Not set"
+           
+            quiz_info['completed_questions'] = len(get_entries_from_db(
+                "question_id",
+                "live",
+                "question_completed = 1"
+            ))
+
+            quiz_info['percentage_completed'] = int(int(quiz_info['completed_questions'])/int(quiz_info['number_of_questions'])*100)
 
         for round in associated_round_info:
             if round['round_active'] == 1:
