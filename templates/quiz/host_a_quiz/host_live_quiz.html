@@ -183,7 +183,7 @@
         {% endif %}
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
-      {% if question['question_completed'] or question['question_active'] %}
+      {% if question['question_completed'] or question['question_active'] or question['next_question'] %}
         <h4>
           {{question['question_text']}}
         </h4>
@@ -589,7 +589,7 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>None</li>
+      <li>Don't show all questions when quiz ends</li>
   </ul>
 
   <hr>

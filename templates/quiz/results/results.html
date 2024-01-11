@@ -29,7 +29,7 @@
       </th>
     </tr>
     {% for participant in participant_info %}
-      <tr>
+      {% if participant['user_id'] == session['user_id'] %}<tr class="me">{% else %}<tr>{% endif %}
         <td>
           {{participant['participant_position']}}
         </td>

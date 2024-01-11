@@ -15,12 +15,16 @@
   <!-- !PAGE CONTENT! -->
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <!-- Maybe add loop for multiple messages -->
-        <div
-          class = "w3-container w3-red"
-        >
-          {{ messages }}
-        </div>
+      {% for message in messages %}
+          <!-- Maybe add loop for multiple messages -->
+          <div
+            style="white-space: pre-wrap;"
+            class = "w3-container w3-red"
+          >{{message}}</div>
+          {% if not loop.last %}
+            <hr style="width:40%; margin: auto; margin-bottom:2em">
+          {% endif %}
+      {% endfor %}
     {% endif %}
   {% endwith %}
 
@@ -72,9 +76,7 @@
   <h4>
     Question:
   </h4>
-  <p>
-    {{question_info['question_text']}}
-  </p>
+  <div style="white-space: pre-wrap;">{{question_info['question_text']}}</div>
   <form
     method  = "POST"
     action  = "{{ url_for(

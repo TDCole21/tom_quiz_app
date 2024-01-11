@@ -510,3 +510,39 @@ def fix_string(text):
     text = text.replace('"', '\\"')
     text = text.replace("'", "\\'")
     return text
+
+def filter_data(data, user_id):
+    target_position = next((d['participant_position'] for d in data if d['user_id'] == user_id), None)
+    filtered_data = []
+
+    if target_position is None:
+        return filtered_data  # Handle case where user_id doesn't exist
+
+    # Find next greater position (if it exists)
+    next_greater = min((p for p in [d['participant_position'] for d in data] if p > target_position), default=None)
+
+    # Handle case where target_position is 1 (no lesser value)
+    if target_position == 1:
+        next_lesser = None
+    # Handle case where target_position is the highest value (no greater value)
+    elif next_greater is None:
+        next_lesser = max(p for p in [d['participant_position'] for d in data] if p < target_position)
+    else:
+        next_lesser = max(p for p in [d['participant_position'] for d in data] if p < target_position)
+
+    # Add dictionaries with matching positions
+    filtered_data.extend(
+        d for d in data if d['participant_position'] in (target_position, next_greater, next_lesser, 1)
+    )
+
+    return filtered_data
+
+def filter_data_old(data, user_id):
+    target_position = next(d['participant_position'] for d in data if d['user_id'] == user_id)
+    filtered_data = [d for d in data if d['participant_position'] in (target_position + 1, target_position - 1, target_position)]
+
+    # Ensure at least one dictionary with position 1 is included
+    if not any(d['participant_position'] == 1 for d in filtered_data):
+        filtered_data.extend([d for d in data if d['participant_position'] == 1])
+
+    return filtered_data

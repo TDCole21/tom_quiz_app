@@ -135,52 +135,117 @@
       {% if question['question_completed'] or question['question_active'] %}
         {{question['question_text']}}
         <br>
-        Current Answer: {{question['answer_text']}}
-        <form
-          method  = "POST"
-          action  = "{{ url_for(
-            'submit_answer'
-          )}}"
-        >
-          <input
-            type  = "hidden"
-            id    = "question_id"
-            name  = "question_id"
-            value = "{{question['question_id']}}"
-          />
-          <input
-            type  = "hidden"
-            id    = "round_id"
-            name  = "round_id"
-            value = "{{question['round_id']}}"
-          />
-          <input
-            type  = "hidden"
-            id    = "quiz_id"
-            name  = "quiz_id"
-            value = "{{quiz_info['quiz_id']}}"
-          />
-          <textarea
-            rows          = "2"
-            cols          = "20"
-            placeholder   = "New Answer"
-            name          = "new_answer"
-            id            = "new_answer"
-            required wrap = "soft"
-          ></textarea>
-          <style>
-            #new_answer {
-              width: 100%;
-            }
-          </style>
-          <br/>
-          <button
-            type  = "submit"
-            class = "registerbtn"
+        Your Answer: {{question['answer_text']}}
+        {% if question['lock_answers'] == 1 %}
+          <br>
+          Correct Answer: {{question['question_correct_answer']}}
+          <br>
+        {% else %}
+          <form
+            method  = "POST"
+            action  = "{{ url_for(
+              'submit_answer'
+            )}}"
           >
-            {% if question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
-          </button>
-        </form>
+            <input
+              type  = "hidden"
+              id    = "question_id"
+              name  = "question_id"
+              value = "{{question['question_id']}}"
+            />
+            <input
+              type  = "hidden"
+              id    = "round_id"
+              name  = "round_id"
+              value = "{{question['round_id']}}"
+            />
+            <input
+              type  = "hidden"
+              id    = "quiz_id"
+              name  = "quiz_id"
+              value = "{{quiz_info['quiz_id']}}"
+            />
+            <textarea
+              rows          = "2"
+              cols          = "20"
+              placeholder   = "New Answer"
+              name          = "new_answer"
+              id            = "new_answer"
+              required wrap = "soft"
+            ></textarea>
+            <style>
+              #new_answer {
+                width: 100%;
+              }
+            </style>
+            <br/>
+            <button
+              type  = "submit"
+              class = "registerbtn"
+            >
+              {% if question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
+            </button>
+          </form>
+        {% endif %}
+        <h4>Hints:</h4>
+        {% if 'hints_used' in question %}
+          {% for hint_index in range(1,question['hints_used']+1) %}
+            Hint {{hint_index}}: {{ question['hint_' ~ hint_index] }}
+            <br>
+          {% endfor %}
+        {% else %}
+          There are no hints for this question
+          <br>
+        {% endif %}
+        {% if question['hints_used'] != question['number_of_hints'] and question['lock_answers'] != 1 %}
+          <form
+            method  = "POST"
+            id      = "form"
+            action  = "{{ url_for(
+              'use_hint'
+            )}}"
+          >
+            <input
+              type  = "hidden"
+              id    = "source_point"
+              name  = "source_point"
+              value = "live_quiz"
+            />
+            <input
+              type  = "hidden"
+              id    = "user_id"
+              name  = "user_id"
+              value = "{{session['user_id']}}"
+            />
+            <input
+              type  = "hidden"
+              id    = "question_id"
+              name  = "question_id"
+              value = "{{question['question_id']}}"
+            />
+            <input
+              type  = "hidden"
+              id    = "round_id"
+              name  = "round_id"
+              value = "{{question['round_id']}}"
+            />
+            <input
+              type  = "hidden"
+              id    = "hints_used"
+              name  = "hints_used"
+              value = "{{question['hints_used']}}"
+            />
+            <button
+              type  = "submit"
+              name  = "quiz_id"
+              class = "registerbtn"
+              value = "{{quiz_info['quiz_id']}}"
+            >
+              Spend {{question['hint_cost']}} points to unlock a new Hint
+            </button>
+          </form>
+        {% endif %}
+        <br>
         Scoring Type: {{question['question_scoring_type']}}
         <br>
         Points: {{question['question_points']}}
@@ -195,7 +260,7 @@
         <br>
       {% endif %}
       {% if question['question_points'] and question['question_completed'] %}
-        Total number of Points in question: {{question['question_points']}}
+        Maximum points you can earn in this question is {{question['question_points']}} points
       {% endif %}
       {% if loop.last %}
       {% else %}
@@ -223,7 +288,7 @@
             </th>
           </tr>
           {% for participant in all_participant_info %}
-          <tr>
+            {% if participant['user_id'] == session['user_id'] %}<tr class="me">{% else %}<tr>{% endif %}
               <td>
                 {{participant['username']}}{% if participant['user_id'] == session['user_id'] %} (You){% endif %}
               </td>
@@ -318,87 +383,68 @@
       <hr>
     {% endif %}
 
-  <!-- The Question -->
-  {% if active_question %}
-    <h2>
-      Active Question
-    </h2>
-    <h3>
-      Question {{active_question['question_order']}}: {{active_question['question_tag']}}
-    </h3>
-    <h4>
-      {{active_question['question_text']}}
-    </h4>
+
+  <!-- Item Info -->
+  <h2> Item:</h2>
+  {% if participant_info['participant_item_id'] %}
+    Item Name:{{participant_info['item_name']}}
+    <br>
+    Item Description: {{participant_info['item_description']}}
+  {% else %}
+    You don't have an item
+  {% endif %}
+  <hr>
+
+
+  <!-- Leader Board -->
+  {% if quiz_info['quiz_active'] == 1 or quiz_info['quiz_completed'] == 1 %}
+    <h2> Leaderboard:</h2>
     <p>
-      Current Answer: {{active_question['answer_text']}}
+      This table only shows 1st place, and those 1 position ahead and behind you
     </p>
-    <form
-      method  = "POST"
-      action  = "{{ url_for(
-        'submit_answer'
-      )}}"
+    <table
+      class = "w3-table"
     >
-      <input
-        type  = "hidden"
-        id    = "question_id"
-        name  = "question_id"
-        value = "{{active_question['question_id']}}"
-      />
-      <input
-        type  = "hidden"
-        id    = "round_id"
-        name  = "round_id"
-        value = "{{active_question['round_id']}}"
-      />
-      <input
-        type  = "hidden"
-        id    = "quiz_id"
-        name  = "quiz_id"
-        value = "{{quiz_info['quiz_id']}}"
-      />
-      <textarea
-        rows          = "2"
-        cols          = "20"
-        placeholder   = "New Answer"
-        name          = "new_answer"
-        id            = "new_answer"
-        required wrap = "soft"
-      ></textarea>
-      <style>
-        #new_answer {
-          width: 100%;
-        }
-      </style>
-      <br/>
-      <button
-        type  = "submit"
-        class = "registerbtn"
-      >
-        {% if active_question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
-      </button>
-    </form>
-    <p>
-      Scoring Type: {{active_question['question_scoring_type']}}
-      <br>
-      Points: {{active_question['question_points']}}
-      <br>
-      Category Type: {{active_question['question_category']}}
-      <br>
-      Question Difficulty: {{active_question['question_difficulty']}}
-      <br>
-    </p>
+      {% if leaderboard %}
+        <tr>
+          <th>
+            Position
+          </th>
+          <th>
+            Name
+          </th>
+          <th>
+            Score
+          </th>
+        </tr>
+        {% for participant in leaderboard %}
+          {% if participant['user_id'] == session['user_id'] %}<tr class="me">{% else %}<tr>{% endif %}
+            <td>
+              {{participant['participant_position']}}
+            </td>
+            <td>
+              {{participant['username']}}{% if participant['user_id'] == session['user_id'] %} (You){% endif %}
+            </td>
+            <td>
+              {{participant['participant_score']}}
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <p>
+          No one is in this Quiz
+        </p>
+      {% endif %}
+    </table>
     <hr>
   {% endif %}
 
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Show current total score of quiz, score for completed rounds, current leaderboard</li>
-      <li>When quiz ends show all questions</li>
-      <li>Add Hints</li>
+      <li>Don't show all questions when quiz ends</li>
+      <li>A bit of work was done to show all questions. Edit this</li>
       <li>Add items</li>
-      <li>Add Quiz and Round progress bar</li>
-      <li>Make sure you can't submit an answer after the marking is done (lock in questions function from host page)</li>
   </ul>
 
   <hr>

@@ -19,7 +19,6 @@ input:hover,
   opacity: 1;
 }
 
-
 input[type = text]:focus,
 input[type = email]:focus,
 input[type = password]:focus {
@@ -125,10 +124,23 @@ img {
   height:     auto;
 }
 
-tr {
+tr:not(:last-child) {
   align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:not(:first-child,.me):hover {
+  background-color: #D6EEEE;
+}
+
+.me {
+  background-color: #D6EEEE;
 }
 
 td {
   padding: 10px;
+}
+
+div[style*="pre-wrap"] {
+  white-space: pre-wrap;
 }
