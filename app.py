@@ -2906,6 +2906,7 @@ def host_live_quiz():
                     "live",
                     "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
                 )['lock_answers']
+            quiz_info['lock_answers'] = round['lock_answers']
             
             if associated_question_info:
                 # Average question difficulty

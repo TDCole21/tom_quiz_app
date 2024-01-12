@@ -720,7 +720,7 @@
       >
         <input
           type        = "text"
-          placeholder = "New Media URL"
+          placeholder = "{{question_media['question_media_url']}}"
           name        = "question_media_url"
           id          = "question_media_url"
         />
@@ -755,6 +755,14 @@
           name  = "question_id"
           value = "{{question_info['question_id']}}"
         />
+        <textarea
+          rows          = "2"
+          cols          = "20"
+          placeholder   = "{{question_info['question_media_description']}}"
+          name          = "question_media_description"
+          id            = "question_media_description"
+          required wrap = "soft"
+        ></textarea>
         <input
           type  = "hidden"
           name  = "source_point"
@@ -817,7 +825,16 @@
         placeholder = "New Media URL"
         name        = "question_media_url"
         id          = "question_media_url"
+        pattern     = "[^\\]+"
       />
+      <textarea
+        rows          = "2"
+        cols          = "20"
+        placeholder   = "Description"
+        name          = "question_media_description"
+        id            = "question_media_description"
+        required wrap = "soft"
+      ></textarea>
       <br>
       <select
         name  = "question_media_type"
@@ -878,7 +895,7 @@
           {{associated_round['round_name']}}
         </h3>
         {% if associated_round['round_description'] %}
-        Round Description: {{associated_round['round_description']}}
+        Round Description: <div style="white-space: pre-wrap;">{{associated_round['round_description']}}</div>
           <br>
         {% endif %}
         {% if associated_round['quiz_names'] %}
@@ -981,7 +998,7 @@
         {{unassociated_round['round_name']}}
       </h3>
       {% if unassociated_round['round_description'] %}
-      Round Description: {{unassociated_round['round_description']}}
+      Round Description: <div style="white-space: pre-wrap;">{{unassociated_round['round_description']}}</div>
         <br>
       {% endif %}
       {% if unassociated_round['quiz_names'] %}

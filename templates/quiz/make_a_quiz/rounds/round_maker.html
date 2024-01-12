@@ -40,7 +40,7 @@
         Round name: {{round['round_name']}}
       </h3>
       {% if round['round_description'] %}
-        Round description: {{round['round_description']}}
+        Round description: <div style="white-space: pre-wrap;">{{round['round_description']}}</div>
         <br>
       {% endif %}
       {% if round['associated_quizzes'] %}

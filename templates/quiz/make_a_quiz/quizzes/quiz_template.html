@@ -74,9 +74,7 @@
   <h2>
     Quiz Description:
   </h2>
-  <p>
-    {{quiz_info['quiz_description']}}
-  </p>
+  <div style="white-space: pre-wrap;">{{quiz_info['quiz_description']}}</div>
 
   <!-- Update Quiz description -->
   <form
@@ -144,7 +142,7 @@
         Round {{associated_round['round_order']}}: {{associated_round['round_name']}}
       </h3>
       {% if associated_round['round_description'] %}
-        Round Description: {{associated_round['round_description']}}
+        Round Description: <div style="white-space: pre-wrap;">{{associated_round['round_description']}}</div>
         <br>
       {% endif %}
       {% if associated_round['number_of_associated_questions'] %}

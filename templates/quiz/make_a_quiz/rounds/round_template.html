@@ -71,9 +71,7 @@
   <h3>
     Round Description:
   </h3>
-  <p>
-    {{round_info['round_description']}}
-  </p>
+  <div style="white-space: pre-wrap;">{{round_info['round_description']}}</div>
   <form
     method  = "POST"
     action  = "{{ url_for(
@@ -140,7 +138,7 @@
         {{associated_quiz["quiz_name"]}}
       </h3>
       {% if associated_quiz['quiz_description'] %}
-        Quiz Description: {{associated_quiz['quiz_description']}}
+        Quiz Description: <div style="white-space: pre-wrap;">{{associated_quiz['quiz_description']}}</div>
         <br>
       {% endif %}
       {% if associated_quiz['associated_rounds'] %}
@@ -258,7 +256,7 @@
         {{unassociated_quiz["quiz_name"]}}
       </h3>
       {% if unassociated_quiz['quiz_description'] %}
-        Quiz Description: {{unassociated_quiz['quiz_description']}}
+        Quiz Description: <div style="white-space: pre-wrap;">{{unassociated_quiz['quiz_description']}}</div>
         <br>
       {% endif %}
       {% if unassociated_quiz['associated_rounds'] %}

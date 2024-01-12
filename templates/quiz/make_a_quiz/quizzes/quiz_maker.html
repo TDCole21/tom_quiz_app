@@ -71,7 +71,7 @@
         {{quiz["quiz_name"]}}
       </h3>
       {% if quiz['quiz_description'] %}
-        Quiz Description: {{quiz['quiz_description']}}
+        Quiz Description: <div style="white-space: pre-wrap;">{{quiz['quiz_description']}}</div>
         <br>
       {% endif %}
       {% if quiz['associated_rounds'] %}
