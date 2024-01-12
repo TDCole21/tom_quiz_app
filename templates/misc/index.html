@@ -1,22 +1,6 @@
 {%extends 'layouts/layout.html'%}
 
 {%block body%}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div
-                class = "w3-container w3-red"
-            >
-                {{ messages[0] }}
-            </div>
-        {% else %}
-            <p>
-                Welcome!
-                {{ session }}
-            </p>
-        {% endif %}
-    {% endwith %}
-
-    <hr>
     <h4>To do:</h4>
     <ul>
         <li>Modulise app.py</li>
@@ -36,6 +20,6 @@
         <li>IMPORTANT: Update all html flash messages to be multi line and have multiple messages (question_template for example)</li>
         <li>Add source point to all functions and forms</li>
         <li>Hints used in app.py to move strain from freontend to backend</li>
+        <li> Maybe add if messages[1] == 'login' Go to href = url_for(loggin)login page. endif to messages</li>
     </ul>
-
 {%endblock%}

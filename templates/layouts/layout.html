@@ -75,6 +75,22 @@
           class = "w3-round"
         />
       </div>
+      <!-- Displays any messages to the use -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <!-- Maybe add loop for multiple messages -->
+            <div
+              style="white-space: pre-wrap;"
+              class = "w3-container w3-red"
+            >Message {{loop.index}}: {{message}}</div>
+            {% if not loop.last %}
+              <br>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      <hr>
       {%block body%}
         <!-- Individual page body here -->
       {%endblock%}

@@ -12,18 +12,7 @@
     />
   </head>
 
-    <!-- Displays any messages to the use -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div
-          class = "w3-container w3-red"
-        >
-          {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
 
-    <hr>
     {% if quiz_info['quiz_completed'] is none %}
       <form
         method  = "POST"
@@ -138,120 +127,119 @@
         {{question['question_text']}}
         <br>
         Your Answer: {{question['answer_text']}}
-        {% if question['lock_answers'] == 1 %}
+        {% if question['lock_answers'] == 1 or 'quiz_end' in quiz_info %}
           <br>
           Correct Answer: {{question['question_correct_answer']}}
           <br>
-        {% else %}
-          <form
-            method  = "POST"
-            action  = "{{ url_for(
-              'submit_answer'
-            )}}"
-          >
-            <input
-              type  = "hidden"
-              id    = "question_id"
-              name  = "question_id"
-              value = "{{question['question_id']}}"
-            />
-            <input
-              type  = "hidden"
-              id    = "round_id"
-              name  = "round_id"
-              value = "{{question['round_id']}}"
-            />
-            <input
-              type  = "hidden"
-              id    = "quiz_id"
-              name  = "quiz_id"
-              value = "{{quiz_info['quiz_id']}}"
-            />
-            <textarea
-              rows          = "2"
-              cols          = "20"
-              placeholder   = "New Answer"
-              name          = "new_answer"
-              id            = "new_answer"
-              required wrap = "soft"
-            ></textarea>
-            <style>
-              #new_answer {
-                width: 100%;
-              }
-            </style>
-            <br/>
-            <button
-              type  = "submit"
-              class = "registerbtn"
-            >
-              {% if question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
-            </button>
-          </form>
         {% endif %}
-        <h4>Hints:</h4>
+      {% endif %}
+      {% if 'quiz_end' not in quiz_info and (question['next_question'] or question['question_completed'] or question['question_active']) %}
+        <form
+          method  = "POST"
+          action  = "{{ url_for(
+            'submit_answer'
+          )}}"
+        >
+          <input
+            type  = "hidden"
+            id    = "question_id"
+            name  = "question_id"
+            value = "{{question['question_id']}}"
+          />
+          <input
+            type  = "hidden"
+            id    = "round_id"
+            name  = "round_id"
+            value = "{{question['round_id']}}"
+          />
+          <input
+            type  = "hidden"
+            id    = "quiz_id"
+            name  = "quiz_id"
+            value = "{{quiz_info['quiz_id']}}"
+          />
+          <textarea
+            rows          = "2"
+            cols          = "20"
+            placeholder   = "New Answer"
+            name          = "new_answer"
+            id            = "new_answer"
+            required wrap = "soft"
+          ></textarea>
+          <style>
+            #new_answer {
+              width: 100%;
+            }
+          </style>
+          <br/>
+          <button
+            type  = "submit"
+            class = "registerbtn"
+          >
+            {% if question['answer_text'] %}Update{% else %}Submit{% endif %} Answer
+          </button>
+        </form>
+      {% endif %}
+      {% if question['question_completed'] or question['question_active'] %}
         {% if 'hints_used' in question %}
-          {% for hint_index in range(1,question['hints_used']+1) %}
-            Hint {{hint_index}}: {{ question['hint_' ~ hint_index] }}
-            <br>
-          {% endfor %}
-        {% endif %}
-        {% if question['number_of_hints'] == 0 %}
-          There are no hints for this question
-          <br>
-        {% endif %}
-        {% if question['hints_used'] != question['number_of_hints'] and question['lock_answers'] != 1 and question['number_of_hints'] != 0 %}
-          <form
-            method  = "POST"
-            id      = "form"
-            action  = "{{ url_for(
-              'use_hint'
-            )}}"
-          >
-            <input
-              type  = "hidden"
-              id    = "source_point"
-              name  = "source_point"
-              value = "live_quiz"
-            />
-            <input
-              type  = "hidden"
-              id    = "user_id"
-              name  = "user_id"
-              value = "{{session['user_id']}}"
-            />
-            <input
-              type  = "hidden"
-              id    = "question_id"
-              name  = "question_id"
-              value = "{{question['question_id']}}"
-            />
-            <input
-              type  = "hidden"
-              id    = "round_id"
-              name  = "round_id"
-              value = "{{question['round_id']}}"
-            />
-            <input
-              type  = "hidden"
-              id    = "hints_used"
-              name  = "hints_used"
-              value = "{{question['hints_used']}}"
-            />
-            <button
-              type  = "submit"
-              name  = "quiz_id"
-              class = "registerbtn"
-              value = "{{quiz_info['quiz_id']}}"
+          {% if question['number_of_hints'] != 0 and question['hints_used'] != 0 %}
+            <h4>Hints:</h4>
+            {% for hint_index in range(1,question['hints_used']+1) %}
+              Hint {{hint_index}}: {{ question['hint_' ~ hint_index] }}
+              <br>
+            {% endfor %}
+          {% endif %}
+          {% if question['hints_used'] != question['number_of_hints'] and question['lock_answers'] != 1 and question['number_of_hints'] != 0 and 'quiz_end' not in quiz_info %}
+            <form
+              method  = "POST"
+              id      = "form"
+              action  = "{{ url_for(
+                'use_hint'
+              )}}"
             >
-              Spend {{question['hint_cost']}} points to unlock a new Hint
-            </button>
-          </form>
+              <input
+                type  = "hidden"
+                id    = "source_point"
+                name  = "source_point"
+                value = "live_quiz"
+              />
+              <input
+                type  = "hidden"
+                id    = "user_id"
+                name  = "user_id"
+                value = "{{session['user_id']}}"
+              />
+              <input
+                type  = "hidden"
+                id    = "question_id"
+                name  = "question_id"
+                value = "{{question['question_id']}}"
+              />
+              <input
+                type  = "hidden"
+                id    = "round_id"
+                name  = "round_id"
+                value = "{{question['round_id']}}"
+              />
+              <input
+                type  = "hidden"
+                id    = "hints_used"
+                name  = "hints_used"
+                value = "{{question['hints_used']}}"
+              />
+              <button
+                type  = "submit"
+                name  = "quiz_id"
+                class = "registerbtn"
+                value = "{{quiz_info['quiz_id']}}"
+              >
+                Spend {{question['hint_cost']}} points to unlock a new Hint
+              </button>
+            </form>
+          {% endif %}
         {% endif %}
         <br>
         Scoring Type: {{question['question_scoring_type']}}
-        <br>
-        Points: {{question['question_points']}}
         <br>
       {% endif %}
       {% if question['question_category'] %}
@@ -262,8 +250,10 @@
         Question Difficulty: {{question['question_difficulty']}}/10
         <br>
       {% endif %}
-      {% if question['question_points'] and question['question_completed'] %}
+      {% if question['question_points'] and (question['question_completed'] or question['question_active']) and 'quiz_end' not in quiz_info %}
         Maximum points you can earn in this question is {{question['question_points']}} points
+      {% elif 'quiz_end' in quiz_info %}
+          You scored {{question['answer_points']}}/{{question['question_points']}} points on this Question
       {% endif %}
       {% if loop.last %}
       {% else %}
@@ -366,26 +356,6 @@
       <hr>
     {% endif %}
 
-    {% if quiz_info['quiz_completed'] is not none %}
-      <form
-        method = "POST"
-        id     = "form"
-        action = "{{ url_for(
-          'results'
-        )}}"
-      >
-        <button
-          type  = "submit"
-          name  = "quiz_id"
-          value = "{{quiz_info['quiz_id']}}"
-          class = "registerbtn"
-        >
-          View Results from {{quiz_info['quiz_name']}}
-        </button>
-      </form>
-      <hr>
-    {% endif %}
-
 
   <!-- Item Info -->
   <h2> Item:</h2>
@@ -402,9 +372,11 @@
   <!-- Leader Board -->
   {% if quiz_info['quiz_active'] == 1 or quiz_info['quiz_completed'] == 1 %}
     <h2> Leaderboard:</h2>
-    <p>
-      This table only shows 1st place, and those 1 position ahead and behind you
-    </p>
+    {% if 'quiz_end' not in quiz_info %}
+      <p>
+        This table only shows 1st place, and those 1 position ahead and behind you
+      </p>
+    {% endif %}
     <table
       class = "w3-table"
     >
@@ -442,10 +414,30 @@
     <hr>
   {% endif %}
 
+  {% if quiz_info['quiz_completed'] is not none %}
+    <form
+      method = "POST"
+      id     = "form"
+      action = "{{ url_for(
+        'results'
+      )}}"
+    >
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+        class = "registerbtn"
+      >
+        View Results from {{quiz_info['quiz_name']}}
+      </button>
+    </form>
+    <hr>
+  {% endif %}
+
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Show users answers, points and correct answers for all questions when all rounds are finished, and quiz is still active but not completed</li>
+      <li>Not sure whether or not to keep whole leaderboard at the end of quiz</li>
       <li>Add items</li>
       <li>Add pictures</li>
       <li>Add multiline</li>

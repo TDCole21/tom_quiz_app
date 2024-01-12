@@ -12,18 +12,6 @@
     />
   </head>
 
-    <!-- Displays any messages to the use -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div
-          class = "w3-container w3-red"
-        >
-          {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-  <hr>
 
   {% if quiz_info['quiz_completed'] is none %}
     <form
@@ -354,7 +342,7 @@
       {% endif %}
     {% endfor %}
   {% else %}
-    There are no active Rounds {{quiz_info}}
+    There are no active Rounds
   {% endif %}
   {% for associated_round in associated_round_info %}
     {% if quiz_info['round_end'] and associated_round['round_active'] and associated_round['lock_answers'] %}

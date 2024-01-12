@@ -2886,7 +2886,7 @@ def host_live_quiz():
         for round in associated_round_info:
             # Collects information on all the quizzes this round is associated with
             associated_question_info = common_values(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
+                "questions.question_id, questions.question_tag, questions.question_correct_answer, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3071,7 +3071,7 @@ def host_live_quiz():
         )[0] == len(associated_round_info):
             quiz_info['quiz_end'] = True
 
-        if 'quiz_end' in quiz_info and quiz_info['quiz_completed'] is None:
+        if 'quiz_end' in quiz_info or quiz_info['quiz_completed'] is not None:
             round_questions = associated_questions
             answers = common_values(
                 "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct, answers.answer_points",
@@ -3419,7 +3419,7 @@ def live_quiz():
         for round in associated_round_info:
             # Collects information on all the quizzes this round is associated with
             associated_question_info = common_values(
-                "questions.question_category_id, questions.question_difficulty, questions.question_points",
+                "questions.question_id, questions.question_tag, questions.question_type_id, questions.question_correct_answer, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3522,6 +3522,17 @@ def live_quiz():
 
         # Sorts the dictionaries of rounds in order of their round_order
         round_questions = sorted(round_questions, key=lambda k: k['question_order'])
+
+        if count(
+            "live",
+            "round_completed",
+            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
+        )[0] == len(associated_round_info):
+            quiz_info['quiz_end'] = True
+
+        if 'quiz_end' in quiz_info or quiz_info['quiz_completed'] is not None:
+            round_questions = associated_questions
+
         for question in round_questions:
             if check_single_db(
                 "answer_text",
@@ -3529,11 +3540,12 @@ def live_quiz():
                 "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], question['question_id'], question['round_id'], request.form.get('quiz_id'))
             ):
                 answer_info = get_entry_from_db(
-                    "answer_text, hints_used",
+                    "answer_text, hints_used, answer_points",
                     "answers",
                     "user_id = \"%s\" AND question_id = \"%s\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], question['question_id'], question['round_id'], request.form.get('quiz_id'))
                 )
                 question['answer_text'] = answer_info['answer_text']
+                question['answer_points'] = answer_info['answer_points']
                 if answer_info['hints_used']:
                     question['hints_used'] = answer_info['hints_used']
                 else:
@@ -3560,7 +3572,7 @@ def live_quiz():
                         "category_name",
                         "categories",
                         "category_id = \"%s\"" % (question['question_category_id'])
-                    )['category_name']
+            )['category_name']
             
             question['question_type'] = get_entry_from_db(
                 "question_type_name",
@@ -3572,7 +3584,7 @@ def live_quiz():
                         "question_scoring_type_name",
                         "question_scoring_type",
                         "question_scoring_type_id = \"%s\"" % (question['question_scoring_type_id'])
-                    )['question_scoring_type_name']
+            )['question_scoring_type_name']
             
         for question in round_questions:
             if question['question_active'] == 1:
@@ -3620,9 +3632,6 @@ def live_quiz():
             participant_info['item_name'] = item_info['item_name']
             participant_info['item_description'] = item_info['item_description']
 
-        leaderboard = sorted(leaderboard, key=lambda k: k['participant_position'])
-
-
         if not count_not(
             "participants",
             "participant_ready",
@@ -3630,15 +3639,7 @@ def live_quiz():
         )[0] > 0:
             quiz_info['quiz_ready'] = True
 
-        if count(
-            "live",
-            "round_completed",
-            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
-        )[0] == len(associated_round_info):
-            quiz_info['quiz_end'] = True
-
-        if 'quiz_end' in quiz_info and quiz_info['quiz_completed'] is None:
-            round_questions = associated_questions
+        leaderboard = sorted(leaderboard, key=lambda k: k['participant_position'])
 
         # Feeds data into HTML Jinja2 template
         return render_template(
@@ -3691,7 +3692,7 @@ def use_hint():
             -int((question_points-1)/(number_of_hints))
         )
 
-        flash("You spent %s points to unlock a hint" % (int(question_points/(number_of_hints))))
+        flash("You spent %s points to unlock a hint" % (int(question_points-1/(number_of_hints))))
         return redirect(url_for(
             request.form.get('source_point')
         ),
@@ -3759,7 +3760,11 @@ def submit_answer():
             "lock_answers = \"1\" AND round_id = \"%s\" AND quiz_id = \"%s\"" % (request.form.get("round_id"), request.form.get("quiz_id"))
         ):
             flash("The Round has already ended. Your answer was not submitted")
-        else:
+        elif check_single_db(
+            "question_active",
+            "live",
+            "(question_active = \"1\" OR question_completed = \"1\") AND question_id = \"%s\" AND round_id = \"%s\"" % (request.form.get("question_id"), request.form.get("round_id"))
+        ):
             flash("Answer updated")
             # This checks if the user has already submitted an answer before
             if check_single_db(
@@ -3782,6 +3787,9 @@ def submit_answer():
                     "user_id, question_id, round_id, quiz_id, answer_text, answer_timestamp",
                     "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"" % (session['user_id'], request.form.get("question_id"), request.form.get("round_id"), request.form.get("quiz_id"), fix_string(request.form.get("new_answer")), timestamp())
             )
+        
+        else:
+            flash("You've jumped the gun! The question hasn't started yet. Your answer was not submitted")
 
         # Redirects user to the Live quiz page
         return redirect(url_for(

@@ -12,25 +12,6 @@
     />
   </head>
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div
-        class = "w3-container w3-red"
-      >
-        {{ messages[0] }}
-        {% if messages[1] == 'login' %}
-          Go to <a
-            href = "{{ url_for(
-              'login'
-            )}}"
-          >
-            login page
-          </a>.
-        {% endif %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
   <form
     method = "POST"
     id     = "form"
