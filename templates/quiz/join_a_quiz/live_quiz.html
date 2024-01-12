@@ -24,26 +24,28 @@
     {% endwith %}
 
     <hr>
-
-    <form
-      method  = "POST"
-      id      = "form"
-      action  = "{{ url_for(
-        'live_quiz'
-      )}}"
-    >
-      <button
-        type  = "submit"
-        name  = "quiz_id"
-        class = "registerbtn"
-        value = "{{quiz_info['quiz_id']}}"
+    {% if quiz_info['quiz_completed'] is none %}
+      <form
+        method  = "POST"
+        id      = "form"
+        action  = "{{ url_for(
+          'live_quiz'
+        )}}"
       >
-        Refresh Page
-      </button>
-    </form>
-  
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          class = "registerbtn"
+          value = "{{quiz_info['quiz_id']}}"
+        >
+          Refresh Page
+        </button>
+      </form>
 
-    <hr>
+      <hr>
+
+    {% endif %}
+
 
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
@@ -193,11 +195,12 @@
             Hint {{hint_index}}: {{ question['hint_' ~ hint_index] }}
             <br>
           {% endfor %}
-        {% else %}
+        {% endif %}
+        {% if question['number_of_hints'] == 0 %}
           There are no hints for this question
           <br>
         {% endif %}
-        {% if question['hints_used'] != question['number_of_hints'] and question['lock_answers'] != 1 %}
+        {% if question['hints_used'] != question['number_of_hints'] and question['lock_answers'] != 1 and question['number_of_hints'] != 0 %}
           <form
             method  = "POST"
             id      = "form"
@@ -377,7 +380,7 @@
           value = "{{quiz_info['quiz_id']}}"
           class = "registerbtn"
         >
-          View Results
+          View Results from {{quiz_info['quiz_name']}}
         </button>
       </form>
       <hr>
@@ -442,30 +445,34 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Don't show all questions when quiz ends</li>
-      <li>A bit of work was done to show all questions. Edit this</li>
+      <li>Show users answers, points and correct answers for all questions when all rounds are finished, and quiz is still active but not completed</li>
       <li>Add items</li>
+      <li>Add pictures</li>
+      <li>Add multiline</li>
   </ul>
 
   <hr>
 
-  <form
-    method  = "POST"
-    id      = "form"
-    action  = "{{ url_for(
-      'live_quiz'
-    )}}"
-  >
-    <button
-      type  = "submit"
-      name  = "quiz_id"
-      class = "registerbtn"
-      value = "{{quiz_info['quiz_id']}}"
+  {% if quiz_info['quiz_completed'] is none %}
+    <form
+      method  = "POST"
+      id      = "form"
+      action  = "{{ url_for(
+        'live_quiz'
+      )}}"
     >
-      Refresh Page
-    </button>
-  </form>
+      <button
+        type  = "submit"
+        name  = "quiz_id"
+        class = "registerbtn"
+        value = "{{quiz_info['quiz_id']}}"
+      >
+        Refresh Page
+      </button>
+    </form>
 
-  <hr>
+    <hr>
+
+  {% endif %}
 
 {%endblock%}

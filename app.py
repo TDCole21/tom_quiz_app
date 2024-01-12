@@ -3071,7 +3071,7 @@ def host_live_quiz():
         )[0] == len(associated_round_info):
             quiz_info['quiz_end'] = True
 
-        if 'quiz_end' in quiz_info and 'quiz_completed' not in quiz_info:
+        if 'quiz_end' in quiz_info and quiz_info['quiz_completed'] is None:
             round_questions = associated_questions
             answers = common_values(
                 "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct, answers.answer_points",
@@ -3539,20 +3539,22 @@ def live_quiz():
                 else:
                     question['hints_used'] = 0
 
-                for hint in range(1,int(question['hints_used'])+1):
-                    question['hint_%s' % (hint)] = get_entry_from_db(
-                        "hint_text",
-                        "hints",
-                        "question_id = \"%s\" AND hint_number = \"%s\"" % (question['question_id'], hint)
-                    )['hint_text']
-
                 question['number_of_hints'] = len(get_entries_from_db(
                     "hint_id",
                     "hints",
                     "question_id = \"%s\"" % (question['question_id'])
                 ))
 
-                question['hint_cost'] = int(question['question_points']/(question['number_of_hints']))
+                # Prevent divisible by zero error. Maybe find smarter way to fix this
+                if question['number_of_hints'] != 0:
+                    question['hint_cost'] = int((question['question_points']-1)/(question['number_of_hints']))
+
+                    for hint in range(1,int(question['hints_used'])+1):
+                        question['hint_%s' % (hint)] = get_entry_from_db(
+                            "hint_text",
+                            "hints",
+                            "question_id = \"%s\" AND hint_number = \"%s\"" % (question['question_id'], hint)
+                        )['hint_text']
 
             question['question_category'] = get_entry_from_db(
                         "category_name",
@@ -3628,15 +3630,14 @@ def live_quiz():
         )[0] > 0:
             quiz_info['quiz_ready'] = True
 
-        if not count_not(
+        if count(
             "live",
             "round_completed",
             "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
-        )[0] > 0:
-            if quiz_info['quiz_completed']:
-                quiz_info['quiz_end'] = True
+        )[0] == len(associated_round_info):
+            quiz_info['quiz_end'] = True
 
-        if 'quiz_end' in quiz_info and 'quiz_completed' not in quiz_info:
+        if 'quiz_end' in quiz_info and quiz_info['quiz_completed'] is None:
             round_questions = associated_questions
 
         # Feeds data into HTML Jinja2 template
@@ -3687,7 +3688,7 @@ def use_hint():
         update_leaderboard(
             request.form.get('user_id'),
             request.form.get('quiz_id'),
-            -int(question_points/(number_of_hints))
+            -int((question_points-1)/(number_of_hints))
         )
 
         flash("You spent %s points to unlock a hint" % (int(question_points/(number_of_hints))))

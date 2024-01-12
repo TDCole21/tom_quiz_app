@@ -25,6 +25,7 @@
 
   <hr>
 
+  {% if quiz_info['quiz_completed'] is none %}
     <form
       method  = "POST"
       id      = "form"
@@ -42,7 +43,9 @@
       </button>
     </form>
 
-  <hr>
+    <hr>
+
+  {% endif %}
 
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
@@ -351,10 +354,10 @@
       {% endif %}
     {% endfor %}
   {% else %}
-    There are no active Rounds
+    There are no active Rounds {{quiz_info}}
   {% endif %}
   {% for associated_round in associated_round_info %}
-    {% if quiz_info['round_end'] and associated_round['round_active'] %}
+    {% if quiz_info['round_end'] and associated_round['round_active'] and associated_round['lock_answers'] %}
       <form
         method = "POST"
         id     = "complete_round"
@@ -589,11 +592,13 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Don't show all questions when quiz ends</li>
+      <li>Add pictures</li>
+      <li>Multi line</li>
   </ul>
 
   <hr>
 
+  {% if quiz_info['quiz_completed'] is none %}
     <form
       method  = "POST"
       id      = "form"
@@ -611,6 +616,8 @@
       </button>
     </form>
 
-  <hr>
+    <hr>
+
+  {% endif %}
 
 {%endblock%}
