@@ -1516,6 +1516,13 @@ def unassociate_question():
 @app.route('/add_question_media', methods=['GET', 'POST'])
 def add_question_media():
     if request.method == "POST":
+        insert_db_entry(
+            "question_media",
+            "question_id, question_media_url, question_media_type, question_media_description",
+            "\"%s\", \"%s\", \"%s\", \"%s\"" % (request.form.get('question_id'), request.form.get('question_media_url'), request.form.get('question_media_type'), request.form.get('question_media_description'))
+        )
+
+        flash("Added %s to Question" % (request.form.get('question_media_type')))
         return redirect(url_for(
                 request.form.get('source_point')
             ),
@@ -1531,6 +1538,12 @@ def add_question_media():
 @app.route('/update_question_media', methods=['GET', 'POST'])
 def update_question_media():
     if request.method == "POST":
+        update_db_entry(
+            "question_media",
+            "question_media_url = \"%s\", question_media_type = \"%s\", question_media_description = \"%s\"" % (fix_string(request.form.get('question_media_url')), request.form.get('question_media_type'), fix_string(request.form.get('question_media_description'))),
+            "question_media_id = \"%s\"" % (request.form.get('question_media_id'))
+        )
+
         return redirect(url_for(
                 request.form.get('source_point')
             ),
@@ -1548,6 +1561,12 @@ def update_question_media():
 @app.route('/delete_question_media', methods=['GET', 'POST'])
 def delete_question_media():
     if request.method == "POST":
+        delete_db_entry(
+            "question_media",
+            "question_media_id = \"%s\"" % (request.form.get('question_media_id'))
+        )
+
+        flash("Media deleted from Question")
         return redirect(url_for(
                 request.form.get('source_point')
             ),
@@ -2362,6 +2381,12 @@ def question_template():
 
         hints = sorted(hints, key=lambda k: k['hint_number']) 
 
+        question_media_info = get_entries_from_db(
+            "*",
+            "question_media",
+            "question_id = \"%s\"" % (request.form.get('question_id'))
+        )
+
 
         # Round information
         # Collects information on all the rounds this question is associated with
@@ -2527,7 +2552,8 @@ def question_template():
             question_categories     = question_categories,
             hints                   = hints,
             unassociated_round_info = unassociated_round_info,
-            associated_round_info   = associated_round_info
+            associated_round_info   = associated_round_info,
+            question_media_info     = question_media_info
         )
 
     else:

@@ -709,8 +709,9 @@
   {% if question_media_info %}
     {% for question_media in question_media_info %}
       <p>
-        {{question_media['question_media_type']}}: {{question_media['question_media_description']}}
-        {{question_media['question_media_url']}}
+        {{question_media['question_media_type']}}: {{question_media['question_media_description']}}<br>
+        
+        <{{question_media['question_media_type']}} src="{{question_media['question_media_url']}}" alt="{{question_media['question_media_description']}}" controls>
       </p>
       <form
         method  = "POST"
@@ -720,7 +721,7 @@
       >
         <input
           type        = "text"
-          placeholder = "{{question_media['question_media_url']}}"
+          value       = "{{question_media['question_media_url']}}"
           name        = "question_media_url"
           id          = "question_media_url"
         />
@@ -729,21 +730,19 @@
           name  = "question_media_type"
           id    = "question_media_type"
         >
-          <option
-            value = "audio"
-          >
-            Audio
-          </option>
-          <option
-            value = "video"
-          >
-            Video
-          </option>
-          <option
-            value = "image"
-          >
-            Image
-          </option>
+          {% if question_media['question_media_type'] == "audio" %}
+              <option value="audio" selected>Audio</option>
+              <option value="video">Video</option>
+              <option value="img">Image</option>
+          {% elif question_media['question_media_type'] == "video" %}
+              <option value="audio">Audio</option>
+              <option value="video" selected>Video</option>
+              <option value="img">Image</option>
+          {% else %}
+              <option value="audio">Audio</option>
+              <option value="video">Video</option>
+              <option value="img" selected>Image</option>
+          {% endif %}
         </select>
         <input
           type  = "hidden"
@@ -758,11 +757,11 @@
         <textarea
           rows          = "2"
           cols          = "20"
-          placeholder   = "{{question_info['question_media_description']}}"
+          placeholder   = "Update Question media description"
           name          = "question_media_description"
           id            = "question_media_description"
           required wrap = "soft"
-        ></textarea>
+        >{{question_media['question_media_description']}}</textarea>
         <input
           type  = "hidden"
           name  = "source_point"
@@ -772,7 +771,7 @@
           type  = "submit"
           class = "registerbtn"
         >
-          Update Question URL
+          Update Question Media
         </button>
         <style>
           #hint_text {
@@ -805,7 +804,7 @@
           type  = "submit"
           class = "registerbtn"
         >
-          Delete Media
+          Delete Question Media
         </button>
       </form>
       <br><br>
@@ -851,7 +850,7 @@
           Video
         </option>
         <option
-          value = "image"
+          value = "img"
         >
           Image
         </option>
@@ -870,7 +869,7 @@
         type  = "submit"
         class = "registerbtn"
       >
-        Add Media
+        Add Question Media
       </button>
       <style>
         #hint_text {
