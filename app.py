@@ -1294,7 +1294,6 @@ def question_maker():
 # Creates a question not associated to any quiz or round
 @app.route('/create_new_question', methods=['GET', 'POST'])
 def create_new_question():
-
     if admin_check() and request.method == "POST":
         if check_single_db(
             "question_type_id",
@@ -1591,10 +1590,9 @@ def add_participants():
             # Insert the user into the participants table
             insert_db_entry(
                 "participants",
-                "user_id, quiz_id, participant_ready",
-                "%s, %s, 0" % (i, request.form.get('quiz_id'))
+                "user_id, quiz_id, participant_ready, participant_score",
+                "\"%s\", \"%s\", \"0\", \"0\"" % (i, request.form.get('quiz_id'))
             )
-
             update_leaderboard(i, request.form.get('quiz_id'), 0)
 
         return redirect(url_for(

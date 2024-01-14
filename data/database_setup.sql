@@ -34,7 +34,9 @@ CREATE TABLE items (
     item_name VARCHAR(50) UNIQUE NOT NULL,
     item_description TEXT,
     item_rarity INT(3),
-    item_use INT(1),
+    chance_forwards INT(3),
+    chance_backwards INT(3),
+    chance_use INT(3),
     item_points INT(3)
 );
 
@@ -107,7 +109,7 @@ CREATE TABLE participants (
     quiz_id INT(3) NOT NULL,
     participant_ready BOOLEAN,
     participant_score INT(3) NOT NULL,
-    participant_position INT(3) NOT NULL,
+    participant_position INT(3),
     participant_item_id INT(3),
     FOREIGN KEY(user_id) REFERENCES users (user_id) ON DELETE CASCADE,
     FOREIGN KEY(quiz_id) REFERENCES live (quiz_id) ON DELETE CASCADE,

@@ -464,12 +464,20 @@ def mark_answer(question_id, round_id, quiz_id):
             )
         
 def update_leaderboard(user_id, quiz_id, points):
-    # Find current user score in quiz
-    participant_score = get_entry_from_db(
+    if check_single_db(
         "participant_score",
         "participants",
         "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-    )['participant_score']
+    ):
+        # Find current user score in quiz
+        participant_score = get_entry_from_db(
+            "participant_score",
+            "participants",
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )['participant_score']
+    
+    else:
+        participant_score = 0
 
     # Adds/Subtracts new points to exisiting score
     update_db_entry(
@@ -557,10 +565,20 @@ def get_item(user_id, quiz_id):
         "quiz_id = %s" % (quiz_id)
     ))
 
+    items = get_entries_from_db(
+        "item_id, item_rarity",
+        "items",
+        "item_id IS NOT NULL"
+    )
+
     if random.random()+(position/number_of_participants) > 1:
+        options = []
+        for item in items:
+            options = options + [item['item_id']]*int(item['item_rarity']*(position/number_of_participants))
+        item = random.choice(options)
         update_db_entry(
             "participants",
-            "participant_item_id = %s" % (1),
+            "participant_item_id = %s" % (item),
             "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
         )
 
