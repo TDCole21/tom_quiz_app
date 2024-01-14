@@ -540,7 +540,7 @@ def add_item():
         insert_db_entry(
             "items",
             "item_name, item_description",
-            "\"%s\", \"%s\"" % (fix_string(request.form.get('item_name'), fix_string(request.form.get('item_description'))))
+            "\"%s\", \"%s\"" % (fix_string(request.form.get('item_name')), fix_string(request.form.get('item_description')))
         )
         flash("Item %s created" % (request.form.get('item_name')))
         return redirect(url_for(
@@ -3037,6 +3037,26 @@ def host_live_quiz():
 
         # Sorts the dictionaries of rounds in order of their round_order
         round_questions = sorted(round_questions, key=lambda k: k['question_order'])
+
+        if count(
+            "live",
+            "round_completed",
+            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
+        )[0] == len(associated_round_info):
+            quiz_info['quiz_end'] = True
+
+        if 'quiz_end' in quiz_info or quiz_info['quiz_completed'] is not None:
+            round_questions = associated_questions
+            answers = common_values(
+                "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct, answers.answer_points",
+                "answers",
+                "users",
+                "answers.user_id",
+                "users.user_id WHERE answers.quiz_id = \"%s\"" % (quiz_info['quiz_id'])
+            )
+            answers = sorted(answers, key=lambda k: k['answer_timestamp'])
+
+
         for question in round_questions:
             question['question_category'] = get_entry_from_db(
                         "category_name",
@@ -3050,6 +3070,25 @@ def host_live_quiz():
                         "question_scoring_type",
                         "question_scoring_type_id = \"%s\"" % (question['question_scoring_type_id'])
                     )['question_scoring_type_name']
+            
+        for question in round_questions:
+            question_media_info = get_entries_from_db(
+                "*",
+                "question_media",
+                "question_id = \"%s\"" % (question['question_id'])
+            )
+
+            question['amount_of_media'] = len(get_entries_from_db(
+                "question_media_id",
+                "question_media",
+                "question_id = \"%s\"" % (question['question_id'])
+            ))
+            
+
+            for media in range(len(question_media_info)):
+                question['media_%s_url' % (media)] = question_media_info[media]['question_media_url']
+                question['media_%s_type' % (media)] = question_media_info[media]['question_media_type']
+                question['media_%s_description' % (media)] = question_media_info[media]['question_media_description'] 
             
         for question in round_questions:
             if question['question_active'] == 1:
@@ -3090,24 +3129,6 @@ def host_live_quiz():
             "1"
         )[0] > 0:
             quiz_info['quiz_ready'] = True
-
-        if count(
-            "live",
-            "round_completed",
-            "1 AND quiz_id = %s" % (request.form.get('quiz_id'))
-        )[0] == len(associated_round_info):
-            quiz_info['quiz_end'] = True
-
-        if 'quiz_end' in quiz_info or quiz_info['quiz_completed'] is not None:
-            round_questions = associated_questions
-            answers = common_values(
-                "users.username, users.user_id, answers.answer_text, answers.hints_used, answers.answer_timestamp, answers.question_id, answers.round_id, answers.answer_correct, answers.answer_points",
-                "answers",
-                "users",
-                "answers.user_id",
-                "users.user_id WHERE answers.quiz_id = \"%s\"" % (quiz_info['quiz_id'])
-            )
-            answers = sorted(answers, key=lambda k: k['answer_timestamp'])
 
 
         # Feeds data into HTML Jinja2 template
@@ -3229,6 +3250,14 @@ def start_round():
 @app.route('/host_live_quiz/start_question', methods=['GET', 'POST'])
 def start_question():
     if admin_check() and request.method == 'POST':
+        participants = get_entries_from_db(
+            "user_id",
+            "participants",
+            "quiz_id = %s" % (request.form.get('quiz_id'))
+        )
+        for participant in participants:
+            get_item(participant['user_id'], request.form.get('quiz_id'))
+
         # This update the value of active to TRUE in the database for the round  
         update_db_entry(
             "live",
@@ -3258,6 +3287,12 @@ def complete_question():
             "live",
             "question_active = NULL, question_completed = 1",
             "question_id = %s" % (request.form.get('question_id'))
+        )
+
+        update_db_entry(
+            "participants",
+            "participant_item_id = NULL",
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
         # Redirects the user back to the host live quiz
@@ -3453,6 +3488,11 @@ def live_quiz():
                 "live.question_id WHERE live.round_id = %s" % (round['round_id'])
             )
             for associated_question in associated_question_info:
+                associated_question['round_order'] = get_entry_from_db(
+                    "round_order",
+                    "live",
+                    "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
+                )['round_order']
                 associated_questions.append(associated_question)
             
             round['number_of_associated_questions'] = len(associated_question_info)
@@ -3595,6 +3635,24 @@ def live_quiz():
                             "question_id = \"%s\" AND hint_number = \"%s\"" % (question['question_id'], hint)
                         )['hint_text']
 
+            question_media_info = get_entries_from_db(
+                "*",
+                "question_media",
+                "question_id = \"%s\"" % (question['question_id'])
+            )
+
+            question['amount_of_media'] = len(get_entries_from_db(
+                "question_media_id",
+                "question_media",
+                "question_id = \"%s\"" % (question['question_id'])
+            ))
+            
+
+            for media in range(len(question_media_info)):
+                question['media_%s_url' % (media)] = question_media_info[media]['question_media_url']
+                question['media_%s_type' % (media)] = question_media_info[media]['question_media_type']
+                question['media_%s_description' % (media)] = question_media_info[media]['question_media_description']            
+
             question['question_category'] = get_entry_from_db(
                         "category_name",
                         "categories",
@@ -3652,7 +3710,7 @@ def live_quiz():
         leaderboard = filter_data(all_participant_info, session['user_id'])
         if participant_info['participant_item_id']:
             item_info = get_entry_from_db(
-                        "item_name",
+                        "item_name, item_description",
                         "items",
                         "item_id = \"%s\"" % (participant_info['participant_item_id'])
                     )
@@ -3720,6 +3778,41 @@ def use_hint():
         )
 
         flash("You spent %s points to unlock a hint" % (int(question_points-1/(number_of_hints))))
+        return redirect(url_for(
+            request.form.get('source_point')
+        ),
+            code = 307
+        )
+    
+    else:
+        flash("Pay me £20 and I will do this")
+        return redirect(url_for(
+            'home'
+        ))
+    
+@app.route('/live_quiz/use_item', methods=['GET', 'POST'])
+def use_item():
+    # This will lable a quiz as active
+    if request.method == "POST":
+        if check_single_db(
+            "participant_item_id",
+            "participants",
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], request.form.get('quiz_id'))
+        ):
+            item_function(
+                session['user_id'],
+                request.form.get('quiz_id'),
+                request.form.get('participant_item_id')
+            )
+            update_db_entry(
+                "participants",
+                "participant_item_id = NULL",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], request.form.get('quiz_id'))
+            )
+            flash("Item used")
+        else:
+            flash("You lost the item")
+
         return redirect(url_for(
             request.form.get('source_point')
         ),

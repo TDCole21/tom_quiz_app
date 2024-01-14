@@ -709,9 +709,8 @@
   {% if question_media_info %}
     {% for question_media in question_media_info %}
       <p>
-        {{question_media['question_media_type']}}: {{question_media['question_media_description']}}<br>
-        
-        <{{question_media['question_media_type']}} src="{{question_media['question_media_url']}}" alt="{{question_media['question_media_description']}}" controls>
+        {{question_media['question_media_description']}}<br>
+        <{{question_media['question_media_type']}} src="{{question_media['question_media_url']}}" alt="{{question_media['question_media_description']}}" autoplay muted loop height=50% width=50%>
       </p>
       <form
         method  = "POST"

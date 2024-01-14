@@ -35,7 +35,6 @@
 
     {% endif %}
 
-
 <!-- Quiz Information -->  
     <h2> Quiz Info:</h2>
     <h3>
@@ -121,9 +120,18 @@
   {% if round_questions %}
     {% for question in round_questions %}
       <h3>
+        {% if 'quiz_end' in quiz_info %}
+          Round {{question['round_order']}} <br>
+        {% endif %}
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['next_question'] %}<b style='color:blue;'>Upcoming</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
       {% if question['question_completed'] or question['question_active'] %}
+        {% for media_index in range(question['amount_of_media']) %}
+          <p>
+            {{question['media_' ~ media_index ~ '_description']}}<br>
+            <{{question['media_' ~ media_index ~ '_type']}} src="{{question['media_' ~ media_index ~ '_url']}}" alt="{{question['media_' ~ media_index ~ '_description']}}" autoplay muted loop height=50% width=50%>
+          </p>
+        {% endfor %}
         <div style="white-space: pre-wrap;">{{question['question_text']}}</div>
         <br>
         Your Answer: {{question['answer_text']}}
@@ -356,13 +364,68 @@
       <hr>
     {% endif %}
 
-
   <!-- Item Info -->
   <h2> Item:</h2>
   {% if participant_info['participant_item_id'] %}
-    Item Name:{{participant_info['item_name']}}
+    Item Name: {{participant_info['item_name']}}
     <br>
-    Item Description: <div style="white-space: pre-wrap;">{{participant_info['item_description']}}</div>
+    <div style="white-space: pre-wrap;">Item Description: {{participant_info['item_description']}}</div>
+    <form
+      method  = "POST"
+      id      = "form"
+      action  = "{{ url_for(
+        'use_item'
+      )}}"
+    >
+      <input
+        type  = "hidden"
+        id    = "source_point"
+        name  = "source_point"
+        value = "live_quiz"
+      />
+      <input
+        type  = "hidden"
+        id    = "participant_item_id"
+        name  = "participant_item_id"
+        value = "{{participant_info['participant_item_id']}}"
+      />
+      <div
+        class = "w3-button"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          class = "registerbtn"
+          value = "{{quiz_info['quiz_id']}}"
+        >
+          Throw Forwards
+        </button>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          class = "registerbtn"
+          value = "{{quiz_info['quiz_id']}}"
+        >
+          Throw Backwards
+        </button>
+      </div>
+      <div
+        class = "w3-button"
+      >
+        <button
+          type  = "submit"
+          name  = "quiz_id"
+          class = "registerbtn"
+          value = "{{quiz_info['quiz_id']}}"
+        >
+          Use
+        </button>
+      </div>
+    </form>
   {% else %}
     You don't have an item
   {% endif %}
@@ -437,10 +500,7 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Not sure whether or not to keep whole leaderboard at the end of quiz</li>
       <li>Add items</li>
-      <li>Add pictures</li>
-      <li>Add multiline</li>
   </ul>
 
   <hr>

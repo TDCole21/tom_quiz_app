@@ -15,6 +15,7 @@ import time
 from werkzeug.security import generate_password_hash, check_password_hash
 from multidict import MultiDict
 import hashlib
+import random
 
 
 
@@ -405,10 +406,6 @@ def mode(data, key):
     return mode_values or []
 
 
-
-
-
-
 def total(list_of_dicts, key):
     total_value = 0
     for dict in list_of_dicts:
@@ -546,3 +543,60 @@ def filter_data_old(data, user_id):
         filtered_data.extend([d for d in data if d['participant_position'] == 1])
 
     return filtered_data
+
+def get_item(user_id, quiz_id):
+    position = get_entry_from_db(
+        "participant_position",
+        "participants",
+        "user_id = %s" % (user_id)
+    )['participant_position']
+
+    number_of_participants = len(get_entries_from_db(
+        "user_id",
+        "participants",
+        "quiz_id = %s" % (quiz_id)
+    ))
+
+    if random.random()+(position/number_of_participants) > 1:
+        update_db_entry(
+            "participants",
+            "participant_item_id = %s" % (1),
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )
+
+def item_function(user_id, quiz_id, participant_item_id):
+    item_info = get_entry_from_db(
+        "*",
+        "items",
+        "item_id = %s" % (participant_item_id)
+    )
+
+    if item_info['item_id'] == 1:
+        return True
+    
+    if item_info['item_id']  == 2:
+        return True
+    
+    if item_info['item_id']  == 3:
+        return True
+    
+    if item_info['item_id']  == 4:
+        return True
+    
+    if item_info['item_id']  == 5:
+        return True
+    
+    if item_info['item_id']  == 6:
+        return True
+    
+    if item_info['item_id']  == 7:
+        return True
+    
+    if item_info['item_id']  == 8:
+        return True
+    
+    if item_info['item_id']  == 9:
+        return True
+    
+    if item_info['item_id']  == 10:
+        return True

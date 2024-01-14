@@ -169,12 +169,18 @@
   {% if round_questions %}
     {% for question in round_questions %}
       <h3>
-        {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+        {% if 'quiz_end' in quiz_info %}
             Round {{question['round_order']}} <br>
         {% endif %}
         Question {{question['question_order']}}: {{question['question_tag']}} {% if question['question_completed'] %}<b style='color:red;'>Completed</b>{% elif question['question_active'] %}<b style='color:green;'>Active</b>{% endif %}
       </h3>
       {% if question['question_completed'] or question['question_active'] or question['next_question'] %}
+        {% for media_index in range(question['amount_of_media']) %}
+          <p>
+            {{question['media_' ~ media_index ~ '_description']}}<br>
+            <{{question['media_' ~ media_index ~ '_type']}} src="{{question['media_' ~ media_index ~ '_url']}}" alt="{{question['media_' ~ media_index ~ '_description']}}" autoplay muted loop height=50% width=50%>
+          </p>
+        {% endfor %}
         <div style="white-space: pre-wrap;"><h4>{{question['question_text']}}</h4></div>
         <h5>
           Correct Answer: <div style="white-space: pre-wrap;">{{question['question_correct_answer']}}</div>
@@ -258,7 +264,7 @@
             <th>
               Correct
             </th>
-            {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+            {% if 'quiz_end' in quiz_info %}
               <th>
                 Points Earned
               </th>
@@ -315,7 +321,7 @@
                       {{answer['answer_correct']}}
                     {% endif %}
                   </td>
-                  {% if quiz_info['quiz_end'] and quiz_info['quiz_completed'] is none %}
+                  {% if 'quiz_end' in quiz_info %}
                     <td>
                       {{answer['answer_points']}}
                     </td>
@@ -578,8 +584,7 @@
   <!-- End page content -->
   <h4>To do:</h4>
   <ul>
-      <li>Add pictures</li>
-      <li>Multi line</li>
+      <li>None</li>
   </ul>
 
   <hr>

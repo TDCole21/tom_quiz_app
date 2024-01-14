@@ -32,7 +32,10 @@ CREATE TABLE categories (
 CREATE TABLE items (
     item_id INT(3) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     item_name VARCHAR(50) UNIQUE NOT NULL,
-    item_description TEXT
+    item_description TEXT,
+    item_rarity INT(3),
+    item_use INT(1),
+    item_points INT(3)
 );
 
 CREATE TABLE question_type (
