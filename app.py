@@ -3786,6 +3786,29 @@ def live_quiz():
 
         leaderboard = sorted(leaderboard, key=lambda k: k['participant_position'])
 
+        if 'score' in session and participant_info['participant_score'] > session['score']:
+            flash("You have gained %s points" % (int(participant_info['participant_score']) - int(session['score'])))
+        elif 'score' in session and participant_info['participant_score'] < session['score']:
+            flash("You have lost %s points" % (int(session['score']) - int(participant_info['participant_score'])))
+
+        if 'position' in session and participant_info['participant_position'] != session['position']:
+            flash("You have moved from %s to %s place" % (ordinal(session['position']), ordinal(participant_info['participant_position'])))
+
+        if 'item' in session and session['item'] != participant_info['participant_item_id']:
+            if participant_info['participant_item_id'] is None:
+                flash("You have no items")
+            else:
+                item_name = get_entry_from_db(
+                    "item_name",
+                    "items",
+                    "item_id = %s" % (participant_info['participant_item_id'])
+                )['item_name']
+                flash(f"You have gained a {item_name} item")
+
+        session['score'] = participant_info['participant_score']
+        session['position'] = participant_info['participant_position']
+        session['item'] = participant_info['participant_item_id']
+
         # Feeds data into HTML Jinja2 template
         return render_template(
             "quiz/join_a_quiz/live_quiz.html",

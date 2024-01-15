@@ -46,10 +46,6 @@
     </div>
     Number of Rounds: {{quiz_info['number_of_associated_rounds']}}
     <br>
-    Number of Questions: {{quiz_info['number_of_associated_questions']}}
-    <br>
-    Questions Completed: {{quiz_info['completed_questions']}}
-    <br>
     Most common Question category: {{quiz_info['mode_question_category']}}
     <br>
     Average Question Difficulty: {{quiz_info['average_question_difficulty']}}/10
@@ -89,12 +85,6 @@
         <div class="w3-section w3-light-grey">
           <div class="w3-container w3-padding-small w3-red w3-center" style="width:{{associated_round['percentage_complete']}}%">{{associated_round['percentage_complete']}}%</div>
         </div>
-        {% if associated_round['number_of_associated_questions'] %}
-          Number of Questions: {{associated_round['number_of_associated_questions']}}
-          <br>
-          Questions Completed:  {{associated_round['completed_questions']}}
-          <br>
-        {% endif %}
         {% if associated_round['mode_question_category'] %}
           Category Type: {{associated_round['mode_question_category']}}
           <br>
@@ -250,16 +240,12 @@
         Scoring Type: {{question['question_scoring_type']}}
         <br>
       {% endif %}
-      {% if question['question_category'] %}
-        Category Type: {{question['question_category']}}
-        <br>
-      {% endif %}
       {% if question['question_difficulty'] %}
         Question Difficulty: {{question['question_difficulty']}}/10
         <br>
       {% endif %}
       {% if question['question_points'] and (question['question_completed'] or question['question_active']) and 'quiz_end' not in quiz_info %}
-        Maximum points you can earn in this question is {{question['question_points']}} points
+        Maximum points: {{question['question_points']}} points
       {% elif 'quiz_end' in quiz_info %}
           You scored {{question['answer_points']}}/{{question['question_points']}} points on this Question
       {% endif %}
@@ -271,6 +257,7 @@
   {% else %}
     There are no active Rounds
   {% endif %}
+  <br>
   <hr>
 
     <!-- Participant Information -->
@@ -510,12 +497,6 @@
   {% endif %}
 
   <!-- End page content -->
-  <h4>To do:</h4>
-  <ul>
-      <li>Add items</li>
-  </ul>
-
-  <hr>
 
   {% if quiz_info['quiz_completed'] is none %}
     <form
@@ -534,9 +515,6 @@
         Refresh Page
       </button>
     </form>
-
-    <hr>
-
   {% endif %}
 
 {%endblock%}

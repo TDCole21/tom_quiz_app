@@ -489,105 +489,99 @@
 
   <!-- Leader Board -->
   {% if quiz_info['quiz_active'] == 1 or quiz_info['quiz_completed'] == 1 %}
-  <h3> Leaderboard:</h3>
-  <form
-  method  = "POST"
-  action  = "{{ url_for(
-    'score'
-  )}}"
->
-  <table
-    class = "w3-table"
-  >
-    {% if participant_info %}
-      <tr>
-        <th>
-          Position
-        </th>
-        <th>
-          Name
-        </th>
-        <th>
-          Score
-        </th>
-        <th>
-          Item
-        </th>
-        <th>
-          Adhoc Points
-        </th>
-      </tr>
-      {% for participant in participant_info %}
-      <tr>
-          <td>
-            {{participant['participant_position']}}
-          </td>
-          <td>
-            {{participant['username']}}
-          </td>
-          <td>
-            {{participant['participant_score']}}
-          </td>
-          <td>
-            {% if participant['item_name'] %}
-              {{participant['item_name']}}
-            {% else %}
-              None
-            {% endif %}
-          </td>
-          <td>
-            <input
-              type        = "number"
-              placeholder = "Points"
-              name        = "points"
-              id          = "points"
-              required
-              maxlength   = "3"
-              step        = "1"
-              value       = "0"
-            />
-            <br/>
-            <input
-              type  = "hidden"
-              name  = "quiz_id"
-              value = "{{quiz_info['quiz_id']}}"
-            />
-            <input
-              type  = "hidden"
-              name  = "user_id"
-              value = "{{participant['user_id']}}"
-            />
-            <input
-              type  = "hidden"
-              name  = "source_point"
-              value = "host_live_quiz"
-            />
-          </td>
-      </tr>
-      {% endfor %}
-    {% else %}
-      <p>
-        You have not entered any participants in this Quiz
-      </p>
-    {% endif %}
-  </table>
-  <button
-  type  = "submit"
-  class = "registerbtn"
->
-  Update Leaderboard
-</button>
-</form>
-  <hr>
+    <h3> Leaderboard:</h3>
+    <form
+      method  = "POST"
+      action  = "{{ url_for(
+        'score'
+      )}}"
+    >
+      <table
+        class = "w3-table"
+      >
+        {% if participant_info %}
+          <tr>
+            <th>
+              Position
+            </th>
+            <th>
+              Name
+            </th>
+            <th>
+              Score
+            </th>
+            <th>
+              Item
+            </th>
+            <th>
+              Adhoc Points
+            </th>
+          </tr>
+          {% for participant in participant_info %}
+          <tr>
+              <td>
+                {{participant['participant_position']}}
+              </td>
+              <td>
+                {{participant['username']}}
+              </td>
+              <td>
+                {{participant['participant_score']}}
+              </td>
+              <td>
+                {% if participant['item_name'] %}
+                  {{participant['item_name']}}
+                {% else %}
+                  None
+                {% endif %}
+              </td>
+              <td>
+                <input
+                  type        = "number"
+                  placeholder = "Points"
+                  name        = "points"
+                  id          = "points"
+                  required
+                  maxlength   = "3"
+                  step        = "1"
+                  value       = "0"
+                />
+                <br/>
+                <input
+                  type  = "hidden"
+                  name  = "quiz_id"
+                  value = "{{quiz_info['quiz_id']}}"
+                />
+                <input
+                  type  = "hidden"
+                  name  = "user_id"
+                  value = "{{participant['user_id']}}"
+                />
+                <input
+                  type  = "hidden"
+                  name  = "source_point"
+                  value = "host_live_quiz"
+                />
+              </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <p>
+            You have not entered any participants in this Quiz
+          </p>
+        {% endif %}
+      </table>
+      <button
+        type  = "submit"
+        class = "registerbtn"
+      >
+        Update Leaderboard
+      </button>
+    </form>
+    <hr>
   {% endif %}
 
   <!-- End page content -->
-  <h4>To do:</h4>
-  <ul>
-      <li>None</li>
-  </ul>
-
-  <hr>
 
   {% if quiz_info['quiz_completed'] is none %}
     <form
@@ -606,9 +600,6 @@
         Refresh Page
       </button>
     </form>
-
-    <hr>
-
   {% endif %}
 
 {%endblock%}
