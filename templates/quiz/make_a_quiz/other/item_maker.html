@@ -38,19 +38,84 @@
     <form
       method  = "POST"
     >
+      Item Name:
       <input
         type                = "text"
         placeholder         = "New Item Name"
         value               = "{{item['item_name']}}"
         name                = "new_item_name"
         id                  = "new_item_name"
+        required
       />
+      Item Description:
       <input
         type                = "text"
         placeholder         = "New Item Description"
         value               = "{{item['item_description']}}"
         name                = "new_item_description"
         id                  = "new_item_description"
+        required
+      />
+      Item Rarity:
+      <input
+        type        = "number"
+        placeholder = "Rarity"
+        name        = "item_rarity"
+        id          = "item_rarity"
+        maxlength   = "3"
+        step        = "1"
+        min         = "1"
+        max         = "100"
+        value       = "{{item['item_rarity']}}"
+        required
+      />
+      <br>Chance of success forwards:
+      <input
+        type        = "number"
+        placeholder = "Chance forwards"
+        name        = "chance_forwards"
+        id          = "chance_forwards"
+        maxlength   = "3"
+        step        = "1"
+        min         = "1"
+        max         = "100"
+        value       = "{{item['chance_forwards']}}"
+      />
+      <br>Chance of success backwards:
+      <input
+        type        = "number"
+        placeholder = "Chance backwards"
+        name        = "chance_backwards"
+        id          = "chance_backwards"
+        maxlength   = "3"
+        step        = "1"
+        min         = "1"
+        max         = "100"
+        value       = "{{item['chance_backwards']}}"
+      />
+      <br>Chance of success use:
+      <input
+        type        = "number"
+        placeholder = "Chance use"
+        name        = "chance_use"
+        id          = "chance_use"
+        maxlength   = "3"
+        step        = "1"
+        min         = "1"
+        max         = "100"
+        value       = "{{item['chance_use']}}"
+      />
+      <br>Item Points:
+      <input
+        type        = "number"
+        placeholder = "Points"
+        name        = "item_points"
+        id          = "item_points"
+        maxlength   = "3"
+        step        = "1"
+        min         = "-100"
+        max         = "100"
+        value       = "{{item['item_points']}}"
       />
       <input
         type  = "hidden"
@@ -67,6 +132,7 @@
         name  = "source_point"
         value = "item_maker"
       />
+      <br>
       <div
         class = "w3-button"
       >
@@ -102,18 +168,77 @@
       'add_item'
     )}}"
   >
+    Item Name:
     <input
-      type                = "text"
       placeholder         = "Item Name"
-      name                = "item_name"
-      id                  = "item_name"
+      type                = "text"
+      name                = "new_item_name"
+      id                  = "new_item_name"
       required
     />
+    Item Description:
     <input
-      type                = "text"
       placeholder         = "Item Description"
-      name                = "item_description"
-      id                  = "item_description"
+      type                = "text"
+      name                = "new_item_description"
+      id                  = "new_item_description"
+      required
+    />
+    Item Rarity:
+    <input
+      placeholder = "Rarity"
+      type        = "number"
+      name        = "item_rarity"
+      id          = "item_rarity"
+      maxlength   = "3"
+      step        = "1"
+      min         = "1"
+      max         = "100"
+      required
+    />
+    <br>Chance of success forwards:
+    <input
+      placeholder = "Chance forwards"
+      type        = "number"
+      name        = "chance_forwards"
+      id          = "chance_forwards"
+      maxlength   = "3"
+      step        = "1"
+      min         = "1"
+      max         = "100"
+    />
+    <br>Chance of success backwards:
+    <input
+      placeholder = "Chance backwards"
+      type        = "number"
+      name        = "chance_backwards"
+      id          = "chance_backwards"
+      maxlength   = "3"
+      step        = "1"
+      min         = "1"
+      max         = "100"
+    />
+    <br>Chance of success use:
+    <input
+      placeholder = "Chance use"
+      type        = "number"
+      name        = "chance_use"
+      id          = "chance_use"
+      maxlength   = "3"
+      step        = "1"
+      min         = "1"
+      max         = "100"
+    />
+    <br>Item Points:
+    <input
+      placeholder = "Points"
+      type        = "number"
+      name        = "item_points"
+      id          = "item_points"
+      maxlength   = "3"
+      step        = "1"
+      min         = "-100"
+      max         = "100"
     />
     <input
       type  = "hidden"

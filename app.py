@@ -537,11 +537,37 @@ def item_maker():
 @app.route('/add_item', methods=['GET', 'POST'])
 def add_item():
     if request.method == "POST":
+        if (request.form.get('item_rarity')):
+            item_rarity = "\"%s\"" % (request.form.get('item_rarity'))
+        else:
+            item_rarity = "NULL"
+
+        if (request.form.get('chance_forwards')):
+            chance_forwards = "\"%s\"" % (request.form.get('chance_forwards'))
+        else:
+            chance_forwards = "NULL"
+
+        if (request.form.get('chance_backwards')):
+            chance_backwards = "\"%s\"" % (request.form.get('chance_backwards'))
+        else:
+            chance_backwards = "NULL"
+
+        if (request.form.get('chance_use')):
+            chance_use = "\"%s\"" % (request.form.get('chance_use'))
+        else:
+            chance_use = "NULL"
+
+        if (request.form.get('item_points')):
+            item_points = "\"%s\"" % (request.form.get('item_points'))
+        else:
+            item_points = "NULL"
+
         insert_db_entry(
             "items",
-            "item_name, item_description",
-            "\"%s\", \"%s\"" % (fix_string(request.form.get('item_name')), fix_string(request.form.get('item_description')))
+            "item_name, item_description, item_rarity, chance_forwards, chance_backwards, chance_use, item_points",
+            "\"%s\", \"%s\", %s, %s, %s, %s, %s" % (fix_string(request.form.get('new_item_name')), fix_string(request.form.get('new_item_description')), item_rarity, chance_forwards, chance_backwards, chance_use, item_points),
         )
+
         flash("Item %s created" % (request.form.get('item_name')))
         return redirect(url_for(
                 request.form.get('source_point')
@@ -556,12 +582,38 @@ def add_item():
 @app.route('/update_item', methods=['GET', 'POST'])
 def update_item():
     if request.method == "POST":
+        if (request.form.get('item_rarity')):
+            item_rarity = "\"%s\"" % (request.form.get('item_rarity'))
+        else:
+            item_rarity = "NULL"
+
+        if (request.form.get('chance_forwards')):
+            chance_forwards = "\"%s\"" % (request.form.get('chance_forwards'))
+        else:
+            chance_forwards = "NULL"
+
+        if (request.form.get('chance_backwards')):
+            chance_backwards = "\"%s\"" % (request.form.get('chance_backwards'))
+        else:
+            chance_backwards = "NULL"
+
+        if (request.form.get('chance_use')):
+            chance_use = "\"%s\"" % (request.form.get('chance_use'))
+        else:
+            chance_use = "NULL"
+
+        if (request.form.get('item_points')):
+            item_points = "\"%s\"" % (request.form.get('item_points'))
+        else:
+            item_points = "NULL"
+
         update_db_entry(
             "items",
-            "item_name = \"%s\", item_description = \"%s\"" % (fix_string(request.form.get('new_item_name')), fix_string(request.form.get('new_item_description'))),
-            "item_name = \"%s\"" % (fix_string(request.form.get('old_item_name')))
+            "item_name = \"%s\", item_description = \"%s\", item_rarity = %s, chance_forwards = %s, chance_backwards = %s, chance_use = %s, item_points = %s" % (fix_string(request.form.get('new_item_name')), fix_string(request.form.get('new_item_description')), item_rarity, chance_forwards, chance_backwards, chance_use, item_points),
+            "item_id = \"%s\"" % (fix_string(request.form.get('item_id')))
         )
-        flash("Item %s updated to %s" % (request.form.get('old_item_name'), request.form.get('new_item_name')))
+
+        flash("Item %s updated" % (request.form.get('new_item_name')))
         return redirect(url_for(
                 request.form.get('source_point')
             ))
@@ -3249,12 +3301,13 @@ def start_round():
 def start_question():
     if admin_check() and request.method == 'POST':
         participants = get_entries_from_db(
-            "user_id",
+            "user_id, participant_item_id",
             "participants",
             "quiz_id = %s" % (request.form.get('quiz_id'))
         )
         for participant in participants:
-            get_item(participant['user_id'], request.form.get('quiz_id'))
+            if participant['participant_item_id'] is None:
+                get_item(participant['user_id'], request.form.get('quiz_id'))
 
         # This update the value of active to TRUE in the database for the round  
         update_db_entry(
@@ -3287,11 +3340,11 @@ def complete_question():
             "question_id = %s" % (request.form.get('question_id'))
         )
 
-        update_db_entry(
-            "participants",
-            "participant_item_id = NULL",
-            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
-        )
+        # update_db_entry(
+        #     "participants",
+        #     "participant_item_id = NULL",
+        #     "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
+        # )
 
         # Redirects the user back to the host live quiz
         return redirect(url_for(
@@ -3315,6 +3368,12 @@ def complete_round():
             "live",
             "round_active = NULL, round_completed = 1, lock_answers = NULL",
             "round_id = %s" % (request.form.get('round_id'))
+        )
+
+        update_db_entry(
+            "participants",
+            "participant_item_id = NULL",
+            "quiz_id = \"%s\"" % (request.form.get('quiz_id'))
         )
 
         # This retrieves information about the answers in the round
@@ -3708,12 +3767,15 @@ def live_quiz():
         leaderboard = filter_data(all_participant_info, session['user_id'])
         if participant_info['participant_item_id']:
             item_info = get_entry_from_db(
-                        "item_name, item_description",
+                        "item_name, item_description, chance_forwards, chance_backwards, chance_use",
                         "items",
                         "item_id = \"%s\"" % (participant_info['participant_item_id'])
                     )
             participant_info['item_name'] = item_info['item_name']
             participant_info['item_description'] = item_info['item_description']
+            participant_info['chance_forwards'] = item_info['chance_forwards']
+            participant_info['chance_backwards'] = item_info['chance_backwards']
+            participant_info['chance_use'] = item_info['chance_use']
 
         if not count_not(
             "participants",

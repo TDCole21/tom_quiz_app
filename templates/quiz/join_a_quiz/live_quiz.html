@@ -389,42 +389,48 @@
         name  = "participant_item_id"
         value = "{{participant_info['participant_item_id']}}"
       />
-      <div
-        class = "w3-button"
-      >
-        <button
-          type  = "submit"
-          name  = "quiz_id"
-          class = "registerbtn"
-          value = "{{quiz_info['quiz_id']}}"
+      {% if participant_info['chance_forwards'] %}
+        <div
+          class = "w3-button"
         >
-          Throw Forwards
-        </button>
-      </div>
-      <div
-        class = "w3-button"
-      >
-        <button
-          type  = "submit"
-          name  = "quiz_id"
-          class = "registerbtn"
-          value = "{{quiz_info['quiz_id']}}"
+          <button
+            type  = "submit"
+            name  = "quiz_id"
+            class = "registerbtn"
+            value = "{{quiz_info['quiz_id']}}"
+          >
+            Throw Forwards
+          </button>
+        </div>
+      {% endif %}
+      {% if participant_info['chance_backwards'] %}
+        <div
+          class = "w3-button"
         >
-          Throw Backwards
-        </button>
-      </div>
-      <div
-        class = "w3-button"
-      >
-        <button
-          type  = "submit"
-          name  = "quiz_id"
-          class = "registerbtn"
-          value = "{{quiz_info['quiz_id']}}"
+          <button
+            type  = "submit"
+            name  = "quiz_id"
+            class = "registerbtn"
+            value = "{{quiz_info['quiz_id']}}"
+          >
+            Throw Backwards
+          </button>
+        </div>
+      {% endif %}
+      {% if participant_info['chance_use'] %}
+        <div
+          class = "w3-button"
         >
-          Use
-        </button>
-      </div>
+          <button
+            type  = "submit"
+            name  = "quiz_id"
+            class = "registerbtn"
+            value = "{{quiz_info['quiz_id']}}"
+          >
+            Use
+          </button>
+        </div>
+      {% endif %}
     </form>
   {% else %}
     You don't have an item

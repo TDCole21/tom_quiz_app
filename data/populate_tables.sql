@@ -36,7 +36,7 @@ INSERT IGNORE INTO items
 (item_name, item_description, item_rarity, chance_forwards, chance_backwards, chance_use, item_points) VALUES
 ("Banana", "If you throw it forwards/behind, you have a 50%/75% chance of taking 5 points off the person infront/behind.", "100", "50", "75", NULL, "-5"),
 ("Green Shell", "If you throw it forwards/behind, you have a 75%/50% chance of taking 5 points off the person infront/behind.", "100", "75", "50", NULL, "-5"),
-("Red Shell", "If you throw it forwards/behind, you have a 100%/50% chance of taking 5 points off the person infront/beghind.", "90", "100", "50", NULL, "-5"),
+("Red Shell", "If you throw it forwards/behind, you have a 100%/50% chance of taking 5 points off the person infront/behind.", "90", "100", "50", NULL, "-5"),
 ("Lightning", "Take 3 points from all people ahead of you", "50", "100", NULL, NULL, "-3"),
 ("Blue Shell", "Take 10 points from 1st, 5 from 2nd, 2 from 3rd and 1 from 4th. If you are in the top 4, you won't loose points", "10", "100", NULL, NULL, "-10"),
 ("1up Mushroom", "Move up a position in the Quiz.", "20", NULL, NULL, "100", NULL),
