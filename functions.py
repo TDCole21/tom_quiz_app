@@ -582,39 +582,241 @@ def get_item(user_id, quiz_id):
             "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
         )
 
-def item_function(user_id, quiz_id, participant_item_id):
+def item_function(user_id, quiz_id, participant_item_id, use):
     item_info = get_entry_from_db(
         "*",
         "items",
         "item_id = %s" % (participant_item_id)
     )
 
+    # Banana
     if item_info['item_id'] == 1:
-        return True
-    
+        # Thrown Forwards
+        if use == 1:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+
+        # Thrown Backwards
+        if use == 2:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+    # Green Shell
     if item_info['item_id']  == 2:
-        return True
-    
+        # Thrown Forwards
+        if use == 1:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+
+        # Thrown Backwards
+        if use == 2:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+    # Red Shell
     if item_info['item_id']  == 3:
-        return True
-    
+        # Thrown Forwards
+        if use == 1:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+
+        # Thrown Backwards
+        if use == 2:
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )
+            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+   
+    # Lightning
     if item_info['item_id']  == 4:
-        return True
-    
+        # Thrown Forwards
+        user_score = get_entry_from_db(
+            "participant_score",
+            "participants",
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )['participant_score']
+
+        update_db_entry(
+            "participants",
+            "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )
+        flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+    # Blue Shell
     if item_info['item_id']  == 5:
-        return True
-    
+        # Thrown Forwards
+        user_score = get_entry_from_db(
+            "participant_score",
+            "participants",
+            "user_id != \"%s\" AND participant_position = \"1\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )['participant_score']
+
+        update_db_entry(
+            "participants",
+            "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
+            "user_id != \"%s\" AND participant_position = \"1\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )
+
+        flash("You used a %s and hit 1st, taking %s points" % (item_info['item_name'], item_info['item_points']))
+
+        for i in range(100):  # Limit to 100 iterations to avoid infinite loops
+            halved_value = item_info['item_points'] // 2
+
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id != \"%s\" AND participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_id, i+2, quiz_id)
+            )['participant_score']
+
+            update_db_entry(
+                "participants",
+                "participant_score = \"%s\"" % (int(user_score)+int(halved_value)),
+                "user_id != \"%s\" AND participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_id, i+2, quiz_id)
+            )
+            item_info['item_points'] = halved_value
+
+
+            flash("You used a %s and hit %s place, taking %s points" % (item_info['item_name'], i+2, item_info['item_points']))
+
+    # 1up Mushroom
     if item_info['item_id']  == 6:
-        return True
-    
+        # Use on self
+        user_info = get_entry_from_db(
+            "participant_position, participant_score",
+            "participants",
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )
+        
+        user_position = user_info['participant_position']
+        user_score = user_info['participant_score']
+
+        if user_position == 1:
+            flash("There's nowhere for you to go, you're already winning")
+        else:
+            next_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_position-1, quiz_id)
+            )['participant_score']
+
+            points = next_score - user_score + 1
+
+            update_leaderboard(user_id, quiz_id, points)
+            flash("You used a %s to gain %s points and moved to %s place" % (item_info['item_name'], points, ordinal(int(user_position)-1)))
+
+    # Coin
     if item_info['item_id']  == 7:
-        return True
-    
+        # Use on self
+        update_leaderboard(user_id, quiz_id, item_info['item_points'])
+        flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+    # Red Mushroom
     if item_info['item_id']  == 8:
-        return True
+        # Use on self
+        update_leaderboard(user_id, quiz_id, item_info['item_points'])
+        flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
     
+    # Golden Mushroom
     if item_info['item_id']  == 9:
-        return True
-    
+        # Use on self
+        update_leaderboard(user_id, quiz_id, item_info['item_points'])
+        flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+    # Golden Pipe
     if item_info['item_id']  == 10:
-        return True
+        # Use on self
+        user_position = get_entry_from_db(
+            "participant_position",
+            "participants",
+            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+        )['participant_position']
+
+        if user_position == 1:
+            flash("You can't use the %s. There's nowhere for you to go, you're already winning" % (item_info['item_name']))
+        else:
+            first_place_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "participant_position = \"1\" AND quiz_id = \"%s\"" % (quiz_id)
+            )['participant_score']
+
+            user_score = get_entry_from_db(
+                "participant_score",
+                "participants",
+                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            )['participant_score']
+
+            points = first_place_score - user_score + 1
+
+            update_leaderboard(user_id, quiz_id, points)
+
+            flash("You used a %s and went straight to 1st place!" % (item_info['item_name']))
+
+def ordinal(num):
+  if num % 100 in (11, 12, 13):
+    return f"{num}th"
+  elif num % 10 == 1:
+    return f"{num}st"
+  elif num % 10 == 2:
+    return f"{num}nd"
+  else:
+    return f"{num}th"

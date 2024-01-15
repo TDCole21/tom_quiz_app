@@ -385,6 +385,12 @@
       />
       <input
         type  = "hidden"
+        id    = "quiz_id"
+        name  = "quiz_id"
+        value = "{{quiz_info['quiz_id']}}"
+      />
+      <input
+        type  = "hidden"
         id    = "participant_item_id"
         name  = "participant_item_id"
         value = "{{participant_info['participant_item_id']}}"
@@ -395,9 +401,9 @@
         >
           <button
             type  = "submit"
-            name  = "quiz_id"
+            name  = "use"
             class = "registerbtn"
-            value = "{{quiz_info['quiz_id']}}"
+            value = "1"
           >
             Throw Forwards
           </button>
@@ -409,9 +415,9 @@
         >
           <button
             type  = "submit"
-            name  = "quiz_id"
+            name  = "use"
             class = "registerbtn"
-            value = "{{quiz_info['quiz_id']}}"
+            value = "2"
           >
             Throw Backwards
           </button>
@@ -423,9 +429,9 @@
         >
           <button
             type  = "submit"
-            name  = "quiz_id"
+            name  = "use"
             class = "registerbtn"
-            value = "{{quiz_info['quiz_id']}}"
+            value = "0"
           >
             Use
           </button>

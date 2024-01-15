@@ -3862,7 +3862,8 @@ def use_item():
             item_function(
                 session['user_id'],
                 request.form.get('quiz_id'),
-                request.form.get('participant_item_id')
+                request.form.get('participant_item_id'),
+                request.form.get('use')
             )
             update_db_entry(
                 "participants",
