@@ -592,150 +592,262 @@ def item_function(user_id, quiz_id, participant_item_id, use):
     # Banana
     if item_info['item_id'] == 1:
         # Thrown Forwards
-        if use == 1:
-            user_score = get_entry_from_db(
-                "participant_score",
-                "participants",
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+        if int(use) == 1:
+            if check_success(item_info['chance_forwards']):
+                user_position = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                )['participant_position']
 
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+                someone_else_in_first = check_single_db(
+                    "participant_position",
+                    "participants",
+                    "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"1\"" % (user_id, quiz_id)
+                )
+
+                if user_position == 1 and not someone_else_in_first:
+                    flash("You threw the %s forwards into the abyss" % (item_info['item_name']))
+                else:
+                    user = common_value(
+                        "users.username, participants.user_id, participants.participant_position",
+                        "users",
+                        "participants",
+                        "users.user_id",
+                        "participants.user_id WHERE participant_position <= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position DESC LIMIT 1" % (user_position, user_id, quiz_id)
+                    )
+
+                    update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                    flash("You threw a %s forwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
+            else:
+                flash("You threw a %s forwards but it missed." % (item_info['item_name']))
 
         # Thrown Backwards
-        if use == 2:
-            user_score = get_entry_from_db(
-                "participant_score",
-                "participants",
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+        if int(use) == 2:
+            if check_success(item_info['chance_backwards']):
+                user_position = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                )['participant_position']
 
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+                last_place = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "quiz_id = \"%s\" AND participant_position = (SELECT MAX(participant_position) FROM participants)" % (quiz_id)
+                )['participant_position']
+
+                someone_else_in_last = check_single_db(
+                    "participant_position",
+                    "participants",
+                    "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"%s\"" % (user_id, quiz_id, last_place)
+                )
+
+                if user_position == last_place and not someone_else_in_last:
+                    flash("You threw the %s backwards into the abyss" % (item_info['item_name']))
+                else:
+                    user = common_value(
+                        "users.username, participants.user_id, participants.participant_position",
+                        "users",
+                        "participants",
+                        "users.user_id",
+                        "participants.user_id WHERE participant_position >= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position ASC LIMIT 1" % (user_position, user_id, quiz_id)
+                    )
+
+                    update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                    flash("You threw a %s backwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
+            else:
+                flash("You threw a %s backwards but it missed." % (item_info['item_name']))
 
     # Green Shell
     if item_info['item_id']  == 2:
         # Thrown Forwards
-        if use == 1:
-            user_score = get_entry_from_db(
-                "participant_score",
-                "participants",
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+        if int(use) == 1:
+            if check_success(item_info['chance_forwards']):
+                user_position = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                )['participant_position']
 
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+                someone_else_in_first = check_single_db(
+                    "participant_position",
+                    "participants",
+                    "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"1\"" % (user_id, quiz_id)
+                )
+
+                if user_position == 1 and not someone_else_in_first:
+                    flash("You threw the %s forwards into the abyss" % (item_info['item_name']))
+                else:
+                    user = common_value(
+                        "users.username, participants.user_id, participants.participant_position",
+                        "users",
+                        "participants",
+                        "users.user_id",
+                        "participants.user_id WHERE participant_position <= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position DESC LIMIT 1" % (user_position, user_id, quiz_id)
+                    )
+
+                    update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                    flash("You threw a %s forwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
+            else:
+                flash("You threw a %s forwards but it missed." % (item_info['item_name']))
 
         # Thrown Backwards
-        if use == 2:
-            user_score = get_entry_from_db(
-                "participant_score",
-                "participants",
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+        if int(use) == 2:
+            if check_success(item_info['chance_backwards']):
+                user_position = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                )['participant_position']
 
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+                last_place = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "quiz_id = \"%s\" AND participant_position = (SELECT MAX(participant_position) FROM participants)" % (quiz_id)
+                )['participant_position']
+
+                someone_else_in_last = check_single_db(
+                    "participant_position",
+                    "participants",
+                    "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"%s\"" % (user_id, quiz_id, last_place)
+                )
+
+                if user_position == last_place and not someone_else_in_last:
+                    flash("You threw the %s backwards into the abyss" % (item_info['item_name']))
+                else:
+                    user = common_value(
+                        "users.username, participants.user_id, participants.participant_position",
+                        "users",
+                        "participants",
+                        "users.user_id",
+                        "participants.user_id WHERE participant_position >= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position ASC LIMIT 1" % (user_position, user_id, quiz_id)
+                    )
+
+                    update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                    flash("You threw a %s backwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
+            else:
+                flash("You threw a %s backwards but it missed." % (item_info['item_name']))
 
     # Red Shell
     if item_info['item_id']  == 3:
         # Thrown Forwards
-        if use == 1:
-            user_score = get_entry_from_db(
-                "participant_score",
+        if int(use) == 1:
+            user_position = get_entry_from_db(
+                "participant_position",
                 "participants",
                 "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+            )['participant_position']
 
-            update_db_entry(
+            someone_else_in_first = check_single_db(
+                "participant_position",
                 "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"1\"" % (user_id, quiz_id)
             )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points'])) 
+
+            if user_position == 1 and not someone_else_in_first:
+                flash("You threw the %s forwards into the abyss" % (item_info['item_name']))
+            else:
+                user = common_value(
+                    "users.username, participants.user_id, participants.participant_position",
+                    "users",
+                    "participants",
+                    "users.user_id",
+                    "participants.user_id WHERE participant_position <= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position DESC LIMIT 1" % (user_position, user_id, quiz_id)
+                )
+
+                update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                flash("You threw a %s forwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
 
         # Thrown Backwards
-        if use == 2:
-            user_score = get_entry_from_db(
-                "participant_score",
-                "participants",
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )['participant_score']
+        if int(use) == 2:
+            if check_success(item_info['chance_backwards']):
+                user_position = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+                )['participant_position']
 
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-                "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-            )
-            flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+                last_place = get_entry_from_db(
+                    "participant_position",
+                    "participants",
+                    "quiz_id = \"%s\" AND participant_position = (SELECT MAX(participant_position) FROM participants)" % (quiz_id)
+                )['participant_position']
+
+                someone_else_in_last = check_single_db(
+                    "participant_position",
+                    "participants",
+                    "user_id != \"%s\" AND quiz_id = \"%s\" AND participant_position = \"%s\"" % (user_id, quiz_id, last_place)
+                )
+
+                if user_position == last_place and not someone_else_in_last:
+                    flash("You threw the %s backwards into the abyss" % (item_info['item_name']))
+                else:
+                    user = common_value(
+                        "users.username, participants.user_id, participants.participant_position",
+                        "users",
+                        "participants",
+                        "users.user_id",
+                        "participants.user_id WHERE participant_position >= \"%s\" AND participants.user_id != \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position ASC LIMIT 1" % (user_position, user_id, quiz_id)
+                    )
+
+                    update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+                    flash("You threw a %s backwards and it hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
+            else:
+                flash("You threw a %s backwards but it missed." % (item_info['item_name']))
    
     # Lightning
     if item_info['item_id']  == 4:
         # Thrown Forwards
-        user_score = get_entry_from_db(
-            "participant_score",
+        user_position = get_entry_from_db(
+            "participant_position",
             "participants",
             "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-        )['participant_score']
+        )['participant_position']
 
-        update_db_entry(
+        users = common_values(
+            "users.username, participants.user_id, participants.participant_position",
+            "users",
             "participants",
-            "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-            "user_id = \"%s\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
+            "users.user_id",
+            "participants.user_id WHERE users.user_id != \"%s\" AND participants.participant_position <= \"%s\" AND participants.quiz_id = \"%s\"" % (user_id, user_position, quiz_id)
         )
-        flash("You used a %s and gained %s points" % (item_info['item_name'], item_info['item_points']))
+
+        for user in users:
+            update_leaderboard(user['user_id'], quiz_id, item_info['item_points'])
+            flash("You used a %s and hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(item_info['item_points'])))
 
     # Blue Shell
     if item_info['item_id']  == 5:
         # Thrown Forwards
-        user_score = get_entry_from_db(
-            "participant_score",
-            "participants",
-            "user_id != \"%s\" AND participant_position = \"1\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-        )['participant_score']
+        damage = {"1": item_info['item_points']}
+        points = abs(item_info['item_points'])
+        index = 0
+        while points > 0:  # Limit to 100 iterations to avoid infinite loops
+            halved_value = points // 2
+            if halved_value != 0:
+                damage[str(int(index+2))] = -halved_value
+            points = halved_value
+            index += 1 
 
-        update_db_entry(
-            "participants",
-            "participant_score = \"%s\"" % (int(user_score)+int(item_info['item_points'])),
-            "user_id != \"%s\" AND participant_position = \"1\" AND quiz_id = \"%s\"" % (user_id, quiz_id)
-        )
-
-        flash("You used a %s and hit 1st, taking %s points" % (item_info['item_name'], item_info['item_points']))
-
-        for i in range(100):  # Limit to 100 iterations to avoid infinite loops
-            halved_value = item_info['item_points'] // 2
-
-            user_score = get_entry_from_db(
-                "participant_score",
+        targets = []
+        for key in damage.keys():
+            users = common_values(
+                "users.username, participants.user_id, participants.participant_position",
+                "users",
                 "participants",
-                "user_id != \"%s\" AND participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_id, i+2, quiz_id)
-            )['participant_score']
-
-            update_db_entry(
-                "participants",
-                "participant_score = \"%s\"" % (int(user_score)+int(halved_value)),
-                "user_id != \"%s\" AND participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_id, i+2, quiz_id)
+                "users.user_id",
+                "participants.user_id WHERE users.user_id != \"%s\" AND participants.participant_position = \"%s\" AND participants.quiz_id = \"%s\"" % (user_id, key, quiz_id)
             )
-            item_info['item_points'] = halved_value
+            targets.extend(users)
+
+        for user in targets:
+            for key, value in damage.items():
+                if int(user['participant_position']) == int(key):
+                    update_leaderboard(user['user_id'], quiz_id, value)
+                    flash("You used a %s and hit %s in %s place, taking %s points" % (item_info['item_name'], user['username'], ordinal(int(user['participant_position'])), abs(value)))
 
 
-            flash("You used a %s and hit %s place, taking %s points" % (item_info['item_name'], i+2, item_info['item_points']))
 
     # 1up Mushroom
     if item_info['item_id']  == 6:
@@ -752,16 +864,19 @@ def item_function(user_id, quiz_id, participant_item_id, use):
         if user_position == 1:
             flash("There's nowhere for you to go, you're already winning")
         else:
-            next_score = get_entry_from_db(
-                "participant_score",
+            next_participant_info = get_entry_from_db(
+                "participant_score, participant_position",
                 "participants",
-                "participant_position = \"%s\" AND quiz_id = \"%s\"" % (user_position-1, quiz_id)
-            )['participant_score']
+                "participant_position < \"%s\" AND quiz_id = \"%s\" ORDER BY participant_position DESC LIMIT 1" % (user_position, quiz_id)
+            )
+
+            next_score = next_participant_info['participant_score']
+            new_position = next_participant_info['participant_position']
 
             points = next_score - user_score + 1
 
             update_leaderboard(user_id, quiz_id, points)
-            flash("You used a %s to gain %s points and moved to %s place" % (item_info['item_name'], points, ordinal(int(user_position)-1)))
+            flash("You used a %s to gain %s points and moved to %s place" % (item_info['item_name'], points, ordinal(int(new_position))))
 
     # Coin
     if item_info['item_id']  == 7:
@@ -812,11 +927,21 @@ def item_function(user_id, quiz_id, participant_item_id, use):
             flash("You used a %s and went straight to 1st place!" % (item_info['item_name']))
 
 def ordinal(num):
-  if num % 100 in (11, 12, 13):
-    return f"{num}th"
-  elif num % 10 == 1:
-    return f"{num}st"
-  elif num % 10 == 2:
-    return f"{num}nd"
-  else:
-    return f"{num}th"
+    suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
+    suffix = suffixes.get(num % 10, 'th')  # Default to 'th' for most cases
+
+    # Handle exceptions for 11, 12, and 13:
+    if 11 <= (num % 100) <= 13:
+        suffix = 'th'
+
+    return f"{num}{suffix}"
+  
+def check_success(chance):
+    if chance <= 0 or chance >= 100:
+        raise ValueError("chance_forwards must be between 0 and 100")
+
+    random_number = random.random()*100  # Generate a random number between 1 and 100
+    if random_number <= chance:
+        return True
+    else:
+        return False

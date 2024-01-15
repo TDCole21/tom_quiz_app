@@ -3870,7 +3870,6 @@ def use_item():
                 "participant_item_id = NULL",
                 "user_id = \"%s\" AND quiz_id = \"%s\"" % (session['user_id'], request.form.get('quiz_id'))
             )
-            flash("Item used")
         else:
             flash("You lost the item")
 
