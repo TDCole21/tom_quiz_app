@@ -3,20 +3,21 @@ USE quiz;
 -- Categories Table
 INSERT IGNORE INTO categories
 (category_name, category_description) VALUES
-("General Knowledge", "Information about stuff"),
-("History", "Shit that already happened"),
-("2023",""),
-("Politics",""),
-("Music",""),
-("Geography",""),
-("Culture and Religion",""),
-("Entertainment",""),
-("Video Games",""),
-("TV and Movie",""),
-("Literature",""),
-("Theatre, Musicals and Plays",""),
-("2024",""),
-("Me","");
+("General Knowledge", "This category covers a wide range of topics about the world, including science, technology, current events, geography, history, culture, and more. It's all about testing your broad understanding of the world around you."),
+("History", "Travel back in time with this category! Test your knowledge of major historical events, figures, empires, wars, and social movements. Questions may span across different periods and regions of the world."),
+("2023","This category focuses on specific events, news, trends, and popular culture from these years. Expect questions about major headlines, technological advancements, political happenings, and cultural phenomena that occurred in these timeframes."),
+("Politics","This category delves into the world of government, elections, policies, and current political events. Be prepared for questions about leaders, ideologies, systems of government, and political debates."),
+("Music","Covers diverse musical genres, artists, albums, instruments, musical theory, and significant moments in music history."),
+("Board Games","Challenges your knowledge of classic and modern board games, gameplay mechanics, strategies, trivia, and popular titles."),
+("Geography","Get your atlas ready! This category will test your knowledge of maps, countries, continents, oceans, capitals, landmarks, and geographical features. Be prepared for questions about physical and political geography."),
+("Culture and Religion","This category explores the diverse cultures and religious traditions of the world. Expect questions about customs, beliefs, practices, holidays, art, music, and folklore from different cultures and religions."),
+("Entertainment","Get ready for some fun! This category covers a wide range of entertainment topics, including music, movies, TV shows, books, celebrities, pop culture, and trends."),
+("Video Games","Level up your knowledge in this category! Test your skills with questions about popular video games, consoles, characters, storylines, genres, and gaming history."),
+("TV and Movie","Lights, camera, action! This category puts your knowledge of cinema and television to the test. Be prepared for questions about movies, TV shows, actors, directors, genres, awards, and iconic scenes."),
+("Literature","Unleash your inner bookworm! This category explores the world of literature, including classic novels, authors, poetry, genres, literary themes, and famous quotes."),
+("Theatre, Musicals and Plays","Take a bow! This category is all about the dramatic arts. Test your knowledge of plays, musicals, theatre history, playwrights, actors, and famous stage productions."),
+("2024","This category focuses on specific events, news, trends, and popular culture from these years. Expect questions about major headlines, technological advancements, political happenings, and cultural phenomena that occurred in these timeframes."),
+("Me","This category is a bit of a mystery! It might involve questions about your personal preferences, experiences, or even hidden talents. Come prepared to reveal something new about yourself!");
 
 
 -- Question Scoring Type Table

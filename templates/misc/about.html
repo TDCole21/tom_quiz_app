@@ -12,8 +12,8 @@
         class = "w3-light-grey"
       >
         <img
-          src   = "https://i.ytimg.com/vi/vbMQfaG6lo8/maxresdefault.jpg"
-          alt   = "Tom"
+          src   = "https://tdcole-30.s3.eu-west-2.amazonaws.com/v1.X.jpg"
+          alt   = "v1.X"
           style = "width:100%"
         />
         <div
@@ -22,7 +22,7 @@
           <p
             class = "w3-opacity"
           >
-            Image irrelevant
+            2022
           </p>
           <h3>
             V1.0.0
@@ -47,24 +47,96 @@
       <div
         class = "w3-light-grey"
       >
+        <img
+          src   = "https://tdcole-30.s3.eu-west-2.amazonaws.com/v2.X"
+          alt   = "v2.X"
+          style = "width:100%"
+        />
         <div
           class = "w3-container"
         >
+          <p
+            class = "w3-opacity"
+          >
+            15/01/2024
+          </p>
           <h3>
             V2.0.0
           </h3>
-          <p>
-            Bug fix, where a registered user could use URL injection to submit answers as any user for any question.
-          </p>             
+          <h4>Bug Fixes:</h4>
+          <ul>
+            <li>Navigation in the app is exclusively done via POST api methods. This is to fix an issue where a registered user could use URL injection to submit answers as any user for any question.</li>
+          </ul> 
+          <h4>New Features:</h4>
+          <ul>
+            <li>Hints added</li>
+            <li>Items added. 10 at launch</li>
+          </ul>  
+          <h4>Feature Enhancements:</h4>
+          <ul>
+            <li>Faster scoring of answers</li>
+            <li>Backend database overhaul</li>
+            <li>Adhoc scoring in app</li>
+          </ul>      
+        </div>
+      </div>
+    </div>
+
+    <div
+      class = "w3-col m4 w3-margin-bottom"
+    >
+      <div
+        class = "w3-light-grey"
+      >
+        <img
+          src   = "https://tdcole-30.s3.eu-west-2.amazonaws.com/v3.X"
+          alt   = "v3.X"
+          style = "width:100%"
+        />
+        <div
+          class = "w3-container"
+        >
+          <p
+            class = "w3-opacity"
+          >
+            TBA
+          </p>
+          <h3>
+            V3.X
+          </h3>
+          <h4>Bug Fixes:</h4>
+          <ul>
+            <li>Modulise app.py</li>
+            <li>Add different styles instead of hard coding css into the html pages</li>
+            <li>Add a host to the quiz database so that they can view the results</li>
+            <li>Re-engineer the pages so that it uses common_values similar to the "all_results" page, to put less stress on the browser</li>
+            <li>Create a weighting for user xp, depending on number of participants and overall difficulty of questions</li>
+            <li>Add paths at the top of the pages e.g. Quiz -> Quiz_maker -> Quiz Template each a url</li>
+            <li>Have a notification if a round or question are added multiple times into a quiz</li>
+            <li>Can currently only have one Quiz active at a time</li>
+            <li>Percentage bar only works with one quiz. Need to reprogram the live database to have quiz, round and question all link</li>
+            <li>Add anchors to the webpages</li>
+            <li>When no associated rounds or questions, the quiz goes weird</li>
+            <li>Some functions are hard coded, or modified e.g. common_values_2</li>
+            <li>Lock in answers function is messy</li>
+            <li>Add source point to all functions and forms</li>
+            <li>Hints used in app.py to move strain from freontend to backend</li>
+            <li>Maybe add if messages[1] == 'login' Go to href = url_for(loggin)login page. endif to messages</li>
+            <li>Have media only accessible if uploaded to s3 bucket, and have function to upload media to s3 bucket. Instead of refering to url of media previously uploaded publically</li>
+            <li>Add it so a message appears if a users points have changed. Then they know if they got hit by an item</li>
+            <li>Add more items</li>
+            <li>Create log database</li>
+            <li>Friend requests</li>
+            <li>User levels and unlockables</li>
+            <li>Profile and emote pictures for users</li>
+            <li>Auto generate quizzes/rounds/questions</li>
+            <li>IaC CI/CD deployment</li>
+            <li>NGINX</li>
+            <li>Containerise app</li>
+          </ul>      
         </div>
       </div>
     </div>
   </div>
-
-  <hr>
-  <h4>To do:</h4>
-  <ul>
-      <li>Nothing</li>
-  </ul>
 
 {%endblock%}
