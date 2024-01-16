@@ -14,3 +14,20 @@ pip install mysqlclient
 pip install Flask
 pip install flask_mysqldb
 pip install multidict
+# install nginx
+sudo apt install nginx -y
+# Create a new conf for port 5000
+sudo vim /etc/nginx/conf.d/quiz.conf
+# server {
+
+#     listen      80;
+#     server_name functions;
+
+#     location / {
+
+#         proxy_pass http://localhost:5000;
+
+#     }
+
+# }
+# server_name is what appears when you run app.py
