@@ -31,3 +31,7 @@ sudo vim /etc/nginx/conf.d/quiz.conf
 
 # }
 # server_name is what appears when you run app.py
+
+# Connect to RDS
+sudo apt-get install mariadb-client -y
+mysql -h <rds-url> -P 3306 -u admin -p
