@@ -87,7 +87,6 @@ def login_attempt():
         # username/User Email does not exist in the database
         else:
             flash('This account does not exist.')
-            flash('register')     
 
     # If no post method was used, or the user was failed to login, then they're redirected to the login page 
     return redirect(url_for(
@@ -227,7 +226,7 @@ def password_update():
         # Updates the user's password in the database, using the session email as the identifier
         update_db_entry(
             "users",
-            "user_password = \"%s\"" % (generate_password_hash(fix_string(request.form.get('new_user_password')), method='pbkdf2')),
+            "user_password = \"%s\"" % (generate_password_hash(fix_string(request.form.get('new_user_password')), method='SHA1')),
             "user_email = \"%s\"" % (session['user_email'])
         )
 
@@ -285,7 +284,7 @@ def user_create():
                 insert_db_entry(
                     "users",
                     "username, user_email, user_password, user_admin",
-                    "\"%s\", \"%s\", \"%s\", 0" % (fix_string(request.form.get('username')), fix_string(request.form.get('user_email')), generate_password_hash(fix_string(request.form.get('user_password')), method='pbkdf2'))
+                    "\"%s\", \"%s\", \"%s\", 0" % (fix_string(request.form.get('username')), fix_string(request.form.get('user_email')), generate_password_hash(fix_string(request.form.get('user_password')), method='SHA1'))
                 )
 
                 # This then grabs the information that was just entered into the database
