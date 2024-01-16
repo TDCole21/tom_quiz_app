@@ -35,3 +35,15 @@ sudo vim /etc/nginx/conf.d/quiz.conf
 # Connect to RDS
 sudo apt-get install mariadb-client -y
 mysql -h <rds-url> -P 3306 -u admin -p
+
+# Turn app into a service
+sudo vim /etc/systemd/system/flask.service
+# [Unit]
+# Description=My Quiz App
+# [Service]
+# User=ubuntu
+
+# ExecStart=/home/ubuntu/tom_quiz_app/installation.sh
+
+# [Install]
+# WantedBy=multi-user.target
