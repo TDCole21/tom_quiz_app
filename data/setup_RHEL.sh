@@ -1,3 +1,4 @@
+# WARNING THIS DOESN'T WORK. IT GETS STUCK ON flask)mysqldb
 # This is on a clean RHEL9 EC2 instance
 sudo yum update -y
 # install git
