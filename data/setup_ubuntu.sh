@@ -47,3 +47,7 @@ sudo vim /etc/systemd/system/flask.service
 
 # [Install]
 # WantedBy=multi-user.target
+
+chmod +x /home/ubuntu/tom_quiz_app/ -R
+sudo systemctl daemon-reload
+sudo systemctl start flask
