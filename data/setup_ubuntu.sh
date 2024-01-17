@@ -42,8 +42,8 @@ sudo vim /etc/systemd/system/flask.service
 # Description=My Quiz App
 # [Service]
 # User=ubuntu
-
 # ExecStart=/home/ubuntu/tom_quiz_app/installation.sh
+# Restart=always
 
 # [Install]
 # WantedBy=multi-user.target
