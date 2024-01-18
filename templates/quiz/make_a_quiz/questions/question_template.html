@@ -190,6 +190,9 @@
   <p>
     {{question_info['question_correct_answer']}}
   </p>
+  {% for url in question_info['urls'] %}
+    <a href="{{ url }}">{{ url }}</a>
+  {% endfor %}
   <form
     method  = "POST"
     action  = "{{ url_for(

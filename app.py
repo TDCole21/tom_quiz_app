@@ -2340,6 +2340,13 @@ def question_template():
         )
 
         # Question Type information
+        if question_info['question_correct_answer'] is not None:
+            urls = detect_urls(question_info['question_correct_answer'])
+            if urls:
+                question_info['urls'] = urls
+
+
+        # Question Type information
         if question_info['question_type_id'] is not None:
             question_type = get_entry_from_db(
                 "*",

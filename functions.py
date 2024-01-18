@@ -945,3 +945,8 @@ def check_success(chance):
         return True
     else:
         return False
+    
+def detect_urls(text):
+    url_regex = r"https?://[^\s<>]+|www\.[^\s<>]+" 
+    matches = re.findall(url_regex, text)
+    return matches
