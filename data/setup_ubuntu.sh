@@ -56,6 +56,7 @@ sudo systemctl start flask
 # #!/bin/bash
 # git clone https://github.com/TDCole21/tom_quiz_app.git /home/ubuntu/tom_quiz_app/
 # cd /home/ubuntu/tom_quiz_app/
+# git reset --hard HEAD
 # git pull
 # chmod +x /home/ubuntu/tom_quiz_app/ -R
 # sudo systemctl daemon-reload
