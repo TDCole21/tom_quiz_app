@@ -51,3 +51,13 @@ sudo vim /etc/systemd/system/flask.service
 chmod +x /home/ubuntu/tom_quiz_app/ -R
 sudo systemctl daemon-reload
 sudo systemctl start flask
+
+# User data on AWS
+# #!/bin/bash
+# git clone https://github.com/TDCole21/tom_quiz_app.git /home/ubuntu/tom_quiz_app/
+# cd /home/ubuntu/tom_quiz_app/
+# git pull
+# chmod +x /home/ubuntu/tom_quiz_app/ -R
+# sudo systemctl daemon-reload
+# sudo systemctl start flask
+# sudo systemctl enable flask
