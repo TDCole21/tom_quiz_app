@@ -58,6 +58,12 @@ sudo systemctl start flask
 # cd /home/ubuntu/tom_quiz_app/
 # git reset --hard HEAD
 # git pull
+# cat << EOF > data/info.py
+# mysql_host = ""
+# mysql_user = ""
+# mysql_password = ""
+# mysql_db = ""
+# EOF
 # chmod +x /home/ubuntu/tom_quiz_app/ -R
 # sudo systemctl daemon-reload
 # sudo systemctl start flask
