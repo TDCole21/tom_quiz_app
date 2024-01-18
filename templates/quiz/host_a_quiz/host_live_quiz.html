@@ -185,6 +185,9 @@
         <h5>
           Correct Answer: <div style="white-space: pre-wrap;">{{question['question_correct_answer']}}</div>
         </h5>
+        {% for url in question['urls'] %}
+          <a href="{{ url }}">{{ url }}</a>
+        {% endfor %}
       {% endif %}
       {% if question['question_category'] %}
         Category Type: {{question['question_category']}}

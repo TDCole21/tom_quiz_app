@@ -2982,6 +2982,12 @@ def host_live_quiz():
                     "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
                 )['round_order']
                 associated_questions.append(associated_question)
+
+                if associated_questions['question_correct_answer'] is not None:
+                    clean_text, urls = detect_urls(associated_questions['question_correct_answer'])
+                    if urls:
+                        associated_questions['question_correct_answer'] = clean_text
+                        associated_questions['urls'] = urls
             
             round['number_of_associated_questions'] = len(associated_question_info)
             round['lock_answers'] = get_entry_from_db(
@@ -3076,7 +3082,7 @@ def host_live_quiz():
                 break
 
         round_questions = common_values(
-                "questions.question_id, questions.question_tag, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
+                "questions.question_id, questions.question_tag, questions.question_correct_answer, questions.question_category_id, questions.question_scoring_type_id, questions.question_text, questions.question_difficulty, questions.question_points, live.question_order, live.question_active, live.question_completed, live.round_id",
                 "questions",
                 "live",
                 "questions.question_id",
@@ -3120,6 +3126,12 @@ def host_live_quiz():
                         "categories",
                         "category_id = \"%s\"" % (question['question_category_id'])
                     )['category_name']
+            
+            if question['question_correct_answer'] is not None:
+                clean_text, urls = detect_urls(question['question_correct_answer'])
+                if urls:
+                    question['question_correct_answer'] = clean_text
+                    question['urls'] = urls
             
         for question in round_questions:
             question['question_scoring_type_name'] = get_entry_from_db(
@@ -3558,6 +3570,12 @@ def live_quiz():
                     "round_id = \"%s\" AND quiz_id = \"%s\"" % (round['round_id'], request.form.get('quiz_id'))
                 )['round_order']
                 associated_questions.append(associated_question)
+
+                if associated_questions['question_correct_answer'] is not None:
+                    clean_text, urls = detect_urls(associated_questions['question_correct_answer'])
+                    if urls:
+                        associated_questions['question_correct_answer'] = clean_text
+                        associated_questions['urls'] = urls
             
             round['number_of_associated_questions'] = len(associated_question_info)
 
@@ -3665,6 +3683,12 @@ def live_quiz():
             round_questions = associated_questions
 
         for question in round_questions:
+            if question['question_correct_answer'] is not None:
+                clean_text, urls = detect_urls(question['question_correct_answer'])
+                if urls:
+                    question['question_correct_answer'] = clean_text
+                    question['urls'] = urls
+
             if check_single_db(
                 "answer_text",
                 "answers",

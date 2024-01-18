@@ -128,6 +128,9 @@
         {% if question['lock_answers'] == 1 or 'quiz_end' in quiz_info %}
           <br>
           Correct Answer: {{question['question_correct_answer']}}
+          {% for url in question['urls'] %}
+            <a href="{{ url }}">{{ url }}</a>
+          {% endfor %}
           <br>
         {% endif %}
       {% endif %}
