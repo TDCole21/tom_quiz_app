@@ -2983,11 +2983,11 @@ def host_live_quiz():
                 )['round_order']
                 associated_questions.append(associated_question)
 
-                if associated_questions['question_correct_answer'] is not None:
-                    clean_text, urls = detect_urls(associated_questions['question_correct_answer'])
+                if associated_question['question_correct_answer'] is not None:
+                    clean_text, urls = detect_urls(associated_question['question_correct_answer'])
                     if urls:
-                        associated_questions['question_correct_answer'] = clean_text
-                        associated_questions['urls'] = urls
+                        associated_question['question_correct_answer'] = clean_text
+                        associated_question['urls'] = urls
             
             round['number_of_associated_questions'] = len(associated_question_info)
             round['lock_answers'] = get_entry_from_db(
@@ -3571,11 +3571,11 @@ def live_quiz():
                 )['round_order']
                 associated_questions.append(associated_question)
 
-                if associated_questions['question_correct_answer'] is not None:
-                    clean_text, urls = detect_urls(associated_questions['question_correct_answer'])
+                if associated_question['question_correct_answer'] is not None:
+                    clean_text, urls = detect_urls(associated_question['question_correct_answer'])
                     if urls:
-                        associated_questions['question_correct_answer'] = clean_text
-                        associated_questions['urls'] = urls
+                        associated_question['question_correct_answer'] = clean_text
+                        associated_question['urls'] = urls
             
             round['number_of_associated_questions'] = len(associated_question_info)
 

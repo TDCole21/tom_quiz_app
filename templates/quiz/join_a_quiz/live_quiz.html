@@ -129,12 +129,14 @@
           <br>
           Correct Answer: {{question['question_correct_answer']}}
           {% for url in question['urls'] %}
+            <br>
             <a href="{{ url }}">{{ url }}</a>
+            <br>
           {% endfor %}
           <br>
         {% endif %}
       {% endif %}
-      {% if 'quiz_end' not in quiz_info and (question['next_question'] or question['question_completed'] or question['question_active']) %}
+      {% if 'quiz_end' not in quiz_info and question['lock_answers'] != 1 and (question['next_question'] or question['question_completed'] or question['question_active']) %}
         <form
           method  = "POST"
           action  = "{{ url_for(
