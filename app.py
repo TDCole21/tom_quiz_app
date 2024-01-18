@@ -2341,8 +2341,9 @@ def question_template():
 
         # Question Type information
         if question_info['question_correct_answer'] is not None:
-            urls = detect_urls(question_info['question_correct_answer'])
+            clean_text, urls = detect_urls(question_info['question_correct_answer'])
             if urls:
+                question_info['question_correct_answer'] = clean_text
                 question_info['urls'] = urls
 
 
